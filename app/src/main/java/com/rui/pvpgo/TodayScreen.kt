@@ -189,6 +189,9 @@ private fun EventHeroCard(
     onExplore: () -> Unit,
     actionLabel: String = "VER AGENDA"
 ) {
+    val nowEvent = calendar?.takeIf { !it.stale }?.active()?.firstOrNull()
+    val nextEvent = calendar?.takeIf { !it.stale }?.upcoming()?.firstOrNull()
+    val event = nowEvent ?: nextEvent
     val shape = RoundedCornerShape(22.dp)
     Box(
         modifier = Modifier
@@ -210,13 +213,7 @@ private fun EventHeroCard(
                 .clip(CircleShape)
                 .background(Color(0xFF315A73).copy(alpha = 0.36f))
         )
-        PokemonArtwork(
-            speciesName = "Carbink",
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 18.dp, top = 12.dp)
-                .size(118.dp)
-        )
+        Text("◈", modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp), color = TodayBlue.copy(alpha = 0.16f), fontSize = 110.sp)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -225,20 +222,26 @@ private fun EventHeroCard(
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "●  AGENDA NÃO SINCRONIZADA",
+                    text = when {
+                        calendar == null -> "●  A ATUALIZAR EVENTOS"
+                        calendar.stale -> "●  EVENTOS EM CACHE"
+                        nowEvent != null -> "●  EM CURSO · COMUNIDADE"
+                        calendar.isAvailable -> "●  AGENDA COMUNITÁRIA"
+                        else -> "●  SEM LIGAÇÃO"
+                    },
                     color = TodayAmber,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (loading) "A carregar" else "Sem feed",
+                    text = if (calendar == null) "A obter" else if (calendar.stale) "Cache" else if (calendar.isAvailable) "${calendar.events.size} eventos" else "Indisponível",
                     color = PvpColors.TextPrimary,
                     style = MaterialTheme.typography.labelMedium
                 )
             }
             Column(Modifier.width(210.dp)) {
                 Text(
-                    text = "Eventos\nPokémon GO",
+                    text = event?.title ?: "Eventos\nPokémon GO",
                     color = PvpColors.TextPrimary,
                     fontSize = 28.sp,
                     lineHeight = 31.sp,
@@ -246,14 +249,14 @@ private fun EventHeroCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "Horários ainda por confirmar",
+                    text = event?.category ?: "Informação comunitária",
                     color = PvpColors.TextSecondary,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SmallBonus("Bónus: —", TodayAmber)
-                SmallBonus("Shiny: —", Color(0xFF99D9D3))
+                SmallBonus("Leek Duck", TodayAmber)
+                SmallBonus("Não oficial", TodayBlue)
             }
             Row(
                 modifier = Modifier
@@ -469,7 +472,7 @@ private fun TodayCatalogStatus(speciesCount: Int, loading: Boolean, onOpenCollec
 }
 
 @Composable
-private fun TodayTimelineCard() {
+private fun TodayTimelineCard(calendar: CalendarSnapshot?) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = TodayCard,
@@ -477,13 +480,20 @@ private fun TodayTimelineCard() {
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
-                "Sem calendário oficial sincronizado",
+                when {
+                    calendar == null -> "A carregar calendário…"
+                    calendar.stale -> "Eventos em cache · confirmar horários"
+                    calendar.active().isNotEmpty() -> calendar.active().first().title
+                    calendar.upcoming().isNotEmpty() -> calendar.upcoming().first().title
+                    calendar.isAvailable -> "Sem eventos na janela de 30 dias"
+                    else -> "Sem ligação ao calendário"
+                },
                 color = PvpColors.TextPrimary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "Não apresentamos horas, eventos ou bónus como ativos sem uma fonte verificada. Consulta a agenda para saber o estado da integração.",
+                calendar?.let { if (it.isAvailable) it.sourceLabel + " · consulta a Agenda para datas" else it.error ?: "Ainda sem dados" } ?: "A obter fonte comunitária…",
                 color = PvpColors.TextSecondary,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -617,66 +627,23 @@ private fun todayDateLabel(): String {
 
 @Composable
 fun EventOverviewScreen(
+    calendar: CalendarSnapshot?,
+    onRefresh: () -> Unit,
     onBack: () -> Unit,
     onOpenRadar: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item { DetailHeader(title = "Eventos", subtitle = "Estado real das fontes", onBack = onBack) }
-        item {
-            Surface(
-                color = TodayCard,
-                shape = RoundedCornerShape(18.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, TodayBorder)
-            ) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("SEM FONTE DE EVENTOS", color = TodayAmber, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                    Text("Eventos por confirmar", color = PvpColors.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-                    Text(
-                        "A aplicação ainda não está ligada a um calendário oficial verificado. Por segurança, não apresenta contagens decrescentes, bónus ou horários inventados.",
-                        color = PvpColors.TextSecondary,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
-        item { TodaySectionHeader("EXPLORAR", "Abrir radar ↗", onOpenRadar) }
-        item {
-            Text(
-                "No Radar podes consultar os teus targets. A informação só deve ser tratada como em tempo real quando a fonte tiver sido validada.",
-                color = PvpColors.TextSecondary,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
+    com.rui.pvpgo.events.CommunityEventScreen(calendar, onRefresh, onBack, onOpenRadar)
 }
 
 @Composable
 fun AgendaOverviewScreen(
+    calendar: CalendarSnapshot?,
+    onRefresh: () -> Unit,
     onBack: () -> Unit,
     onOpenEvent: () -> Unit,
     onOpenRadar: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        item { DetailHeader(title = "Agenda", subtitle = todayDateLabel(), onBack = onBack) }
-        item { TodayTimelineCard() }
-        item { TodaySectionHeader("FONTES", "Ver eventos ↗", onOpenEvent) }
-        item {
-            Text(
-                "Não há eventos confirmados para apresentar. Só mostraremos datas quando a fonte de calendário estiver integrada e sincronizada.",
-                color = PvpColors.TextSecondary,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-        item { TodaySectionHeader("TARGETS", "Abrir radar ↗", onOpenRadar) }
-    }
+    com.rui.pvpgo.events.CommunityAgendaScreen(calendar, onRefresh, onBack, onOpenEvent, onOpenRadar)
 }
 
 @Composable
