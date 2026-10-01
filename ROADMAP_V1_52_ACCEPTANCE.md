@@ -48,6 +48,25 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 **Roadmap global de 50 gates:** mantém **7/50 (14%) verificados**. Os 9/10 gates acima são implementação parcial em novas subáreas, não justificam alterar automaticamente os gates globais B2/C3/J3.
 
+## Checkpoint V1.56 — Pokémon 360 e IV Targets multi-liga
+
+**Estado de implementação:** 8/10 tarefas de código/guardas estruturais concluídas (80%). A build Android e o teste em dispositivo estão separados. **Aceitação global:** continua 7/50 (14%), sem aumento artificial por existir código.
+
+| Gate | Requisito e evidência | Estado |
+|---|---|---|
+| V56-01 | Seleção de Little / Great / Ultra / Master baseada no enum real `League` | [x] |
+| V56-02 | Rank calculado por `RankRepository.find(species, league, iv)` usando a liga ativa | [x] |
+| V56-03 | Liga partilhada entre Espécie, Exemplares, Comparação e IV Targets (`CoreScreens.kt`) | [x] |
+| V56-04 | IV Targets geram Top 4 e melhor exemplar para a liga escolhida | [x] |
+| V56-05 | Alterar liga limpa rankings antigos e ativa estado de carregamento específico | [x] |
+| V56-06 | Distinguir «a calcular», «sem exemplares» e «exemplares sem rank elegível» | [x] |
+| V56-07 | Componentes multi-liga e IV Targets com tokens das 4 skins e alvos de toque ≥48 dp | [x] |
+| V56-08 | Testes de políticas (labels/CP/seleção) e verificador de integração V1.56 no CI | [x] |
+| V56-09 | Confirmar build V1.56 e assinatura debug, com APK descarregada | [ ] |
+| V56-10 | Testar os 4 contextos com Pokémon reais, trocar liga e comparar no Android | [ ] |
+
+**Limites:** O Rank exibido é o ranking matemático de stat product e não um ranking competitivo por meta. O motor usa níveis até 50 no perfil padrão; casos com requisitos de formas, elegibilidade ou regras especiais exigem verificação. Não usar um Rank para decidir transferências de forma automática. As builds debug continuam com identificador isolado para evitar conflitos de assinatura; a versão final precisará de chave persistente e estratégia de migração.
+
 ## Checkpoint V1.55 · Pokédex Nacional e Pokémon 360 (9/10 verificados por código e CI)
 
 **Progresso desta ronda:** 9/10 tarefas com prova de código, testes JUnit ou CI; falta a verificação num dispositivo Android. **Progresso global de aceitação:** mantém-se **7/50 (14%)** até existir teste em dispositivo e evidência integral para um gate global.
