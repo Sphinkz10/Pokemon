@@ -41,30 +41,32 @@ import com.rui.pvpgo.ui.theme.PvpColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private val IvBlue = Color(0xFF75D5FF)
-private val IvGreen = Color(0xFF7BE0A1)
-private val IvAmber = Color(0xFFFFC84D)
-private val IvCard = Color(0xFF101D31)
-private val IvBorder = Color(0xFF263C55)
+private val IvBlue: Color get() = PvpColors.AccentSky
+private val IvGreen: Color get() = PvpColors.AccentGreen
+private val IvAmber: Color get() = PvpColors.AccentAmber
+private val IvCard: Color get() = PvpColors.SurfaceCard
+private val IvBorder: Color get() = PvpColors.BorderDefault
 
 @Composable
 fun IvTargetsScreen(
     species: PokemonSpecies,
     collection: List<OwnedPokemon>,
+    league: League,
+    onLeagueChange: (League) -> Unit,
     onBack: () -> Unit
 ) {
     val owned = remember(collection, species.speciesId) { collection.filter { it.speciesId == species.speciesId } }
-    var topRows by remember(species.speciesId) { mutableStateOf<List<PvPRankEntry>>(emptyList()) }
-    var bestOwned by remember(species.speciesId, owned) { mutableStateOf<Pair<OwnedPokemon, PvPRankEntry>?>(null) }
-    var loading by remember(species.speciesId, owned) { mutableStateOf(true) }
+    var topRows by remember(species.speciesId, league) { mutableStateOf<List<PvPRankEntry>>(emptyList()) }
+    var bestOwned by remember(species.speciesId, owned, league) { mutableStateOf<Pair<OwnedPokemon, PvPRankEntry>?>(null) }
+    var loading by remember(species.speciesId, owned, league) { mutableStateOf(true) }
 
-    LaunchedEffect(species.speciesId, owned) {
+    LaunchedEffect(species.speciesId, owned, league) {
         loading = true
         val result = withContext(Dispatchers.Default) {
             val settings = RankSettings()
-            val ranks = RankRepository.ranks(species, League.GREAT, settings)
+            val ranks = RankRepository.ranks(species, league, settings)
             val best = owned.mapNotNull { pokemon ->
-                RankRepository.find(species, League.GREAT, pokemon.iv, settings)?.let { pokemon to it }
+                RankRepository.find(species, league, pokemon.iv, settings)?.let { pokemon to it }
             }.minByOrNull { it.second.rank }
             ranks.take(4) to best
         }
@@ -78,11 +80,19 @@ fun IvTargetsScreen(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        item { IvTargetsHeader(species.name, onBack) }
+        item { IvTargetsHeader(species.name, league, onBack) }
+        item { SpeciesLeagueSelector(league, onLeagueChange) }
+        item {
+            Text(
+                "Ranking de IV por stat product para ${SpeciesLeaguePolicy.cpLimitLabel(league)}. Não representa a classificação competitiva da espécie.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
         item { IvSpeciesHero(species, bestOwned) }
         item { IvSectionHeader("DOIS CONCEITOS DIFERENTES") }
-        item { IvConcepts() }
-        item { IvSectionHeader("TOP IVS · GREAT LEAGUE") }
+        item { IvConcepts(league) }
+        item { IvSectionHeader("TOP IVS · ${SpeciesLeaguePolicy.title(league).uppercase()}") }
         if (loading) {
             item {
                 Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -103,17 +113,17 @@ fun IvTargetsScreen(
             }
         }
         item { IvSectionHeader("AÇÃO") }
-        item { IvActionCard(bestOwned) }
+        item { IvActionCard(bestOwned, league) }
     }
 }
 
 @Composable
-private fun IvTargetsHeader(name: String, onBack: () -> Unit) {
+private fun IvTargetsHeader(name: String, league: League, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Surface(
             modifier = Modifier.size(48.dp).clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF0B1728),
+            color = PvpColors.CanvasMiddle,
             border = BorderStroke(1.dp, IvBorder)
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -123,7 +133,7 @@ private fun IvTargetsHeader(name: String, onBack: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("IV Targets", color = PvpColors.TextPrimary, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-            Text("$name · Great League", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+            Text("$name · ${SpeciesLeaguePolicy.title(league)}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -133,8 +143,8 @@ private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon,
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = Color(0xFF13283F),
-        border = BorderStroke(1.dp, Color(0xFF2F5D7D))
+        color = PvpColors.SurfaceRaised,
+        border = BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             PokemonArtwork(species.name, Modifier.size(76.dp))
@@ -155,12 +165,12 @@ private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon,
 }
 
 @Composable
-private fun IvConcepts() {
+private fun IvConcepts(league: League) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         IvConceptCard(
             modifier = Modifier.weight(1f),
             title = "PvP Rank",
-            detail = "Stat Product otimizado para o limite de CP.",
+            detail = if (league.cpCap == null) "Stat Product ao nível máximo configurado." else "Stat Product para ${SpeciesLeaguePolicy.cpLimitLabel(league)}.",
             accent = IvBlue
         )
         IvConceptCard(
@@ -193,8 +203,8 @@ private fun IvRankRow(row: PvPRankEntry, ownedRank: Boolean, label: String? = nu
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = if (ownedRank) Color(0xFF122E2E) else IvCard,
-        border = BorderStroke(1.dp, if (ownedRank) Color(0xFF2D6B5B) else IvBorder)
+        color = if (ownedRank) PvpColors.AccentDeep else IvCard,
+        border = BorderStroke(1.dp, if (ownedRank) PvpColors.StateSuccess else IvBorder)
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(shape = RoundedCornerShape(8.dp), color = accent.copy(alpha = 0.14f)) {
@@ -235,14 +245,14 @@ private fun IvOwnedDivider(rank: Int) {
 }
 
 @Composable
-private fun IvActionCard(bestOwned: Pair<OwnedPokemon, PvPRankEntry>?) {
+private fun IvActionCard(bestOwned: Pair<OwnedPokemon, PvPRankEntry>?, league: League) {
     val text = when {
-        bestOwned == null -> "Procura um exemplar competitivo. O objetivo é comparar o IV real com a tabela Great League antes de investir recursos."
-        bestOwned.second.rank == 1 -> "Já tens o Rank #1 matemático desta espécie para Great League. O próximo passo é validar moves e custo de build."
+        bestOwned == null -> "Ainda não tens um exemplar com rank disponível para ${SpeciesLeaguePolicy.title(league)}. Compara os IVs e os custos antes de investir recursos."
+        bestOwned.second.rank == 1 -> "O teu exemplar tem Rank #1 de stat product para ${SpeciesLeaguePolicy.title(league)}. Isto não mede o meta; confirma ataques, elegibilidade e custos."
         bestOwned.second.rank <= 50 -> "O teu melhor exemplar já está no Top 50. Compara o custo de melhoria antes de substituir um build utilizável."
         else -> "O teu melhor exemplar é Rank #${bestOwned.second.rank}. Mantém-no como referência e procura uma melhoria sem apagar progresso útil."
     }
-    Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = Color(0xFF14283F), border = BorderStroke(1.dp, IvBorder)) {
+    Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = PvpColors.SurfaceRaised, border = BorderStroke(1.dp, IvBorder)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text("O que fazer agora", color = PvpColors.TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
             Text(text, color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodyMedium)
