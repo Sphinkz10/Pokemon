@@ -216,6 +216,8 @@ fun CollectionModuleScreen(
                 IvTargetsScreen(
                     species = species,
                     collection = collection,
+                    league = speciesLeague,
+                    onLeagueChange = { speciesLeague = it },
                     onBack = { route = targetsReturnRoute }
                 )
             }
