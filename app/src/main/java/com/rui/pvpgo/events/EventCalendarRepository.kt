@@ -118,13 +118,13 @@ object EventCalendarRepository {
                 val start = parseTime(entry.opt("start_time"), local) ?: continue
                 val end = parseTime(entry.opt("end_time"), local) ?: continue
                 if (end <= start) continue
-                // A valid event may be outside our 30-day display window.
-                recognizedEntries++
-                if (end < now || start > endHorizon) continue
                 val title = entry.optString("title").trim().take(140)
                 if (title.isBlank()) continue
                 val link = entry.optString("article_url")
                 if (!link.startsWith("https://leekduck.com/")) continue
+                // Count valid source events even outside our 30-day window.
+                recognizedEntries++
+                if (end < now || start > endHorizon) continue
                 items += PokemonGoCalendarEvent(
                     title, entry.optString("category", group).take(64),
                     start, end, link, local
