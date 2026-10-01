@@ -18,6 +18,7 @@ components = read("app/src/main/java/com/rui/pvpgo/ui/components/PvpComponents.k
 gradle = read("app/build.gradle.kts")
 checks = {
   "V1.54 Android version": 'versionCode = 54' in gradle and 'versionName = "1.54.0-dev"' in gradle,
+  "V1.54 isolated debug app id avoids signing conflict": 'applicationIdSuffix = ".installtestv154"' in gradle,
   "today hero uses skin background": "colors = listOf(PvpColors.SurfaceRaised, PvpColors.CanvasMiddle, PvpColors.CanvasStart)" in today,
   "today key colors are semantic": "PvpColors.BorderDefault" in today and "PvpColors.AccentDeep" in today,
   "event title capped to two lines": "maxLines = 2" in today and "TextOverflow.Ellipsis" in today,
