@@ -56,6 +56,8 @@ import com.rui.pvpgo.engine.IvSpread
 import com.rui.pvpgo.engine.StandardRulesets
 import com.rui.pvpgo.live.LiveCompanionScreen
 import com.rui.pvpgo.ui.theme.PvpColors
+import com.rui.pvpgo.ui.theme.PvpSkin
+import com.rui.pvpgo.ui.theme.PvpSkinPalettes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -1060,13 +1062,15 @@ fun RadarRootScreen(catalog: List<PokemonSpecies>) {
     }
 }
 
-enum class MoreRoute { HOME, EVENT, AGENDA, RADAR, MATCHUP, TEAM_LAB, BATTLE_LOG, LIVE }
+enum class MoreRoute { HOME, EVENT, AGENDA, RADAR, MATCHUP, TEAM_LAB, BATTLE_LOG, LIVE, APPEARANCE }
 
 @Composable
 fun MoreRootScreen(
     catalog: List<PokemonSpecies>,
     moves: List<PvpMove>,
-    startRoute: MoreRoute = MoreRoute.HOME
+    startRoute: MoreRoute = MoreRoute.HOME,
+    selectedSkin: PvpSkin = PvpSkin.DEEP,
+    onSkinSelected: (PvpSkin) -> Unit = {}
 ) {
     var route by remember(startRoute) { mutableStateOf(startRoute) }
     when (route) {
@@ -1075,7 +1079,8 @@ fun MoreRootScreen(
             onMatchup = { route = MoreRoute.MATCHUP },
             onTeamLab = { route = MoreRoute.TEAM_LAB },
             onBattleLog = { route = MoreRoute.BATTLE_LOG },
-            onLive = { route = MoreRoute.LIVE }
+            onLive = { route = MoreRoute.LIVE },
+            onAppearance = { route = MoreRoute.APPEARANCE }
         )
         MoreRoute.EVENT -> EventOverviewScreen(
             onBack = { route = MoreRoute.HOME },
@@ -1091,12 +1096,17 @@ fun MoreRootScreen(
         MoreRoute.TEAM_LAB -> TeamLabScreen(catalog = catalog, moves = moves, onBack = { route = MoreRoute.HOME })
         MoreRoute.BATTLE_LOG -> BattleLogScreen(catalog = catalog, onBack = { route = MoreRoute.HOME })
         MoreRoute.LIVE -> LiveCompanionScreen(onBack = { route = MoreRoute.HOME })
+        MoreRoute.APPEARANCE -> AppearanceScreen(
+            selectedSkin = selectedSkin,
+            onChoose = onSkinSelected,
+            onBack = { route = MoreRoute.HOME }
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MoreHomeScreen(onRadar: () -> Unit, onMatchup: () -> Unit, onTeamLab: () -> Unit, onBattleLog: () -> Unit, onLive: () -> Unit) {
+private fun MoreHomeScreen(onRadar: () -> Unit, onMatchup: () -> Unit, onTeamLab: () -> Unit, onBattleLog: () -> Unit, onLive: () -> Unit, onAppearance: () -> Unit) {
     Scaffold(topBar = { TopAppBar(title = { Text("Mais") }) }) { padding ->
         LazyColumn(
             Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
@@ -1104,7 +1114,7 @@ private fun MoreHomeScreen(onRadar: () -> Unit, onMatchup: () -> Unit, onTeamLab
             contentPadding = PaddingValues(top = 12.dp, bottom = 28.dp)
         ) {
             item {
-                Text("PvP GO · Android integration 1.41-dev", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Pokémon PvP · Android vNext", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text("Abrimos apenas áreas que conseguem preservar os trust guards do motor. UNKNOWN continua melhor do que inventar um build.", style = MaterialTheme.typography.bodySmall)
             }
             item {
@@ -1162,7 +1172,83 @@ private fun MoreHomeScreen(onRadar: () -> Unit, onMatchup: () -> Unit, onTeamLab
                     }
                 }
             }
+            item {
+                Card(Modifier.fillMaxWidth().clickable(onClick = onAppearance)) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Aparência · Skins", fontWeight = FontWeight.Bold)
+                            Text("Escolher →", color = MaterialTheme.colorScheme.primary)
+                        }
+                        Text("Deep, AMOLED, Mystic e Classic. Preferência guardada neste dispositivo.", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
             item { IntegrationStatusCard("Privacidade", "Collection fica em user.db local. Importações não alteram a Collection sem confirmação humana.", "Ativo") }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppearanceScreen(
+    selectedSkin: PvpSkin,
+    onChoose: (PvpSkin) -> Unit,
+    onBack: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Aparência") },
+                navigationIcon = { TextButton(onClick = onBack) { Text("←") } }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(top = 18.dp, bottom = 32.dp)
+        ) {
+            item {
+                Text("Escolhe a tua skin", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("O tema escolhido fica guardado e é restaurado quando abres a aplicação.", style = MaterialTheme.typography.bodySmall)
+            }
+            items(PvpSkin.entries, key = { it.storageKey }) { option ->
+                val preview = PvpSkinPalettes.palette(option)
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { onChoose(option) },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf(preview.canvasStart, preview.surfaceCard, preview.brandYellow).forEach { swatch ->
+                                Surface(
+                                    modifier = Modifier.size(22.dp),
+                                    color = swatch,
+                                    shape = RoundedCornerShape(50)
+                                ) {}
+                            }
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text(option.label, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                            Text(option.description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        }
+                        if (selectedSkin == option) {
+                            Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+            item {
+                Text(
+                    "A estrutura de temas já é funcional. Alguns gráficos e ilustrações antigas ainda têm cores próprias e serão migrados por módulo.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
