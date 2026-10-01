@@ -56,11 +56,11 @@ private enum class CollectionQuickFilter(val label: String) {
     ALL("Todos"), PVP("PvP"), HUNDO("100%"), SHINY("Shiny"), TARGETS("Targets")
 }
 
-private val CollectionBlue = Color(0xFF75D5FF)
-private val CollectionGreen = Color(0xFF7BE0A1)
-private val CollectionAmber = Color(0xFFFFC84D)
-private val CollectionCard = Color(0xFF101D31)
-private val CollectionBorder = Color(0xFF263C55)
+private val CollectionBlue: Color get() = PvpColors.AccentSky
+private val CollectionGreen: Color get() = PvpColors.AccentGreen
+private val CollectionAmber: Color get() = PvpColors.AccentAmber
+private val CollectionCard: Color get() = PvpColors.TodayCard
+private val CollectionBorder: Color get() = PvpColors.BorderDefault
 
 @Composable
 fun CollectionOverviewScreen(
@@ -106,7 +106,8 @@ fun CollectionOverviewScreen(
             val matchesQuery = normalizedQuery.isBlank() ||
                 species?.name?.lowercase(Locale.ROOT)?.contains(normalizedQuery) == true ||
                 owned.nickname?.lowercase(Locale.ROOT)?.contains(normalizedQuery) == true ||
-                owned.speciesId.lowercase(Locale.ROOT).contains(normalizedQuery)
+                owned.speciesId.lowercase(Locale.ROOT).contains(normalizedQuery) ||
+                species?.dex?.toString() == normalizedQuery.removePrefix("#").trimStart('0').ifBlank { "0" }
             val box = pvpBoxByOwned[owned.id]
             val matchesFilter = when (filter) {
                 CollectionQuickFilter.ALL -> true
@@ -321,8 +322,8 @@ private fun CollectionHeader(pendingCount: Int, onAdd: () -> Unit) {
         Surface(
             modifier = Modifier.size(48.dp).clickable(onClick = onAdd),
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF15314A),
-            border = BorderStroke(1.dp, Color(0xFF315978))
+            color = PvpColors.SurfaceRaised,
+            border = BorderStroke(1.dp, PvpColors.BorderDefault)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text("+", color = CollectionBlue, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
@@ -335,7 +336,7 @@ private fun CollectionHeader(pendingCount: Int, onAdd: () -> Unit) {
 private fun CollectionTabs(tab: CollectionViewTab, onSelect: (CollectionViewTab) -> Unit) {
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF0B1728),
+        color = PvpColors.CanvasMiddle,
         border = BorderStroke(1.dp, CollectionBorder)
     ) {
         Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -346,7 +347,7 @@ private fun CollectionTabs(tab: CollectionViewTab, onSelect: (CollectionViewTab)
                         .weight(1f)
                         .heightIn(min = 44.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (active) Color(0xFF173A57) else Color.Transparent)
+                        .background(if (active) PvpColors.AccentDeep else Color.Transparent)
                         .clickable { onSelect(item) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -367,8 +368,8 @@ private fun PendingReviewCard(count: Int, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF3A301C),
-        border = BorderStroke(1.dp, Color(0xFF725C2E))
+        color = PvpColors.SurfaceRaised,
+        border = BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -382,7 +383,10 @@ private fun PendingReviewCard(count: Int, onClick: () -> Unit) {
 
 @Composable
 private fun CollectionFilterRow(filter: CollectionQuickFilter, onSelect: (CollectionQuickFilter) -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         CollectionQuickFilter.entries.forEach { item ->
             val active = filter == item
             Surface(
@@ -390,8 +394,8 @@ private fun CollectionFilterRow(filter: CollectionQuickFilter, onSelect: (Collec
                     .heightIn(min = 44.dp)
                     .clickable { onSelect(item) },
                 shape = RoundedCornerShape(10.dp),
-                color = if (active) Color(0xFF173A57) else CollectionCard,
-                border = BorderStroke(1.dp, if (active) Color(0xFF397A9F) else CollectionBorder)
+                color = if (active) PvpColors.AccentDeep else CollectionCard,
+                border = BorderStroke(1.dp, if (active) PvpColors.BrandBlue else CollectionBorder)
             ) {
                 Box(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {
                     Text(item.label, color = if (active) CollectionBlue else PvpColors.TextSecondary, style = MaterialTheme.typography.labelMedium)
@@ -426,8 +430,8 @@ private fun CollectionAttentionCard(
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF14283F),
-        border = BorderStroke(1.dp, Color(0xFF294A68))
+        color = PvpColors.SurfaceRaised,
+        border = BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
