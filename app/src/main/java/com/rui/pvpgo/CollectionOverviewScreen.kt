@@ -78,6 +78,7 @@ fun CollectionOverviewScreen(
     var filter by remember { mutableStateOf(CollectionQuickFilter.ALL) }
     var sortByPriority by remember { mutableStateOf(true) }
     var generation by remember { mutableStateOf("Todas") }
+    var selectedNational by remember { mutableStateOf<NationalDexEntry?>(null) }
     val context = LocalContext.current.applicationContext
     var national by remember { mutableStateOf<NationalDexLoad?>(null) }
     // Lazy-load the national catalog only when Pokédex is opened. Battle data stays in PvPoke.
@@ -141,6 +142,29 @@ fun CollectionOverviewScreen(
             .associateBy { it.dex }
     }
 
+
+    // Route to a national species profile irrespective of PvPoke battle coverage.
+    // The list state (query, generation and position) remains alive on Back.
+    selectedNational?.let { entry ->
+        val battleSpecies = pvpByDex[entry.dex]
+        val firstOwnedId = battleSpecies?.let { species ->
+            ownedBySpecies[species.speciesId]?.firstOrNull()?.id
+        }
+        NationalDexDetailScreen(
+            entry = entry,
+            ownedCount = ownedCountsByDex[entry.dex] ?: 0,
+            battleAvailable = battleSpecies != null,
+            indexSource = national?.status ?: "Pokédex Nacional · fonte por confirmar",
+            onBack = { selectedNational = null },
+            onOpenIvTargets = battleSpecies?.let { species ->
+                { selectedNational = null; onOpenIvTargets(species.speciesId) }
+            },
+            onOpenOwned = firstOwnedId?.let { ownedId ->
+                { selectedNational = null; onSelectOwned(ownedId) }
+            }
+        )
+        return
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -269,9 +293,7 @@ fun CollectionOverviewScreen(
                         entry = entry,
                         ownedCount = ownedCount,
                         hasBattleData = battleSpecies != null,
-                        onClick = battleSpecies?.let { species ->
-                            { onOpenIvTargets(species.speciesId) }
-                        }
+                        onClick = { selectedNational = entry }
                     )
                 }
             }
@@ -493,12 +515,10 @@ private fun NationalDexCollectionRow(
     entry: NationalDexEntry,
     ownedCount: Int,
     hasBattleData: Boolean,
-    onClick: (() -> Unit)?
+    onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().then(
-            if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-        ),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = CollectionCard,
         border = BorderStroke(1.dp, CollectionBorder)
@@ -512,9 +532,10 @@ private fun NationalDexCollectionRow(
                 Text("#${entry.dex.toString().padStart(4,'0')} · ${if (hasBattleData) "Dados PvP disponíveis" else "Sem análise PvP validada"}",
                     color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
             }
-            if (ownedCount > 0) {
-                Text("TENS $ownedCount", color = CollectionGreen,
+            Column(horizontalAlignment = Alignment.End) {
+                if (ownedCount > 0) Text("TENS $ownedCount", color = CollectionGreen,
                     style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                Text("Abrir ›", color = CollectionBlue, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
