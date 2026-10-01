@@ -18,6 +18,14 @@ android {
         versionName = "1.51.0-dev"
     }
 
+    // Instalação de diagnóstico independente: não substitui a app já instalada.
+    buildTypes {
+        getByName("debug") {
+            applicationIdSuffix = ".installtest"
+            versionNameSuffix = "-installtest"
+        }
+    }
+
     buildFeatures { compose = true }
 
     compileOptions {
