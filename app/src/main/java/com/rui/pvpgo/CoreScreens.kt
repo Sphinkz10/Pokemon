@@ -800,6 +800,14 @@ private fun OwnedPokemonDetailScreen(
     var fastMoveId by remember(owned.id, owned.updatedAtEpochMs) { mutableStateOf(owned.fastMoveId) }
     var chargedMoveIds by remember(owned.id, owned.updatedAtEpochMs) { mutableStateOf(owned.chargedMoveIds) }
     var league by remember(owned.id) { mutableStateOf(League.GREAT) }
+    var ownedRank by remember(owned.id, owned.iv, species, league) { mutableStateOf<com.rui.pvpgo.engine.PvPRankEntry?>(null) }
+    var rankComputed by remember(owned.id, owned.iv, species, league) { mutableStateOf(false) }
+    LaunchedEffect(owned.id, owned.iv, species, league) {
+        ownedRank = withContext(Dispatchers.Default) {
+            runCatching { species?.let { RankRepository.find(it, league, owned.iv, RankSettings()) } }.getOrNull()
+        }
+        rankComputed = true
+    }
     var planStatus by remember(owned.id, league, plans) {
         mutableStateOf(plans.firstOrNull { it.league == league }?.status ?: BuildStatus.IDEA)
     }
@@ -872,6 +880,39 @@ private fun OwnedPokemonDetailScreen(
                                 ).joinToString(" · ").ifBlank { "Exemplar da tua coleção" },
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (owned.uncertainFields.isNotEmpty()) PvpColors.StateWarning else PvpColors.BrandBlue
+                            )
+                        }
+                    }
+                }
+            }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = PvpColors.SurfaceRaised,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, PvpColors.BorderDefault)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                "RANK PVP · ${SpeciesLeaguePolicy.title(league).uppercase(Locale.ROOT)}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PvpColors.TextSecondary
+                            )
+                            Text(
+                                SpeciesLeaguePolicy.statusLabel(ownedRank?.rank, !rankComputed),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = PvpColors.TextPrimary
+                            )
+                            Text(
+                                "Calculado com os IV registados. Muda a liga na secção Plano PvP.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = PvpColors.TextSecondary
                             )
                         }
                     }
