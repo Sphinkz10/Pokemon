@@ -84,6 +84,11 @@ fun CollectionModuleScreen(
     var selectedOwnedId by remember { mutableStateOf<String?>(null) }
     var selectedSpeciesId by remember { mutableStateOf<String?>(null) }
     var compareIds by remember { mutableStateOf<Pair<String, String>?>(null) }
+    // Preserve the entry route; the detail screen can be opened from more
+    // than one part of Collection, and Back should reverse that path.
+    var detailReturnRoute by remember { mutableStateOf(CollectionRoute.SPECIES) }
+    var compareReturnRoute by remember { mutableStateOf(CollectionRoute.EXEMPLARS) }
+    var targetsReturnRoute by remember { mutableStateOf(CollectionRoute.SPECIES) }
 
     LaunchedEffect(repository) {
         repository.collection.collectLatest { collection = it }
@@ -110,6 +115,7 @@ fun CollectionModuleScreen(
             },
             onOpenIvTargets = { speciesId ->
                 selectedSpeciesId = speciesId
+                targetsReturnRoute = CollectionRoute.LIST
                 route = CollectionRoute.IV_TARGETS
             }
         )
@@ -125,13 +131,18 @@ fun CollectionModuleScreen(
                     plans = buildPlans,
                     onBack = { route = CollectionRoute.LIST },
                     onOpenExemplars = { route = CollectionRoute.EXEMPLARS },
-                    onOpenTargets = { route = CollectionRoute.IV_TARGETS },
+                    onOpenTargets = {
+                        targetsReturnRoute = CollectionRoute.SPECIES
+                        route = CollectionRoute.IV_TARGETS
+                    },
                     onOpenOwned = { id ->
                         selectedOwnedId = id
+                        detailReturnRoute = CollectionRoute.SPECIES
                         route = CollectionRoute.DETAIL
                     },
                     onCompare = { a, b ->
                         compareIds = a to b
+                        compareReturnRoute = CollectionRoute.SPECIES
                         route = CollectionRoute.COMPARE
                     }
                 )
@@ -149,10 +160,12 @@ fun CollectionModuleScreen(
                     onBack = { route = CollectionRoute.SPECIES },
                     onOpenOwned = { id ->
                         selectedOwnedId = id
+                        detailReturnRoute = CollectionRoute.EXEMPLARS
                         route = CollectionRoute.DETAIL
                     },
                     onCompare = { a, b ->
                         compareIds = a to b
+                        compareReturnRoute = CollectionRoute.EXEMPLARS
                         route = CollectionRoute.COMPARE
                     }
                 )
@@ -169,7 +182,7 @@ fun CollectionModuleScreen(
                 SpeciesCompareScreen(
                     species = species, first = a, second = b,
                     plans = buildPlans,
-                    onBack = { route = CollectionRoute.EXEMPLARS }
+                    onBack = { route = compareReturnRoute }
                 )
             }
         }
@@ -184,7 +197,7 @@ fun CollectionModuleScreen(
                     moves = moves,
                     plans = buildPlans.filter { it.ownedPokemonId == owned.id },
                     repository = repository,
-                    onBack = { route = CollectionRoute.EXEMPLARS }
+                    onBack = { route = detailReturnRoute }
                 )
             }
         }
@@ -196,7 +209,7 @@ fun CollectionModuleScreen(
                 IvTargetsScreen(
                     species = species,
                     collection = collection,
-                    onBack = { route = CollectionRoute.SPECIES }
+                    onBack = { route = targetsReturnRoute }
                 )
             }
         }
