@@ -38,7 +38,7 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 | V54-1 | Inspecionar o JSON público de eventos | Confirmados grupos com datas locais ISO e timestamps UNIX em [events.json](https://raw.githubusercontent.com/zhenga8533/leak-duck/data/events.json) | [x] |
 | V54-2 | Migrar cores de interface do Hoje e aumentar alvos | 19 ocorrências / 13 famílias convertidas para tokens; CTA de 48 dp, sem substituir as cores próprias das ilustrações | [x] |
 | V54-3 | Proteger agenda contra formato inválido e títulos longos | Não gravar JSON sem eventos válidos; cache anterior preservada; título limitado a 2 linhas | [x] |
-| V54-4 | Passar 14+23+13 verificações e produzir APK V1.54 | [CI #36938547368](https://github.com/Sphinkz10/Pokemon/actions/runs/36938547368): testes + build + assinatura + artefacto verificados | [x] |
+| V54-4 | Passar 14+23+14 verificações e produzir APK V1.54 | [CI #36938928935](https://github.com/Sphinkz10/Pokemon/actions/runs/36938928935): testes + build + assinatura + artefacto verificados | [x] |
 | V54-5 | Verificar no telemóvel a Agenda e as quatro skins | Screenshot 320/390/430, rede/offline, fusos e persistência | [ ] |
 
 **Ainda pendente:** migrar para tokens todas as cores fixas dos restantes módulos; contrastes da skin Classic; validar a pontualidade das notificações/WorkManager; testar se os eventos carregam realmente em pelo menos um Android com Internet, sem inventar horários.
