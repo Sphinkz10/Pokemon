@@ -37,6 +37,8 @@ checks={
  "legacy rank policy remains compatible": "fun bestForGreat(" in policy,
  "owned detail uses real artwork": "PokemonArtwork(species.name, Modifier.size(90.dp), shiny = owned.isShiny" in core,
  "owned details show IV and uncertain status": "owned.iv.total" in core and "DADOS POR CONFIRMAR" in core,
+ "owned profile rank actually uses ranking engine": "RankRepository.find(it, league, owned.iv, RankSettings())" in core,
+ "owned profile never invents unavailable ranking": "SpeciesLeaguePolicy.statusLabel(ownedRank?.rank, !rankComputed)" in core,
  "CP invalid typed input is blocked": "OwnedBuildValidation.cpError(cpText)" in core,
  "level invalid typed input blocked": "OwnedBuildValidation.levelError(levelText)" in core,
  "charged move invalid input blocked": "OwnedBuildValidation.chargedMovesError(chargedMoveIds)" in core,
