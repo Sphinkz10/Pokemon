@@ -1,4 +1,4 @@
-# Pokémon PvP — Roadmap de aceitação V1.52
+# Pokémon PvP — Roadmap mestre de aceitação · atualizado até V1.53
 
 **Data:** 2026-10-01 · **GitHub:** [Sphinkz10/Pokemon](https://github.com/Sphinkz10/Pokemon) · **Figma:** [Pokémon Companion](https://www.figma.com/design/Y85bgqW7K2jEnrXdqDnwBE)
 
@@ -126,16 +126,16 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 - [ ] **J4** — Checklist de regressão final, instalador e changelog verificados.
 - [ ] **J5** — Publicação/release final com guia de atualização e backup.
 
-## Resultado da ronda V1.52
+## Histórico de trabalho V1.52 e V1.53
 
 - **Código real alterado:** `app/src/main/java/com/rui/pvpgo/TodayScreen.kt`: contagem do catálogo carregado e estado não sincronizado de eventos/agenda. Os exemplos de Carbink/Vulpix/Paras passam a estar identificados como espécies de referência, não como recomendações pessoais já calculadas.
-- **Número de versão alterado:** `app/build.gradle.kts` para `versionCode=52` e `1.52.0-dev`; mantém o sufixo `.installtest` na variante debug.
+- **Versões:** a V1.52 usou `versionCode=52`; a versão atual está em `versionCode=53` e `1.53.0-dev`, mantendo `.installtest` para debug.
 - **Regressão automatizada:** `tests/v1_52_dashboard_truth/verify_dashboard.py` com 14 verificações; adicionado ao GitHub Actions.
-- **CI:** consultar [Actions](https://github.com/Sphinkz10/Pokemon/actions). Uma APK CI verde é compilada e assinada, mas **não é validação de uso final em dispositivo**.
+- **CI:** a [V1.53 compilou e passou os checks de assinatura](https://github.com/Sphinkz10/Pokemon/actions/runs/36936887131). A compilação verde **não substitui o teste final em Android**.
 
 ## Ordem de execução sugerida (não saltar gates sem registo)
 
-1. **A4** — instalar a APK V1.52 e testar no telemóvel, incluindo 5 tabs, regresso, rotação e logs.
+1. **A4 + T10 (V1.53)** — instalar e testar a APK V1.53 no telemóvel: 5 tabs, 4 skins, persistência, regresso, rotação, feed ativo/offline, horário local e logs.
 2. **B2+B3+C5** — corrigir correspondência visual de Hoje e navegação inferior com Figma e screenshots 320/390/430.
 3. **D2–D5 e E1–E5** — completar Coleção, catálogo, importação e Pokémon 360, validar persistência.
 4. **F1–F5** — Equipas com dados reais.
@@ -147,4 +147,4 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 Cada gate passa quando houver **código versionado + teste ou captura comprovável + ligação ao artefacto**, quando aplicável. Não marcar como concluído por existir documentação, mocks, screenshots do Figma ou um botão que ainda não executa a ação.
 
-**Ponto importante:** o bloco de eventos foi corrigido para não exibir horários fictícios; ainda não foi ligado a um feed verificado. A interface mostra explicitamente esse estado.
+**Estado atual de eventos:** a V1.53 contém um adaptador HTTPS para a fonte comunitária Leek Duck (não oficial), cache e atualizações periódicas. A sincronização automática e a precisão dos horários ainda precisam de validação num dispositivo real e contra a fonte; o feed pode falhar ou mudar de formato.
