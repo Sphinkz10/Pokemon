@@ -44,6 +44,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Validate V1.52 dashboard data integrity
+        run: python3 tests/v1_52_dashboard_truth/verify_dashboard.py
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
       - name: Confirm generated APK
@@ -60,7 +62,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonPvP-v1.51-installtest-debug-apk
+          name: PokemonPvP-v1.52-installtest-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
