@@ -14,6 +14,7 @@ def read(path):
 today = read("app/src/main/java/com/rui/pvpgo/TodayScreen.kt")
 repo = read("app/src/main/java/com/rui/pvpgo/events/EventCalendarRepository.kt")
 skins = read("app/src/main/java/com/rui/pvpgo/ui/theme/PvpSkins.kt")
+components = read("app/src/main/java/com/rui/pvpgo/ui/components/PvpComponents.kt")
 gradle = read("app/build.gradle.kts")
 checks = {
   "V1.54 Android version": 'versionCode = 54' in gradle and 'versionName = "1.54.0-dev"' in gradle,
@@ -27,6 +28,8 @@ checks = {
   "seconds, millis, numeric strings accepted": all(t in repo for t in ['epochMillis(value.toLong())', 'value > 100_000_000_000L']),
   "local and timezone-aware datetimes": all(t in repo for t in ["LocalDateTime.parse(value)", "OffsetDateTime.parse(value)"]),
   "four theme skins still supported": all(x in skins for x in ('DEEP("deep"', 'AMOLED("amoled"', 'MYSTIC("mystic"', 'CLASSIC("classic"')),
+  "button text contrasts with selected primary": "contentColor = MaterialTheme.colorScheme.onPrimary" in components,
+  "header action has >=48dp target": "modifier = Modifier.heightIn(min = PvpSpacing.TouchTarget)" in components,
 }
 for label, passed in checks.items():
     print(("PASS" if passed else "FAIL"), label)
