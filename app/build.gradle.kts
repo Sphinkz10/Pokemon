@@ -14,14 +14,14 @@ android {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 54
-        versionName = "1.54.0-dev"
+        versionCode = 55
+        versionName = "1.55.0-dev"
     }
 
     // Instalação de diagnóstico independente: não substitui a app já instalada.
     buildTypes {
         getByName("debug") {
-            applicationIdSuffix = ".installtestv154"
+            applicationIdSuffix = ".installtestv155"
             versionNameSuffix = "-installtest"
         }
     }
@@ -51,5 +51,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.5")
     implementation("androidx.room:room-ktx:2.8.5")
     kapt("androidx.room:room-compiler:2.8.5")
+    testImplementation("junit:junit:4.13.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
