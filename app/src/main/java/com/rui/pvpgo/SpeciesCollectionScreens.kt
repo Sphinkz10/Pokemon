@@ -56,13 +56,13 @@ private val speciesCard: Color get() = PvpColors.SurfaceCard
 private val speciesBorder: Color get() = PvpColors.BorderDefault
 
 @Composable
-private fun rememberGreatRanks(species: PokemonSpecies, owned: List<OwnedPokemon>): Map<String, PvPRankEntry>? {
-    var ranks by remember(species.speciesId, owned) { mutableStateOf<Map<String, PvPRankEntry>?>(null) }
-    LaunchedEffect(species.speciesId, owned) {
+private fun rememberLeagueRanks(species: PokemonSpecies, owned: List<OwnedPokemon>, league: League): Map<String, PvPRankEntry>? {
+    var ranks by remember(species.speciesId, owned, league) { mutableStateOf<Map<String, PvPRankEntry>?>(null) }
+    LaunchedEffect(species.speciesId, owned, league) {
         ranks = withContext(Dispatchers.Default) {
             val settings = RankSettings()
             owned.mapNotNull { item ->
-                RankRepository.find(species, League.GREAT, item.iv, settings)?.let { item.id to it }
+                RankRepository.find(species, league, item.iv, settings)?.let { item.id to it }
             }.toMap()
         }
     }
@@ -136,10 +136,34 @@ private fun SpeciesMetric(title: String, value: String, foot: String, modifier: 
 }
 
 @Composable
+private fun SpeciesLeagueSelector(league: League, onLeagueChange: (League) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+        Text(
+            "LIGA PVP · ${SpeciesLeaguePolicy.cpLimitLabel(league)}",
+            color = PvpColors.TextSecondary,
+            style = MaterialTheme.typography.labelMedium
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp)
+        ) {
+            SpeciesLeaguePolicy.selectable.forEach { option ->
+                DetailChip(
+                    text = SpeciesLeaguePolicy.shortLabel(option),
+                    selected = option == league,
+                    onClick = { onLeagueChange(option) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun ExemplarRow(
     item: OwnedPokemon,
     species: PokemonSpecies,
     rank: PvPRankEntry?,
+    league: League,
     plans: List<PvpBuildPlan>,
     onClick: () -> Unit,
     checked: Boolean = false
@@ -155,7 +179,7 @@ private fun ExemplarRow(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(nameFor(item, species), color = PvpColors.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("${cpText(item)} · ${ivText(item)}", color = PvpColors.TextSecondary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(if (rank == null) "Rank GL indisponível" else "Great League · Rank #${rank.rank}", color = speciesBlue, fontSize = 12.sp, maxLines = 1)
+                Text(if (rank == null) "Rank ${SpeciesLeaguePolicy.shortLabel(league)} indisponível" else "${SpeciesLeaguePolicy.title(league)} · Rank #${rank.rank}", color = speciesBlue, fontSize = 12.sp, maxLines = 1)
             }
             Column(horizontalAlignment = Alignment.End) {
                 if (item.isFavorite) Text("♥", color = speciesAmber, fontSize = 18.sp)
@@ -172,14 +196,16 @@ fun SpeciesOverviewScreen(
     species: PokemonSpecies,
     owned: List<OwnedPokemon>,
     plans: List<PvpBuildPlan>,
+    league: League,
+    onLeagueChange: (League) -> Unit,
     onBack: () -> Unit,
     onOpenExemplars: () -> Unit,
     onOpenTargets: () -> Unit,
     onOpenOwned: (String) -> Unit,
     onCompare: (String, String) -> Unit
 ) {
-    val ranks = rememberGreatRanks(species, owned)
-    val best = SpeciesCollectionPolicy.bestForGreat(owned, ranks)
+    val ranks = rememberLeagueRanks(species, owned, league)
+    val best = SpeciesCollectionPolicy.bestForLeague(owned, ranks)
     val favorite = owned.count { it.isFavorite }
     val hundo = owned.count { it.iv.total == 45 }
     val sorted = SpeciesCollectionPolicy.sortedForGreat(owned, ranks)
@@ -189,6 +215,7 @@ fun SpeciesOverviewScreen(
         verticalArrangement = Arrangement.spacedBy(13.dp)
     ) {
         item { CollectionDetailHeader(species.name, "Espécie · coleção + utilidade", onBack) }
+        item { SpeciesLeagueSelector(league, onLeagueChange) }
         item {
             CollectionDetailCard {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -197,14 +224,14 @@ fun SpeciesOverviewScreen(
                         Text(species.name, color = PvpColors.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Text(species.types.joinToString(" · ").ifBlank { "Tipos por confirmar" }, color = PvpColors.TextSecondary, fontSize = 12.sp)
                         Text("Tens ${owned.size} · $favorite favorito(s)", color = speciesBlue, fontSize = 12.sp)
-                        Text(if (best == null) "Sem ranking GL calculado" else "Melhor Great League · Rank #${ranks?.get(best.id)?.rank}", color = PvpColors.TextSecondary, fontSize = 12.sp)
+                        Text(if (best == null) "Sem ranking ${SpeciesLeaguePolicy.shortLabel(league)} disponível" else "Melhor ${SpeciesLeaguePolicy.title(league)} · Rank #${ranks?.get(best.id)?.rank}", color = PvpColors.TextSecondary, fontSize = 12.sp)
                     }
                 }
             }
         }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SpeciesMetric("MELHOR GL", if (ranks == null) "…" else best?.let { "#${ranks[it.id]?.rank}" } ?: "—", "da tua coleção", Modifier.weight(1f))
+                SpeciesMetric("RANK ${SpeciesLeaguePolicy.shortLabel(league).uppercase(Locale.ROOT)}", if (ranks == null) "…" else best?.let { "#${ranks[it.id]?.rank}" } ?: "—", "da tua coleção", Modifier.weight(1f))
                 SpeciesMetric("100% IV", hundo.toString(), "exemplares", Modifier.weight(1f))
                 SpeciesMetric("PLANOS", plans.count { p -> owned.any { it.id == p.ownedPokemonId } }.toString(), "associados", Modifier.weight(1f))
             }
@@ -212,14 +239,14 @@ fun SpeciesOverviewScreen(
         item { DetailSection("OS TEUS EXEMPLARES", "Ver todos ›", onOpenExemplars) }
         if (owned.isEmpty()) item { CollectionDetailCard { Text("Ainda não tens exemplares desta espécie.", color = PvpColors.TextSecondary) } }
         else items(sorted.take(3), key = { "overview-${it.id}" }) { item ->
-            ExemplarRow(item, species, ranks?.get(item.id), plans, onClick = { onOpenOwned(item.id) })
+            ExemplarRow(item, species, ranks?.get(item.id), league, plans, onClick = { onOpenOwned(item.id) })
         }
         item { DetailSection("PARA QUE SERVE") }
         item {
             CollectionDetailCard {
                 Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    Text("Great League", color = PvpColors.TextPrimary, fontWeight = FontWeight.Bold)
-                    Text(if (best == null) "Consulta os IV Targets para encontrar um exemplar GL." else "O teu melhor exemplar calculado é Rank #${ranks?.get(best.id)?.rank}. O Rank PvP não equivale a 100% IV.", color = PvpColors.TextSecondary, fontSize = 13.sp)
+                    Text(SpeciesLeaguePolicy.title(league), color = PvpColors.TextPrimary, fontWeight = FontWeight.Bold)
+                    Text(if (best == null) "Ainda não existe ranking disponível para esta liga. Confirma os IV Targets e a elegibilidade." else "O teu melhor exemplar nesta liga tem Rank #${ranks?.get(best.id)?.rank}. O Rank PvP não equivale a 100% IV.", color = PvpColors.TextSecondary, fontSize = 13.sp)
                     DetailChip("Ver IV Targets ›", onClick = onOpenTargets)
                 }
             }
@@ -240,11 +267,13 @@ fun SpeciesExemplarsScreen(
     species: PokemonSpecies,
     owned: List<OwnedPokemon>,
     plans: List<PvpBuildPlan>,
+    league: League,
+    onLeagueChange: (League) -> Unit,
     onBack: () -> Unit,
     onOpenOwned: (String) -> Unit,
     onCompare: (String, String) -> Unit
 ) {
-    val ranks = rememberGreatRanks(species, owned)
+    val ranks = rememberLeagueRanks(species, owned, league)
     var filter by remember(species.speciesId) { mutableStateOf(ExemplarsFilter.ALL) }
     var selected by remember(species.speciesId) { mutableStateOf<Set<String>>(emptySet()) }
     val visibleIds = owned.map { it.id }.toSet()
@@ -261,11 +290,12 @@ fun SpeciesExemplarsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item { CollectionDetailHeader(species.name, "${owned.size} exemplares na tua coleção", onBack) }
+        item { SpeciesLeagueSelector(league, onLeagueChange) }
         item {
             CollectionDetailCard {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Escolhe pelo uso, não só pela percentagem", color = PvpColors.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("O Rank Great League e os IV gerais medem coisas diferentes. Favoritos e Pokémon com planos devem ser revistos antes de qualquer transferência.", color = PvpColors.TextSecondary, fontSize = 13.sp)
+                    Text("O ranking ${SpeciesLeaguePolicy.title(league)} e os IV gerais medem coisas diferentes. Favoritos e Pokémon com planos devem ser revistos antes de qualquer transferência.", color = PvpColors.TextSecondary, fontSize = 13.sp)
                 }
             }
         }
@@ -278,7 +308,7 @@ fun SpeciesExemplarsScreen(
         if (ranks == null) item { Text("A calcular ranks…", color = PvpColors.TextSecondary, fontSize = 12.sp) }
         if (filtered.isEmpty()) item { CollectionDetailCard { Text("Sem exemplares para este filtro.", color = PvpColors.TextSecondary) } }
         else items(filtered, key = { "exemplar-${it.id}" }) { item ->
-            ExemplarRow(item, species, ranks?.get(item.id), plans, checked = item.id in selected, onClick = {
+            ExemplarRow(item, species, ranks?.get(item.id), league, plans, checked = item.id in selected, onClick = {
                 selected = if (item.id in selected) selected - item.id else if (selected.size < 2) selected + item.id else setOf(item.id)
             })
         }
@@ -310,13 +340,15 @@ fun SpeciesCompareScreen(
     first: OwnedPokemon,
     second: OwnedPokemon,
     plans: List<PvpBuildPlan>,
+    league: League,
+    onLeagueChange: (League) -> Unit,
     onBack: () -> Unit
 ) {
     val two = remember(first, second) { listOf(first, second) }
-    val ranks = rememberGreatRanks(species, two)
+    val ranks = rememberLeagueRanks(species, two, league)
     val a = ranks?.get(first.id)
     val b = ranks?.get(second.id)
-    val betterGl = SpeciesCollectionPolicy.betterGreatRank(first, second, ranks)
+    val betterGl = SpeciesCollectionPolicy.betterLeagueRank(first, second, ranks)
     val totalA = first.iv.total
     val totalB = second.iv.total
     val betterIv = SpeciesCollectionPolicy.higherIvTotal(first, second)
@@ -326,6 +358,7 @@ fun SpeciesCompareScreen(
         verticalArrangement = Arrangement.spacedBy(13.dp)
     ) {
         item { CollectionDetailHeader("Comparar", "${species.name} · 2 exemplares", onBack) }
+        item { SpeciesLeagueSelector(league, onLeagueChange) }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 listOf(first to "A", second to "B").forEach { (item, label) ->
@@ -338,7 +371,7 @@ fun SpeciesCompareScreen(
                             PokemonArtwork(species.name, Modifier.size(57.dp), shiny = item.isShiny, form = species.form)
                             Text(ivText(item), color = PvpColors.TextPrimary, fontSize = 19.sp, fontWeight = FontWeight.Bold)
                             Text(cpText(item), color = PvpColors.TextSecondary, fontSize = 12.sp)
-                            Text(if (ranks == null) "A calcular…" else ranks[item.id]?.let { "Rank GL #${it.rank}" } ?: "Sem Rank GL", color = speciesBlue, fontSize = 12.sp)
+                            Text(if (ranks == null) "A calcular…" else ranks[item.id]?.let { "Rank ${SpeciesLeaguePolicy.shortLabel(league)} #${it.rank}" } ?: "Ranking indisponível", color = speciesBlue, fontSize = 12.sp)
                             if (SpeciesCollectionPolicy.isProtected(item, plans)) Text("PROTEGIDO", color = speciesGreen, fontSize = 12.sp)
                         }
                     }
@@ -352,9 +385,9 @@ fun SpeciesCompareScreen(
                     Text("Depende do objetivo", color = PvpColors.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                     Text(
                         when (betterGl) {
-                            "A", "B" -> "Para Great League, o exemplar $betterGl tem o Rank calculado superior."
-                            "Empate" -> "Os dois têm o mesmo Rank Great League."
-                            else -> "A avaliação Great League está a ser calculada ou indisponível."
+                            "A", "B" -> "Para ${SpeciesLeaguePolicy.title(league)}, o exemplar $betterGl tem o Rank calculado superior."
+                            "Empate" -> "Os dois têm o mesmo Rank ${SpeciesLeaguePolicy.title(league)}."
+                            else -> "A avaliação ${SpeciesLeaguePolicy.title(league)} está a ser calculada ou indisponível."
                         } + " Para IV gerais, ${if (betterIv == "Empate") "há empate" else "o exemplar $betterIv tem maior soma dos IV"}. Estes critérios não medem tudo sobre desempenho, moves ou investimento.",
                         color = PvpColors.TextSecondary, fontSize = 13.sp
                     )
@@ -363,7 +396,7 @@ fun SpeciesCompareScreen(
             }
         }
         item { DetailSection("DIFERENÇAS") }
-        item { ComparisonMetricRow("Great League", a?.let { "A · #${it.rank}" } ?: "A · —", b?.let { "B · #${it.rank}" } ?: "B · —", betterGl) }
+        item { ComparisonMetricRow(SpeciesLeaguePolicy.title(league), a?.let { "A · #${it.rank}" } ?: "A · —", b?.let { "B · #${it.rank}" } ?: "B · —", betterGl) }
         item { ComparisonMetricRow("Soma dos IV", "A · $totalA/45", "B · $totalB/45", betterIv) }
         item { ComparisonMetricRow("CP registado", first.cp?.toString() ?: "—", second.cp?.toString() ?: "—", "") }
         item { ComparisonMetricRow("Favorito", if (first.isFavorite) "A · Sim" else "A · Não", if (second.isFavorite) "B · Sim" else "B · Não", "") }
