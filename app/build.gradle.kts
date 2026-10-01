@@ -5,9 +5,11 @@ plugins {
     kotlin("kapt")
     id("androidx.room")
 }
+
 android {
     namespace = "com.rui.pvpgo"
     compileSdk = 35
+
     defaultConfig {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
@@ -15,14 +17,20 @@ android {
         versionCode = 51
         versionName = "1.51.0-dev"
     }
+
     buildFeatures { compose = true }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
 }
-room { schemaDirectory("$projectDir/schemas") }
+
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
     implementation(project(":engine"))
     implementation(platform("androidx.compose:compose-bom:2025.01.01"))

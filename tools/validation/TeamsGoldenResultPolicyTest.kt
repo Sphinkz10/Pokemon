@@ -1,0 +1,37 @@
+package com.rui.pvpgo
+
+fun main() {
+    var checks = 0
+    fun verify(condition: Boolean, label: String) { check(condition) { label }; checks++ }
+    val primary = listOf("a", "b", "c")
+    val swaps = listOf(listOf("a", "d", "c"), listOf("a", "b", "e"))
+    val roles = mapOf("a" to "LEAD", "b" to "SAFE_SWITCH", "c" to "CLOSER")
+    verify(TeamsGoldenResultPolicy.validIds(primary), "valid primary")
+    verify(!TeamsGoldenResultPolicy.validIds(emptyList()), "empty")
+    verify(!TeamsGoldenResultPolicy.validIds(listOf("a", "a", "b")), "no repeated member")
+    verify(!TeamsGoldenResultPolicy.validIds(listOf("a", "b")), "3 required")
+    verify(!TeamsGoldenResultPolicy.validIds(listOf("a", "", "b")), "no blank")
+    verify(TeamsGoldenResultPolicy.isVerified(primary, swaps, primary), "primary verified")
+    verify(TeamsGoldenResultPolicy.isVerified(primary, swaps, swaps[0]), "alternative verified")
+    verify(!TeamsGoldenResultPolicy.isVerified(primary, swaps, listOf("x", "y", "z")), "unknown rejected")
+    verify(!TeamsGoldenResultPolicy.isVerified(primary, swaps, listOf("a", "c", "d")), "reordered alternative not implicitly approved")
+    verify(TeamsGoldenResultPolicy.singleSwap(primary, listOf("a", "c", "d")), "set based one slot")
+    verify(!TeamsGoldenResultPolicy.singleSwap(primary, listOf("d", "e", "f")), "three slots")
+    verify(!TeamsGoldenResultPolicy.singleSwap(primary, primary), "not a swap")
+    val original = TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, primary, roles)
+    verify(original == roles, "primary role identity")
+    val swapped = TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, swaps[0], roles)
+    verify(swapped == mapOf("a" to "LEAD", "d" to "SAFE_SWITCH", "c" to "CLOSER"), "role inherited from replaced member")
+    verify(swapped?.values?.toSet()?.size == 3, "unique roles")
+    verify(TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, listOf("a", "c", "d"), roles) == null, "must be verified exact ordering")
+    verify(TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, listOf("a", "x", "c"), roles) == null, "unverified candidate")
+    verify(TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, swaps[0], roles - "a") == null, "no incomplete role map")
+    verify(TeamsGoldenResultPolicy.rolesForVerifiedSingleSwap(primary, swaps, swaps[0], mapOf("a" to "LEAD", "b" to "LEAD", "c" to "CLOSER")) == null, "no duplicate roles")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 56.0, listOf(swaps[0] to 62.0, swaps[1] to 60.0)) == swaps[0], "highest verified coverage")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 67.0, listOf(swaps[0] to 62.0)) == primary, "main already best")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 50.0, listOf(swaps[0] to Double.NaN)) == primary, "NaN rejected")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 50.0, listOf(swaps[0] to 102.0)) == primary, "out of range rejected")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 50.0, listOf(listOf("a", "a", "b") to 99.0)) == primary, "invalid team rejected")
+    verify(TeamsGoldenResultPolicy.highestCoverage(primary, 50.0, emptyList()) == primary, "no alternatives")
+    println("V144_TEAMS_RESULT_POLICY_PASS checks=$checks")
+}

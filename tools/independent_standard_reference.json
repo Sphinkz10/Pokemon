@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "release": "1.29",
+  "purpose": "Independent standard-mechanics oracle inputs; expected values are not imported from production helpers.",
+  "references": [
+    {
+      "id": "go-hub-cp",
+      "url": "https://db.pokemongohub.net/tools/cp-calculator",
+      "covers": [
+        "CP formula",
+        "CPM table",
+        "effective stats"
+      ]
+    },
+    {
+      "id": "go-hub-damage",
+      "url": "https://pokemongohub.net/post/wiki/damage-mechanics/",
+      "covers": [
+        "floor damage formula",
+        "STAB/effectiveness structure"
+      ]
+    },
+    {
+      "id": "go-hub-pvp-mechanics",
+      "url": "https://pokemongohub.net/post/pvp/comprehensive-pvp-mechanics-guide-in-pokemon-go/",
+      "covers": [
+        "0.5s turns",
+        "Trainer Battle bonus",
+        "STAB"
+      ]
+    },
+    {
+      "id": "pvpoke-fast-registration",
+      "url": "https://pvpoke.com/articles/strategy/guide-to-fast-move-registration/",
+      "covers": [
+        "Fast Move registration by duration"
+      ]
+    },
+    {
+      "id": "pvpoke-cmp-chart",
+      "url": "https://pvpoke.com/attack-cmp-chart/",
+      "covers": [
+        "CMP true Attack",
+        "buff/debuff and Shadow exclusion",
+        "active-form stats"
+      ]
+    }
+  ],
+  "independentAssertions": 82,
+  "specialFamilyAssertions": 30,
+  "outcomeMicroBattles": 3,
+  "gateDisposition": "PARTIAL"
+}

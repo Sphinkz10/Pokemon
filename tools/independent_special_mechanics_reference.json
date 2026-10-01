@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-14",
+  "purpose": "Independent mechanics reference matrix for F91. These references are intentionally separate from the production BattleEngine helpers and from the pinned PvPoke implementation.",
+  "references": [
+    {
+      "mechanic": "mimikyu-disguise",
+      "sourceType": "community-mechanics",
+      "url": "https://pokemongohub.net/post/meta/mimikyu-pvp-battle-mechanic-in-pokemon-go-explained/",
+      "claims": [
+        "Mimikyu starts with Disguise intact.",
+        "The first unshielded incoming Charged Attack is reduced to shield-like 1 HP damage and changes Mimikyu to Busted Form.",
+        "Using a normal Protect Shield preserves Disguise.",
+        "Busted Form carries a persistent -1 Defense stage."
+      ]
+    },
+    {
+      "mechanic": "aegislash-stance-change",
+      "sourceType": "community-mechanics+database",
+      "url": "https://pokemongohub.net/post/pvp/an-updated-pvp-analysis-on-aegislash/",
+      "secondaryUrl": "https://pokemongobase.com/pokemon/aegislash-shield",
+      "claims": [
+        "Aegislash starts in Shield Forme.",
+        "Any Charged Attack changes Shield -> Blade before Charged damage is calculated.",
+        "Using a Protect Shield changes Blade -> Shield after shielding.",
+        "Shield Fast Moves resolve at minimum 1 damage and +6 energy; Blade restores ordinary Fast Move values.",
+        "Switching resets Aegislash to Shield Forme; this remains outside the current 1v1 engine."
+      ]
+    },
+    {
+      "mechanic": "morpeko-form-toggle",
+      "sourceType": "first-party",
+      "url": "https://pokemongo.com/news/halloween-part-1-2024",
+      "claims": [
+        "Morpeko changes form each time it uses a Charged Attack.",
+        "Full Belly uses Electric Aura Wheel; Hangry uses Dark Aura Wheel.",
+        "Aura Wheel raises the user's Attack by one stage."
+      ]
+    },
+    {
+      "mechanic": "cramorant-gulp-missile",
+      "sourceType": "community-mechanics",
+      "url": "https://bulbapedia.bulbagarden.net/wiki/Gulp_Missile_(Ability)",
+      "secondaryUrl": "https://pokemongohub.net/post/meta/cramorant-form-change-mechanic-in-pokemon-go-explained/",
+      "claims": [
+        "Surf or Dive loads Gulping above 50% HP and Gorging at or below 50% HP.",
+        "An unshielded incoming Charged Attack triggers Gulp Missile and returns Cramorant to base form.",
+        "Gulping deals 15% max-HP damage and lowers opponent Defense by one stage.",
+        "Gorging deals 15% max-HP damage and lowers opponent Attack by two stages.",
+        "Protect Shield prevents the retaliation; retaliation can still trigger through the Charged Attack KO."
+      ]
+    }
+  ]
+}

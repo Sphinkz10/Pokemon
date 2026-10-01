@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 2,
+  "reference": {
+    "repository": "https://github.com/pvpoke/pvpoke",
+    "commitSha": "a93147bf1f2e829758958bfb5b37e56bbadc9678",
+    "siteVersion": "1.40.1.3"
+  },
+  "battle": {
+    "cp": 1500,
+    "levelCap": 50,
+    "shieldsA": 1,
+    "shieldsB": 1,
+    "decisionMethod": "default",
+    "buffChanceModifier": -1
+  },
+  "cases": [
+    {
+      "fixtureId": "PINNED-AZU-FERALIGATR",
+      "a": {
+        "speciesId": "azumarill",
+        "level": 43.0,
+        "ivs": [
+          4,
+          15,
+          13
+        ],
+        "shadow": false,
+        "fast": "BUBBLE",
+        "charged": [
+          "ICE_BEAM",
+          "HYDRO_PUMP"
+        ]
+      },
+      "b": {
+        "speciesId": "feraligatr",
+        "level": 19.5,
+        "ivs": [
+          6,
+          15,
+          6
+        ],
+        "shadow": false,
+        "fast": "SHADOW_CLAW",
+        "charged": [
+          "HYDRO_CANNON",
+          "ICE_BEAM"
+        ]
+      }
+    },
+    {
+      "fixtureId": "PINNED-AZU-FERALIGATR-SHADOW",
+      "a": {
+        "speciesId": "azumarill",
+        "level": 43.0,
+        "ivs": [
+          4,
+          15,
+          13
+        ],
+        "shadow": false,
+        "fast": "BUBBLE",
+        "charged": [
+          "ICE_BEAM",
+          "HYDRO_PUMP"
+        ]
+      },
+      "b": {
+        "speciesId": "feraligatr",
+        "level": 19.5,
+        "ivs": [
+          6,
+          15,
+          6
+        ],
+        "shadow": true,
+        "fast": "SHADOW_CLAW",
+        "charged": [
+          "HYDRO_CANNON",
+          "ICE_BEAM"
+        ]
+      }
+    },
+    {
+      "fixtureId": "PINNED-AZU-WALREIN",
+      "a": {
+        "speciesId": "azumarill",
+        "level": 43.0,
+        "ivs": [
+          4,
+          15,
+          13
+        ],
+        "shadow": false,
+        "fast": "BUBBLE",
+        "charged": [
+          "ICE_BEAM",
+          "HYDRO_PUMP"
+        ]
+      },
+      "b": {
+        "speciesId": "walrein",
+        "level": 20.0,
+        "ivs": [
+          7,
+          15,
+          13
+        ],
+        "shadow": false,
+        "fast": "POWDER_SNOW",
+        "charged": [
+          "ICICLE_SPEAR",
+          "EARTHQUAKE"
+        ]
+      }
+    }
+  ]
+}

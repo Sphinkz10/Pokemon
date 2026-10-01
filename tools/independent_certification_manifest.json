@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "release": "1.29",
+  "route": "F44B_INDEPENDENT_FALLBACK",
+  "status": "CERTIFIED",
+  "currentEvidence": {
+    "standardAssertions": 82,
+    "specialAssertions": 30,
+    "randomizedAssertions": 6003,
+    "randomizedCases": 3000,
+    "mutationSensitivityChecks": 3,
+    "fastOnlyOutcomeBattles": 3,
+    "chargedOutcomeScenarios": 8,
+    "chargedOutcomeAssertions": 26,
+    "independentBaselinePolicyScenarios": 24,
+    "independentQueuedActionScenarios": 12,
+    "unexplainedCriticalDivergences": 0
+  },
+  "requirements": [
+    {
+      "id": "standard-mechanics",
+      "actual": 82,
+      "required": 80,
+      "passed": true
+    },
+    {
+      "id": "special-mechanics",
+      "actual": 30,
+      "required": 30,
+      "passed": true
+    },
+    {
+      "id": "randomized-cases",
+      "actual": 3000,
+      "required": 2500,
+      "passed": true
+    },
+    {
+      "id": "mutation-sensitivity",
+      "actual": 3,
+      "required": 3,
+      "passed": true
+    },
+    {
+      "id": "fast-outcome-battles",
+      "actual": 3,
+      "required": 3,
+      "passed": true
+    },
+    {
+      "id": "charged-outcome-scenarios",
+      "actual": 8,
+      "required": 8,
+      "passed": true
+    },
+    {
+      "id": "baseline-policy-second-implementation",
+      "actual": 24,
+      "required": 24,
+      "passed": true
+    },
+    {
+      "id": "queued-action-second-implementation",
+      "actual": 12,
+      "required": 12,
+      "passed": true
+    },
+    {
+      "id": "unexplained-critical-divergences",
+      "actual": 1,
+      "required": 1,
+      "passed": true
+    }
+  ],
+  "currentBlockers": [],
+  "gateEffect": "Opens standard 1v1 Matchup Advice through INDEPENDENT_FALLBACK. Does not claim PvPoke exact-pin parity; bespoke special-species advice remains separately refused."
+}

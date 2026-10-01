@@ -1,0 +1,681 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "a0ebe23eb8426c0933320c3d9508ed2c",
+    "entities": [
+      {
+        "tableName": "owned_pokemon",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `speciesId` TEXT NOT NULL, `ivAttack` INTEGER NOT NULL, `ivDefense` INTEGER NOT NULL, `ivStamina` INTEGER NOT NULL, `cp` INTEGER, `level` REAL, `nickname` TEXT, `isShadow` INTEGER NOT NULL, `isPurified` INTEGER NOT NULL, `isShiny` INTEGER NOT NULL, `isLucky` INTEGER NOT NULL, `isBestBuddy` INTEGER NOT NULL, `isFavorite` INTEGER NOT NULL, `fastMoveId` TEXT, `chargedMoveIds` TEXT NOT NULL, `secondChargedMoveUnlocked` INTEGER, `tags` TEXT NOT NULL, `acquisitionMethod` TEXT NOT NULL, `caughtAtEpochMs` INTEGER, `createdAtEpochMs` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, `externalSource` TEXT, `externalId` TEXT, `lastVerifiedAtEpochMs` INTEGER, `verificationSource` TEXT NOT NULL, `uncertainFields` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "speciesId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivAttack",
+            "columnName": "ivAttack",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivDefense",
+            "columnName": "ivDefense",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivStamina",
+            "columnName": "ivStamina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cp",
+            "columnName": "cp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isShadow",
+            "columnName": "isShadow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPurified",
+            "columnName": "isPurified",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isShiny",
+            "columnName": "isShiny",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isLucky",
+            "columnName": "isLucky",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isBestBuddy",
+            "columnName": "isBestBuddy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastMoveId",
+            "columnName": "fastMoveId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "chargedMoveIds",
+            "columnName": "chargedMoveIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "secondChargedMoveUnlocked",
+            "columnName": "secondChargedMoveUnlocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "acquisitionMethod",
+            "columnName": "acquisitionMethod",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "caughtAtEpochMs",
+            "columnName": "caughtAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAtEpochMs",
+            "columnName": "createdAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "externalSource",
+            "columnName": "externalSource",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "externalId",
+            "columnName": "externalId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastVerifiedAtEpochMs",
+            "columnName": "lastVerifiedAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "verificationSource",
+            "columnName": "verificationSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uncertainFields",
+            "columnName": "uncertainFields",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_owned_pokemon_speciesId",
+            "unique": false,
+            "columnNames": [
+              "speciesId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_owned_pokemon_speciesId` ON `${TABLE_NAME}` (`speciesId`)"
+          },
+          {
+            "name": "index_owned_pokemon_externalSource_externalId",
+            "unique": false,
+            "columnNames": [
+              "externalSource",
+              "externalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_owned_pokemon_externalSource_externalId` ON `${TABLE_NAME}` (`externalSource`, `externalId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "candidate_inbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `candidateOwnedId` TEXT NOT NULL, `speciesId` TEXT NOT NULL, `ivAttack` INTEGER NOT NULL, `ivDefense` INTEGER NOT NULL, `ivStamina` INTEGER NOT NULL, `cp` INTEGER, `level` REAL, `nickname` TEXT, `isShadow` INTEGER NOT NULL, `isPurified` INTEGER NOT NULL, `isShiny` INTEGER NOT NULL, `isLucky` INTEGER NOT NULL, `isBestBuddy` INTEGER NOT NULL, `isFavorite` INTEGER NOT NULL, `fastMoveId` TEXT, `chargedMoveIds` TEXT NOT NULL, `secondChargedMoveUnlocked` INTEGER, `tags` TEXT NOT NULL, `acquisitionMethod` TEXT NOT NULL, `caughtAtEpochMs` INTEGER, `candidateCreatedAtEpochMs` INTEGER NOT NULL, `candidateUpdatedAtEpochMs` INTEGER NOT NULL, `externalSource` TEXT, `externalId` TEXT, `lastVerifiedAtEpochMs` INTEGER, `verificationSource` TEXT NOT NULL, `uncertainFields` TEXT NOT NULL, `createdAtEpochMs` INTEGER NOT NULL, `status` TEXT NOT NULL, `reviewedAtEpochMs` INTEGER, `linkedOwnedPokemonId` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateOwnedId",
+            "columnName": "candidateOwnedId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "speciesId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivAttack",
+            "columnName": "ivAttack",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivDefense",
+            "columnName": "ivDefense",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivStamina",
+            "columnName": "ivStamina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cp",
+            "columnName": "cp",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isShadow",
+            "columnName": "isShadow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPurified",
+            "columnName": "isPurified",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isShiny",
+            "columnName": "isShiny",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isLucky",
+            "columnName": "isLucky",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isBestBuddy",
+            "columnName": "isBestBuddy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastMoveId",
+            "columnName": "fastMoveId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "chargedMoveIds",
+            "columnName": "chargedMoveIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "secondChargedMoveUnlocked",
+            "columnName": "secondChargedMoveUnlocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "acquisitionMethod",
+            "columnName": "acquisitionMethod",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "caughtAtEpochMs",
+            "columnName": "caughtAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "candidateCreatedAtEpochMs",
+            "columnName": "candidateCreatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateUpdatedAtEpochMs",
+            "columnName": "candidateUpdatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "externalSource",
+            "columnName": "externalSource",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "externalId",
+            "columnName": "externalId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastVerifiedAtEpochMs",
+            "columnName": "lastVerifiedAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "verificationSource",
+            "columnName": "verificationSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uncertainFields",
+            "columnName": "uncertainFields",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMs",
+            "columnName": "createdAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewedAtEpochMs",
+            "columnName": "reviewedAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "linkedOwnedPokemonId",
+            "columnName": "linkedOwnedPokemonId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_candidate_inbox_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_candidate_inbox_status` ON `${TABLE_NAME}` (`status`)"
+          },
+          {
+            "name": "index_candidate_inbox_createdAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "createdAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_candidate_inbox_createdAtEpochMs` ON `${TABLE_NAME}` (`createdAtEpochMs`)"
+          }
+        ]
+      },
+      {
+        "tableName": "pvp_build_plan",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `ownedPokemonId` TEXT NOT NULL, `league` TEXT NOT NULL, `bestBuddyAllowed` INTEGER NOT NULL, `desiredFastMoveId` TEXT, `desiredChargedMoveIds` TEXT NOT NULL, `status` TEXT NOT NULL, `priority` INTEGER NOT NULL, `notes` TEXT, `createdAtEpochMs` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownedPokemonId",
+            "columnName": "ownedPokemonId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "league",
+            "columnName": "league",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bestBuddyAllowed",
+            "columnName": "bestBuddyAllowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "desiredFastMoveId",
+            "columnName": "desiredFastMoveId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "desiredChargedMoveIds",
+            "columnName": "desiredChargedMoveIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMs",
+            "columnName": "createdAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_pvp_build_plan_ownedPokemonId",
+            "unique": false,
+            "columnNames": [
+              "ownedPokemonId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pvp_build_plan_ownedPokemonId` ON `${TABLE_NAME}` (`ownedPokemonId`)"
+          },
+          {
+            "name": "index_pvp_build_plan_league",
+            "unique": false,
+            "columnNames": [
+              "league"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pvp_build_plan_league` ON `${TABLE_NAME}` (`league`)"
+          }
+        ]
+      },
+      {
+        "tableName": "saved_team",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `league` TEXT NOT NULL, `members` TEXT NOT NULL, `isPrimary` INTEGER NOT NULL, `notes` TEXT, `createdAtEpochMs` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "league",
+            "columnName": "league",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "members",
+            "columnName": "members",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPrimary",
+            "columnName": "isPrimary",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMs",
+            "columnName": "createdAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_saved_team_league",
+            "unique": false,
+            "columnNames": [
+              "league"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_saved_team_league` ON `${TABLE_NAME}` (`league`)"
+          }
+        ]
+      },
+      {
+        "tableName": "battle_record",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `league` TEXT NOT NULL, `outcome` TEXT NOT NULL, `playedAtEpochMs` INTEGER NOT NULL, `ownTeamId` TEXT, `ownPokemon` TEXT NOT NULL, `opponentPokemon` TEXT NOT NULL, `ratingBefore` INTEGER, `ratingAfter` INTEGER, `notes` TEXT, `tags` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "league",
+            "columnName": "league",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "outcome",
+            "columnName": "outcome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playedAtEpochMs",
+            "columnName": "playedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownTeamId",
+            "columnName": "ownTeamId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ownPokemon",
+            "columnName": "ownPokemon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "opponentPokemon",
+            "columnName": "opponentPokemon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ratingBefore",
+            "columnName": "ratingBefore",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ratingAfter",
+            "columnName": "ratingAfter",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_battle_record_league",
+            "unique": false,
+            "columnNames": [
+              "league"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_battle_record_league` ON `${TABLE_NAME}` (`league`)"
+          },
+          {
+            "name": "index_battle_record_playedAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "playedAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_battle_record_playedAtEpochMs` ON `${TABLE_NAME}` (`playedAtEpochMs`)"
+          },
+          {
+            "name": "index_battle_record_ownTeamId",
+            "unique": false,
+            "columnNames": [
+              "ownTeamId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_battle_record_ownTeamId` ON `${TABLE_NAME}` (`ownTeamId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a0ebe23eb8426c0933320c3d9508ed2c')"
+    ]
+  }
+}

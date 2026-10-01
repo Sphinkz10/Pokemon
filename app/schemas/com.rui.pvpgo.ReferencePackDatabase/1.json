@@ -1,0 +1,462 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "b7f40e48bd2f2d9499689f6f28702420",
+    "entities": [
+      {
+        "tableName": "data_pack_snapshot",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contentHashSha256` TEXT NOT NULL, `packId` TEXT NOT NULL, `version` TEXT NOT NULL, `generatedAtEpochMs` INTEGER NOT NULL, `sourceName` TEXT NOT NULL, `sourceRevision` TEXT NOT NULL, `sourceUrl` TEXT, `pokemonCount` INTEGER NOT NULL, `moveCount` INTEGER NOT NULL, `cpmCount` INTEGER NOT NULL, `typeChartVersion` TEXT NOT NULL, PRIMARY KEY(`contentHashSha256`))",
+        "fields": [
+          {
+            "fieldPath": "contentHashSha256",
+            "columnName": "contentHashSha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packId",
+            "columnName": "packId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAtEpochMs",
+            "columnName": "generatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceRevision",
+            "columnName": "sourceRevision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceUrl",
+            "columnName": "sourceUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pokemonCount",
+            "columnName": "pokemonCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "moveCount",
+            "columnName": "moveCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cpmCount",
+            "columnName": "cpmCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeChartVersion",
+            "columnName": "typeChartVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "contentHashSha256"
+          ]
+        }
+      },
+      {
+        "tableName": "reference_pack",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packKey` TEXT NOT NULL, `metaPackId` TEXT NOT NULL, `metaPackVersion` TEXT NOT NULL, `metaContentHashSha256` TEXT NOT NULL, `league` TEXT NOT NULL, `status` TEXT NOT NULL, `metaGroupId` TEXT NOT NULL, `seasonId` TEXT NOT NULL, `cupId` TEXT, `sourceName` TEXT NOT NULL, `sourceVersion` TEXT NOT NULL, `generatedAtEpochMs` INTEGER NOT NULL, `rulesetId` TEXT NOT NULL, `rulesetVersion` TEXT NOT NULL, `dataPackHashSha256` TEXT NOT NULL, `entryCount` INTEGER NOT NULL, `activatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`packKey`))",
+        "fields": [
+          {
+            "fieldPath": "packKey",
+            "columnName": "packKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metaPackId",
+            "columnName": "metaPackId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metaPackVersion",
+            "columnName": "metaPackVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metaContentHashSha256",
+            "columnName": "metaContentHashSha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "league",
+            "columnName": "league",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metaGroupId",
+            "columnName": "metaGroupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seasonId",
+            "columnName": "seasonId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cupId",
+            "columnName": "cupId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceVersion",
+            "columnName": "sourceVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAtEpochMs",
+            "columnName": "generatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rulesetId",
+            "columnName": "rulesetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rulesetVersion",
+            "columnName": "rulesetVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataPackHashSha256",
+            "columnName": "dataPackHashSha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entryCount",
+            "columnName": "entryCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activatedAtEpochMs",
+            "columnName": "activatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_reference_pack_league",
+            "unique": false,
+            "columnNames": [
+              "league"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reference_pack_league` ON `${TABLE_NAME}` (`league`)"
+          },
+          {
+            "name": "index_reference_pack_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reference_pack_status` ON `${TABLE_NAME}` (`status`)"
+          },
+          {
+            "name": "index_reference_pack_activatedAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "activatedAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reference_pack_activatedAtEpochMs` ON `${TABLE_NAME}` (`activatedAtEpochMs`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ruleset_snapshot",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packKey` TEXT NOT NULL, `id` TEXT NOT NULL, `version` TEXT NOT NULL, `title` TEXT NOT NULL, `baseLeague` TEXT NOT NULL, `cpCap` INTEGER, `minLevel` REAL NOT NULL, `maxLevel` REAL NOT NULL, `rankingIvFloor` INTEGER NOT NULL, `allowShadow` INTEGER NOT NULL, `allowMega` INTEGER NOT NULL, `allowUnreleased` INTEGER NOT NULL, `includeFilters` TEXT NOT NULL, `excludeFilters` TEXT NOT NULL, `explicitIncludes` TEXT NOT NULL, `explicitExcludes` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `sourceVersion` TEXT NOT NULL, `generatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`packKey`))",
+        "fields": [
+          {
+            "fieldPath": "packKey",
+            "columnName": "packKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseLeague",
+            "columnName": "baseLeague",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cpCap",
+            "columnName": "cpCap",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "minLevel",
+            "columnName": "minLevel",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxLevel",
+            "columnName": "maxLevel",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rankingIvFloor",
+            "columnName": "rankingIvFloor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allowShadow",
+            "columnName": "allowShadow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allowMega",
+            "columnName": "allowMega",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allowUnreleased",
+            "columnName": "allowUnreleased",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "includeFilters",
+            "columnName": "includeFilters",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "excludeFilters",
+            "columnName": "excludeFilters",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "explicitIncludes",
+            "columnName": "explicitIncludes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "explicitExcludes",
+            "columnName": "explicitExcludes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceVersion",
+            "columnName": "sourceVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAtEpochMs",
+            "columnName": "generatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packKey"
+          ]
+        }
+      },
+      {
+        "tableName": "meta_entry",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packKey` TEXT NOT NULL, `entryKey` TEXT NOT NULL, `opponentSpeciesId` TEXT NOT NULL, `fastMoveId` TEXT NOT NULL, `chargedMoveIds` TEXT NOT NULL, `ivAttack` INTEGER NOT NULL, `ivDefense` INTEGER NOT NULL, `ivStamina` INTEGER NOT NULL, `level` REAL NOT NULL, `isShadow` INTEGER NOT NULL, `weight` REAL NOT NULL, `labels` TEXT NOT NULL, PRIMARY KEY(`packKey`, `entryKey`))",
+        "fields": [
+          {
+            "fieldPath": "packKey",
+            "columnName": "packKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entryKey",
+            "columnName": "entryKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "opponentSpeciesId",
+            "columnName": "opponentSpeciesId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastMoveId",
+            "columnName": "fastMoveId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chargedMoveIds",
+            "columnName": "chargedMoveIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivAttack",
+            "columnName": "ivAttack",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivDefense",
+            "columnName": "ivDefense",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ivStamina",
+            "columnName": "ivStamina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isShadow",
+            "columnName": "isShadow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weight",
+            "columnName": "weight",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "labels",
+            "columnName": "labels",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "packKey",
+            "entryKey"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_meta_entry_packKey",
+            "unique": false,
+            "columnNames": [
+              "packKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_meta_entry_packKey` ON `${TABLE_NAME}` (`packKey`)"
+          },
+          {
+            "name": "index_meta_entry_opponentSpeciesId",
+            "unique": false,
+            "columnNames": [
+              "opponentSpeciesId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_meta_entry_opponentSpeciesId` ON `${TABLE_NAME}` (`opponentSpeciesId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b7f40e48bd2f2d9499689f6f28702420')"
+    ]
+  }
+}
