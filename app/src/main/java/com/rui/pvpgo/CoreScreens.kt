@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rui.pvpgo.events.CalendarSnapshot
 import com.rui.pvpgo.domain.CandidateInboxItem
 import com.rui.pvpgo.domain.CollectionImportDraft
 import com.rui.pvpgo.domain.CollectionImportEntryContext
@@ -1070,7 +1071,9 @@ fun MoreRootScreen(
     moves: List<PvpMove>,
     startRoute: MoreRoute = MoreRoute.HOME,
     selectedSkin: PvpSkin = PvpSkin.DEEP,
-    onSkinSelected: (PvpSkin) -> Unit = {}
+    onSkinSelected: (PvpSkin) -> Unit = {},
+    calendar: CalendarSnapshot? = null,
+    onRefreshCalendar: () -> Unit = {}
 ) {
     var route by remember(startRoute) { mutableStateOf(startRoute) }
     when (route) {
@@ -1083,10 +1086,14 @@ fun MoreRootScreen(
             onAppearance = { route = MoreRoute.APPEARANCE }
         )
         MoreRoute.EVENT -> EventOverviewScreen(
+            calendar = calendar,
+            onRefresh = onRefreshCalendar,
             onBack = { route = MoreRoute.HOME },
             onOpenRadar = { route = MoreRoute.RADAR }
         )
         MoreRoute.AGENDA -> AgendaOverviewScreen(
+            calendar = calendar,
+            onRefresh = onRefreshCalendar,
             onBack = { route = MoreRoute.HOME },
             onOpenEvent = { route = MoreRoute.EVENT },
             onOpenRadar = { route = MoreRoute.RADAR }
