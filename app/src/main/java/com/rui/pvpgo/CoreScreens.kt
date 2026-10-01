@@ -3,6 +3,7 @@ package com.rui.pvpgo
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -850,6 +851,8 @@ private fun OwnedPokemonDetailScreen(
         priority = plan?.priority ?: 50
         notes = plan?.notes.orEmpty()
     }
+
+    BackHandler { exitDetail() }
 
     if (showDiscardConfirm) {
         AlertDialog(
