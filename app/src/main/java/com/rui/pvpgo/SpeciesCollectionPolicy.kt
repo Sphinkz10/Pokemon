@@ -4,19 +4,15 @@ import com.rui.pvpgo.domain.OwnedPokemon
 import com.rui.pvpgo.domain.PvpBuildPlan
 import com.rui.pvpgo.engine.PvPRankEntry
 
-/** Pure policy. All ranks are supplied by the engine for the currently selected league. */
+/** Ranking decisions are league-neutral; caller supplies rankings for one selected league. */
 object SpeciesCollectionPolicy {
     fun sortedForLeague(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): List<OwnedPokemon> =
-        owned.sortedWith(
-            compareBy<OwnedPokemon> { ranks?.get(it.id)?.rank ?: Int.MAX_VALUE }
-                .thenBy { it.id }
-        )
+        owned.sortedWith(compareBy<OwnedPokemon> { ranks?.get(it.id)?.rank ?: Int.MAX_VALUE }.thenBy { it.id })
 
     fun bestForLeague(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): OwnedPokemon? =
-        if (ranks == null) null
-        else sortedForLeague(owned.filter { it.id in ranks }, ranks).firstOrNull()
+        if (ranks == null) null else sortedForLeague(owned.filter { it.id in ranks }, ranks).firstOrNull()
 
-    // Backward compatibility for existing callers supplying Great League ranks.
+    /** Legacy compatibility: existing callers still use these names with Great League ranks. */
     fun sortedForGreat(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): List<OwnedPokemon> =
         sortedForLeague(owned, ranks)
 
