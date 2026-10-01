@@ -38,7 +38,7 @@ checks = {
  "all Species360 semantic colors": "Color(0xFF" not in species,
  "real JVM policy unit tests": ":app:testDebugUnitTest" in workflow and "testImplementation(\"junit:junit:4.13.2\")" in build,
  "collection stats derive from actual owned records": "CollectionStatsStrip(collection)" in index and "owned.map { it.speciesId }.distinct().size" in index and "owned.count { it.isShiny }" in index and "it.iv.total == 45" in index,
- "v155 isolated APK": 'applicationIdSuffix = ".installtestv155"' in build,
+ "independent APK suffix remains present": 'applicationIdSuffix = ".installtestv156"' in build,
 }
 for name, yes in checks.items():
     print(("PASS" if yes else "FAIL"), name)
