@@ -172,8 +172,8 @@ private fun TodayHeader(onSearch: () -> Unit) {
                 .size(48.dp)
                 .clickable(onClick = onSearch),
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF0B1728),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263B57))
+            color = PvpColors.CanvasMiddle,
+            border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text("⌕", color = PvpColors.TextSecondary, fontSize = 27.sp)
@@ -200,7 +200,7 @@ private fun EventHeroCard(
             .clip(shape)
             .background(
                 Brush.linearGradient(
-                    colors = listOf(Color(0xFF173652), Color(0xFF0C1C30), Color(0xFF0B1726))
+                    colors = listOf(PvpColors.SurfaceRaised, PvpColors.CanvasMiddle, PvpColors.CanvasStart)
                 )
             )
             .border(1.dp, TodayBorder, shape)
@@ -211,7 +211,7 @@ private fun EventHeroCard(
                 .padding(end = 8.dp)
                 .size(140.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF315A73).copy(alpha = 0.36f))
+                .background(PvpColors.AccentDeep.copy(alpha = 0.36f))
         )
         Text("◈", modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp), color = TodayBlue.copy(alpha = 0.16f), fontSize = 110.sp)
         Column(
@@ -261,7 +261,7 @@ private fun EventHeroCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 36.dp)
+                    .heightIn(min = 48.dp)
                     .clickable(onClick = onExplore),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -283,7 +283,7 @@ private fun EventHeroCard(
 private fun SmallBonus(text: String, accent: Color) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = Color(0xFF2A465B).copy(alpha = 0.78f)
+        color = PvpColors.SurfaceRaised.copy(alpha = 0.78f)
     ) {
         Text(
             text = text,
@@ -333,8 +333,8 @@ private fun CarbinkPriorityCard(enabled: Boolean, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(104.dp)
             .clip(shape)
-            .background(Brush.linearGradient(listOf(Color(0xFF15314A), Color(0xFF0E2236))))
-            .border(1.dp, Color(0xFF4AA8D5), shape)
+            .background(Brush.linearGradient(listOf(PvpColors.SurfaceRaised, PvpColors.CanvasMiddle)))
+            .border(1.dp, PvpColors.BrandBlue, shape)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -363,12 +363,12 @@ private fun CarbinkPriorityCard(enabled: Boolean, onClick: () -> Unit) {
             Spacer(Modifier.height(2.dp))
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFF23546D)
+                color = PvpColors.AccentDeep
             ) {
                 Text(
                     "VER POKÉMON ↗",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    color = Color(0xFF9DE7FF),
+                    color = PvpColors.AccentSky,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -394,7 +394,7 @@ private fun MiniPriorityCard(
             .height(108.dp)
             .clip(shape)
             .background(TodayCard)
-            .border(1.dp, Color(0xFF263C55), shape)
+            .border(1.dp, PvpColors.BorderDefault, shape)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(11.dp)
     ) {
@@ -441,7 +441,7 @@ private fun TodayCatalogStatus(speciesCount: Int, loading: Boolean, onOpenCollec
     Surface(
         color = TodayCard,
         shape = RoundedCornerShape(16.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
+        border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
@@ -476,7 +476,7 @@ private fun TodayTimelineCard(calendar: CalendarSnapshot?) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = TodayCard,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
+        border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
@@ -652,8 +652,8 @@ private fun DetailHeader(title: String, subtitle: String, onBack: () -> Unit) {
         Surface(
             modifier = Modifier.size(48.dp).clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF0B1728),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263B57))
+            color = PvpColors.CanvasMiddle,
+            border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
         ) {
             Box(contentAlignment = Alignment.Center) { Text("‹", color = PvpColors.TextPrimary, fontSize = 30.sp) }
         }
@@ -671,7 +671,7 @@ private fun EventInfoCard(modifier: Modifier, title: String, detail: String, acc
         modifier = modifier,
         shape = RoundedCornerShape(14.dp),
         color = TodayCard,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
+        border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, color = accent, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -685,7 +685,7 @@ private fun EventTargetRow(name: String, detail: String, art: ArtKind, accent: C
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = TodayCard,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
+        border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
     ) {
         Row(Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
             PokemonArtwork(name, Modifier.size(54.dp))
