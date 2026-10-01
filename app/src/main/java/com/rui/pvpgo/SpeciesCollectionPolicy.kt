@@ -6,11 +6,18 @@ import com.rui.pvpgo.engine.PvPRankEntry
 
 /** Pure, testable Collection C04-C06 decisions. No write or transfer actions. */
 object SpeciesCollectionPolicy {
-    fun sortedForGreat(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): List<OwnedPokemon> =
+    fun sortedForLeague(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): List<OwnedPokemon> =
         owned.sortedWith(compareBy<OwnedPokemon> { ranks?.get(it.id)?.rank ?: Int.MAX_VALUE }.thenBy { it.id })
 
+    fun bestForLeague(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): OwnedPokemon? =
+        if (ranks == null) null else sortedForLeague(owned.filter { it.id in ranks }, ranks).firstOrNull()
+
+    // Compatibility for older callers. Always pass league-specific rank maps.
+    fun sortedForGreat(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): List<OwnedPokemon> =
+        sortedForLeague(owned, ranks)
+
     fun bestForGreat(owned: List<OwnedPokemon>, ranks: Map<String, PvPRankEntry>?): OwnedPokemon? =
-        if (ranks == null) null else sortedForGreat(owned.filter { it.id in ranks }, ranks).firstOrNull()
+        bestForLeague(owned, ranks)
 
     /** Rankings share the same ordering regardless of the selected league.
      * The caller supplies the relevant league's rank table. */
@@ -36,7 +43,10 @@ object SpeciesCollectionPolicy {
     fun betterLeagueRank(a: OwnedPokemon, b: OwnedPokemon, ranks: Map<String, PvPRankEntry>?): String =
         betterGreatRank(a, b, ranks)
 
-    fun betterGreatRank(a: OwnedPokemon, b: OwnedPokemon, ranks: Map<String, PvPRankEntry>?): String {
+    fun betterGreatRank(a: OwnedPokemon, b: OwnedPokemon, ranks: Map<String, PvPRankEntry>?): String =
+        betterLeagueRank(a, b, ranks)
+
+    fun betterLeagueRank(a: OwnedPokemon, b: OwnedPokemon, ranks: Map<String, PvPRankEntry>?): String {
         val ra = ranks?.get(a.id)?.rank ?: return "Indisponível"
         val rb = ranks[b.id]?.rank ?: return "Indisponível"
         return when {
