@@ -21,7 +21,7 @@ checks={
  'no 150 cap': '.take(150)' not in ui,
  'LazyColumn list': 'LazyColumn(' in ui and 'items(nationalItems, key = { it.dex })' in ui,
  'reactive national state': 'var national by remember' in ui and 'NationalDexRepository.load(' in ui,
- 'search by name and dex': 'entry.slug.contains(q)' in policy and 'entry.dex.toString() == q' in policy,
+ 'search by name and dex': 'entry.slug.contains(q)' in policy and 'entry.dex == exactDex' in policy,
  'generation filters present': all(f'"{n}"' in ui for n in ['G1','G2','G3','G4','G5','G6','G7','G8','G9','Novas']),
  'future entries retained': 'else -> "Novas"' in policy,
  'PvP fields not invented': 'hasBattleData = battleSpecies != null' in ui and 'onOpenIvTargets = battleSpecies?.let' in ui,
