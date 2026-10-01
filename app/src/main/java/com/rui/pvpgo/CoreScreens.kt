@@ -6,6 +6,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -919,6 +921,21 @@ private fun OwnedPokemonDetailScreen(
                 }
             }
             item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SpeciesLeaguePolicy.selectable.forEach { option ->
+                        FilterChip(
+                            selected = league == option,
+                            onClick = { league = option },
+                            label = { Text(SpeciesLeaguePolicy.shortLabel(option)) },
+                            modifier = Modifier.heightIn(min = 48.dp)
+                        )
+                    }
+                }
+            }
+            item {
                 Text("Build real", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text("Regista apenas dados que confirmaste no Pokémon GO. Campos em falta continuam UNKNOWN.", style = MaterialTheme.typography.bodySmall)
             }
@@ -1047,8 +1064,11 @@ private fun OwnedPokemonDetailScreen(
                 Text("O plano é intenção de investimento. Não altera os moves reais do Pokémon.", style = MaterialTheme.typography.bodySmall)
             }
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(League.GREAT, League.ULTRA, League.MASTER).forEach { option ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SpeciesLeaguePolicy.selectable.forEach { option ->
                         FilterChip(
                             selected = league == option,
                             onClick = { league = option },
