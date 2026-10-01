@@ -1,6 +1,6 @@
 # Pokémon PvP V1.55 — Pokédex Nacional + Coleção / Pokémon 360
 
-**Estado:** código versionado; verificação de APK Android pendente até o CI concluir. **Canal:** build debug de testes com id isolado `com.rui.pvpgo.installtestv155` para evitar incompatibilidade das chaves de debug temporárias.
+**Estado:** CI concluído com sucesso em [Build #36940790132](https://github.com/Sphinkz10/Pokemon/actions/runs/36940790132), APK V1.55 gerada e assinatura Android V2 verificada; teste em telemóvel pendente. **Canal:** build debug de testes com id isolado `com.rui.pvpgo.installtestv155` para evitar incompatibilidade das chaves de debug temporárias.
 
 ## Alterações funcionais
 
@@ -20,6 +20,17 @@
 - 22 verificações estáticas de navegação, origem de dados, skin e rotas.
 - **7 testes JUnit** da lógica real `NationalDexPolicy` para numeração, 19 limites de gerações, formas de pesquisa, deduplicação e URLs de artwork (a executar no CI).
 - Workflow requer `:app:testDebugUnitTest`, APK assinada e teste do package de diagnóstico.
+
+## Provas CI concluídas
+
+- Compilação `:engine:compileKotlin :app:assembleDebug` — PASS.
+- `:app:testDebugUnitTest`: **7 testes executados, 0 falhas**.
+- Escala da Pokédex — 28/28.
+- Navegação, detalhes e skins — 22/22.
+- Guardas anteriores de dados/skins/eventos — PASS.
+- `apksigner verify` com Android Signature Scheme V2 — PASS.
+- Package independente `com.rui.pvpgo.installtestv155`, `versionCode=55`.
+- ZIP transferido e `app-debug.apk` extraída com verificação do arquivo sem erros.
 
 ## Testes manuais obrigatórios (ainda pendentes)
 
