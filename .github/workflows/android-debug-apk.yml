@@ -49,6 +49,8 @@ jobs:
         run: python3 tests/v1_52_dashboard_truth/verify_dashboard.py
       - name: Validate V1.53 skins and community calendar
         run: python3 tests/v1_53_skins_events/verify_architecture.py
+      - name: Validate V1.54 real events and skin integration
+        run: python3 tests/v1_54_feed_theme/verify_v154.py --live
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
       - name: Confirm generated APK
@@ -65,7 +67,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonPvP-v1.53-installtest-debug-apk
+          name: PokemonPvP-v1.54-installtest-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
