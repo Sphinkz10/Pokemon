@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,12 +75,14 @@ fun CollectionOverviewScreen(
     onSelectOwned: (String) -> Unit,
     onOpenIvTargets: (String) -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
-    var tab by remember { mutableStateOf(CollectionViewTab.COLLECTION) }
-    var filter by remember { mutableStateOf(CollectionQuickFilter.ALL) }
-    var sortByPriority by remember { mutableStateOf(true) }
-    var generation by remember { mutableStateOf("Todas") }
-    var selectedNational by remember { mutableStateOf<NationalDexEntry?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
+    var filter by rememberSaveable { mutableStateOf(CollectionQuickFilter.ALL) }
+    var sortByPriority by rememberSaveable { mutableStateOf(true) }
+    var generation by rememberSaveable { mutableStateOf("Todas") }
+    var selectedDex by rememberSaveable { mutableStateOf<Int?>(null) }
+    val collectionScroll = rememberLazyListState()
+    val nationalScroll = rememberLazyListState()
     val context = LocalContext.current.applicationContext
     var national by remember { mutableStateOf<NationalDexLoad?>(null) }
     // Lazy-load the national catalog only when Pokédex is opened. Battle data stays in PvPoke.
@@ -146,6 +150,7 @@ fun CollectionOverviewScreen(
 
     // Route to a national species profile irrespective of PvPoke battle coverage.
     // The list state (query, generation and position) remains alive on Back.
+    val selectedNational = national?.entries?.firstOrNull { it.dex == selectedDex }
     selectedNational?.let { entry ->
         val battleSpecies = pvpByDex[entry.dex]
         val firstOwnedId = battleSpecies?.let { species ->
@@ -156,12 +161,12 @@ fun CollectionOverviewScreen(
             ownedCount = ownedCountsByDex[entry.dex] ?: 0,
             battleAvailable = battleSpecies != null,
             indexSource = national?.status ?: "Pokédex Nacional · fonte por confirmar",
-            onBack = { selectedNational = null },
+            onBack = { selectedDex = null },
             onOpenIvTargets = battleSpecies?.let { species ->
-                { selectedNational = null; onOpenIvTargets(species.speciesId) }
+                { selectedDex = null; onOpenIvTargets(species.speciesId) }
             },
             onOpenOwned = firstOwnedId?.let { ownedId ->
-                { selectedNational = null; onSelectOwned(ownedId) }
+                { selectedDex = null; onSelectOwned(ownedId) }
             }
         )
         return
@@ -169,6 +174,7 @@ fun CollectionOverviewScreen(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = if (tab == CollectionViewTab.POKEDEX) nationalScroll else collectionScroll,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -297,7 +303,7 @@ fun CollectionOverviewScreen(
                         entry = entry,
                         ownedCount = ownedCount,
                         hasBattleData = battleSpecies != null,
-                        onClick = { selectedNational = entry }
+                        onClick = { selectedDex = entry.dex }
                     )
                 }
             }
