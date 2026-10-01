@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Static regression gate for skin preferences and the event feed. Not an on-device test."""
 from pathlib import Path
+import re
 root = Path(__file__).resolve().parents[2]
 def file(path):
     return (root / path).read_text(encoding="utf-8")
@@ -26,7 +27,7 @@ checks = {
     "Today uses semantic skin tokens": "private val TodayBlue: Color get() = PvpColors.AccentSky" in today,
     "source explicitly community": "third-party Leek Duck" in events,
     "feed fetches structured events": "events.json" in events and "JSONObject(json)" in events,
-    "mixed local and absolute timestamps": "LocalDateTime.parse(value)" in events and "value.toLong() * 1000" in events,
+    "mixed local and absolute timestamps": "LocalDateTime.parse(value)" in events and "epochMillis(value.toLong())" in events,
     "feed discards wrong url": 'link.startsWith("https://leekduck.com/")' in events,
     "feed excludes expired events": "end < now" in events,
     "cache stale threshold": "STALE_AFTER_MS" in events,
@@ -35,7 +36,7 @@ checks = {
     "Home reads actual feed": "calendar = eventCalendar" in main and "calendar.active().isNotEmpty()" in today,
     "calendar screens show community attribution": "fonte comunitária NÃO oficial" in screens,
     "user can refresh": "onRefresh" in screens and "onRefreshCalendar" in more,
-    "version updated": 'versionName = "1.53.0-dev"' in build,
+    "version updated": re.search(r'versionCode\s*=\s*(\d+)', build) is not None and int(re.search(r'versionCode\s*=\s*(\d+)', build).group(1)) >= 53,
 }
 for title, ok in checks.items(): print(("PASS" if ok else "FAIL") + " - " + title)
 total=sum(checks.values());print(f"SKIN_EVENTS {total}/{len(checks)} PASS")
