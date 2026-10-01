@@ -32,7 +32,7 @@ checks = {
     "cache stale threshold": "STALE_AFTER_MS" in events,
     "offline fallback provided": "a mostrar cache" in events,
     "periodic worker scheduled": "enqueueUniquePeriodicWork" in events and "EventCalendarRepository.schedule(this)" in main,
-    "Home reads actual feed": "calendar = eventCalendar" in main and "calendar?.active()" in today,
+    "Home reads actual feed": "calendar = eventCalendar" in main and "calendar.active().isNotEmpty()" in today,
     "calendar screens show community attribution": "fonte comunitária NÃO oficial" in screens,
     "user can refresh": "onRefresh" in screens and "onRefreshCalendar" in more,
     "version updated": 'versionName = "1.53.0-dev"' in build,
