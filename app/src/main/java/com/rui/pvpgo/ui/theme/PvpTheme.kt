@@ -5,6 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -20,28 +23,39 @@ import androidx.compose.ui.unit.sp
  * the source of truth for behavior, states and flows.
  */
 object PvpColors {
-    val CanvasStart = Color(0xFF070B14)
-    val CanvasMiddle = Color(0xFF0B1220)
-    val CanvasEnd = Color(0xFF101A33)
+    var skin by mutableStateOf(PvpSkin.DEEP)
+        private set
 
-    val SurfaceCard = Color(0xFF111A2E)
-    val SurfaceRaised = Color(0xFF182442)
-    val SurfaceInput = Color(0xFF0F1A2F)
-    val BorderDefault = Color(0xFF25375D)
+    fun useSkin(next: PvpSkin) {
+        if (skin != next) skin = next
+    }
 
-    val TextPrimary = Color(0xFFFFF8F0)
-    val TextSecondary = Color(0xFFAFC0D8)
-    val NeutralMuted = Color(0xFFAAAABB)
-
-    val BrandYellow = Color(0xFFFFCC03)
-    val BrandBlue = Color(0xFF38BDF8)
-    val BrandRed = Color(0xFFFF4222)
-
-    val StateSuccess = Color(0xFF34D399)
-    val StateWarning = Color(0xFFFFB84D)
-    val StateUnknown = Color(0xFF9BA8B7)
-
-    val TypeWater = Color(0xFF3399FF)
+    private val palette: PvpPalette get() = PvpSkinPalettes.palette(skin)
+    val CanvasStart: Color get() = palette.canvasStart
+    val CanvasMiddle: Color get() = palette.canvasMiddle
+    val CanvasEnd: Color get() = palette.canvasEnd
+    val SurfaceCard: Color get() = palette.surfaceCard
+    val SurfaceRaised: Color get() = palette.surfaceRaised
+    val SurfaceInput: Color get() = palette.surfaceInput
+    val BorderDefault: Color get() = palette.borderDefault
+    val TextPrimary: Color get() = palette.textPrimary
+    val TextSecondary: Color get() = palette.textSecondary
+    val NeutralMuted: Color get() = palette.neutralMuted
+    val BrandYellow: Color get() = palette.brandYellow
+    val BrandBlue: Color get() = palette.brandBlue
+    val BrandRed: Color get() = palette.brandRed
+    val StateSuccess: Color get() = palette.stateSuccess
+    val StateWarning: Color get() = palette.stateWarning
+    val StateUnknown: Color get() = palette.stateUnknown
+    val TypeWater: Color get() = palette.typeWater
+    val AccentSky: Color get() = palette.accentSky
+    val AccentDeep: Color get() = palette.accentDeep
+    val AccentAmber: Color get() = palette.accentAmber
+    val AccentGreen: Color get() = palette.accentGreen
+    val AccentRed: Color get() = palette.accentRed
+    val TodayCard: Color get() = palette.todayCard
+    val TodayCardRaised: Color get() = palette.todayCardRaised
+    val TodayBorder: Color get() = palette.todayBorder
 }
 
 object PvpSpacing {
@@ -64,29 +78,52 @@ object PvpRadius {
     val Sheet = 24.dp
 }
 
-private val PvpColorScheme = darkColorScheme(
-    primary = PvpColors.BrandYellow,
-    onPrimary = PvpColors.CanvasStart,
-    primaryContainer = PvpColors.SurfaceRaised,
-    onPrimaryContainer = PvpColors.TextPrimary,
-    secondary = PvpColors.BrandBlue,
-    onSecondary = PvpColors.CanvasStart,
-    secondaryContainer = PvpColors.SurfaceRaised,
-    onSecondaryContainer = PvpColors.TextPrimary,
-    tertiary = PvpColors.StateSuccess,
-    onTertiary = PvpColors.CanvasStart,
-    error = PvpColors.BrandRed,
-    onError = PvpColors.TextPrimary,
-    background = PvpColors.CanvasStart,
-    onBackground = PvpColors.TextPrimary,
-    surface = PvpColors.SurfaceCard,
-    onSurface = PvpColors.TextPrimary,
-    surfaceVariant = PvpColors.SurfaceRaised,
-    onSurfaceVariant = PvpColors.TextSecondary,
-    outline = PvpColors.BorderDefault,
-    outlineVariant = PvpColors.BorderDefault,
-    scrim = Color.Black
-)
+private fun pvpColorScheme(palette: PvpPalette, isLight: Boolean) =
+    (if (isLight) lightColorScheme(
+        primary = palette.brandYellow,
+        onPrimary = palette.surfaceCard,
+        primaryContainer = palette.surfaceRaised,
+        onPrimaryContainer = palette.textPrimary,
+        secondary = palette.brandBlue,
+        onSecondary = palette.surfaceCard,
+        secondaryContainer = palette.surfaceRaised,
+        onSecondaryContainer = palette.textPrimary,
+        tertiary = palette.stateSuccess,
+        onTertiary = palette.surfaceCard,
+        error = palette.brandRed,
+        onError = palette.surfaceCard,
+        background = palette.canvasStart,
+        onBackground = palette.textPrimary,
+        surface = palette.surfaceCard,
+        onSurface = palette.textPrimary,
+        surfaceVariant = palette.surfaceRaised,
+        onSurfaceVariant = palette.textSecondary,
+        outline = palette.borderDefault,
+        outlineVariant = palette.borderDefault,
+        scrim = Color.Black
+    ) else darkColorScheme(
+        primary = palette.brandYellow,
+        onPrimary = palette.canvasStart,
+        primaryContainer = palette.surfaceRaised,
+        onPrimaryContainer = palette.textPrimary,
+        secondary = palette.brandBlue,
+        onSecondary = palette.canvasStart,
+        secondaryContainer = palette.surfaceRaised,
+        onSecondaryContainer = palette.textPrimary,
+        tertiary = palette.stateSuccess,
+        onTertiary = palette.canvasStart,
+        error = palette.brandRed,
+        onError = palette.textPrimary,
+        background = palette.canvasStart,
+        onBackground = palette.textPrimary,
+        surface = palette.surfaceCard,
+        onSurface = palette.textPrimary,
+        surfaceVariant = palette.surfaceRaised,
+        onSurfaceVariant = palette.textSecondary,
+        outline = palette.borderDefault,
+        outlineVariant = palette.borderDefault,
+        scrim = Color.Black
+    ))
 
 private val PvpTypography = Typography(
     displayLarge = TextStyle(
@@ -172,11 +209,10 @@ private val PvpShapes = Shapes(
 )
 
 @Composable
-fun PvpTheme(content: @Composable () -> Unit) {
-    // The redesign is intentionally dark-first. A light palette can be added
-    // later without changing call sites.
+fun PvpTheme(skin: PvpSkin = PvpSkin.DEEP, content: @Composable () -> Unit) {
+    val palette = PvpSkinPalettes.palette(skin)
     MaterialTheme(
-        colorScheme = PvpColorScheme,
+        colorScheme = pvpColorScheme(palette, skin.isLight),
         typography = PvpTypography,
         shapes = PvpShapes,
         content = content
