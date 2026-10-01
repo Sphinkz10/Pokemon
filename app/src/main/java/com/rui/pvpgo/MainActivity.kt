@@ -37,6 +37,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rui.pvpgo.engine.*
+import com.rui.pvpgo.events.CalendarSnapshot
+import com.rui.pvpgo.events.EventCalendarRepository
 import com.rui.pvpgo.location.JsonFeedSpawnProvider
 import com.rui.pvpgo.location.MockSpawnProvider
 import com.rui.pvpgo.location.ProviderHealth
@@ -63,6 +65,7 @@ class MainActivity : ComponentActivity() {
         requestedSpeciesId = intent.getStringExtra("speciesId")
         RadarNotifier.ensureChannel(this)
         RadarWatchScheduler.sync(this)
+        EventCalendarRepository.schedule(this)
         PvpColors.useSkin(PvpSkinPreferences.load(this))
         setContent {
             PvPGoApp(
@@ -135,6 +138,8 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
 private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () -> Unit = {}) {
     val context = LocalContext.current
     var skin by remember { mutableStateOf(PvpSkinPreferences.load(context)) }
+    var eventCalendar by remember { mutableStateOf<CalendarSnapshot?>(null) }
+    var eventRefreshToken by remember { mutableIntStateOf(0) }
     var catalog by remember { mutableStateOf<List<PokemonSpecies>>(emptyList()) }
     var moves by remember { mutableStateOf<List<PvpMove>>(emptyList()) }
     var source by remember { mutableStateOf("a carregar…") }
@@ -149,6 +154,10 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     var moreStartRoute by remember { mutableStateOf(MoreRoute.HOME) }
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
+
+    LaunchedEffect(eventRefreshToken) {
+        eventCalendar = EventCalendarRepository.load(context, forceRefresh = eventRefreshToken > 0)
+    }
 
     LaunchedEffect(refreshToken) {
         loading = true
@@ -210,6 +219,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                     Box(Modifier.padding(shellPadding).fillMaxSize()) {
                         when (tab) {
                             AppTab.HOME -> TodayScreen(
+                                calendar = eventCalendar,
                                 catalog = catalog,
                                 loading = loading,
                                 onSelectPokemon = { pokemon ->
@@ -237,6 +247,8 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                             AppTab.MORE -> MoreRootScreen(
                                 catalog = catalog, moves = moves, startRoute = moreStartRoute,
                                 selectedSkin = skin,
+                                calendar = eventCalendar,
+                                onRefreshCalendar = { eventRefreshToken++ },
                                 onSkinSelected = { chosen ->
                                     skin = chosen
                                     PvpColors.useSkin(chosen)
