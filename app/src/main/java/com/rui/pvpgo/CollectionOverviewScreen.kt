@@ -181,6 +181,9 @@ fun CollectionOverviewScreen(
         item {
             CollectionTabs(tab = tab, onSelect = { next -> tab = next })
         }
+        if (tab == CollectionViewTab.COLLECTION) {
+            item { CollectionStatsStrip(collection) }
+        }
         item {
             PvpSearchField(
                 value = query,
@@ -296,6 +299,38 @@ fun CollectionOverviewScreen(
                         hasBattleData = battleSpecies != null,
                         onClick = { selectedNational = entry }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollectionStatsStrip(owned: List<OwnedPokemon>) {
+    val speciesCount = remember(owned) { owned.map { it.speciesId }.distinct().size }
+    val shinyCount = remember(owned) { owned.count { it.isShiny } }
+    val hundoCount = remember(owned) { owned.count { it.iv.total == 45 } }
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        listOf(
+            Triple("EXEMPLARES", owned.size.toString(), PvpColors.BrandBlue),
+            Triple("ESPÉCIES", speciesCount.toString(), PvpColors.AccentSky),
+            Triple("SHINY", shinyCount.toString(), PvpColors.AccentAmber),
+            Triple("IV 100%", hundoCount.toString(), PvpColors.StateSuccess)
+        ).forEach { (label, value, accent) ->
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = CollectionCard,
+                border = BorderStroke(1.dp, CollectionBorder)
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Text(label, color = PvpColors.TextSecondary, style = MaterialTheme.typography.labelSmall)
+                    Text(value, color = accent, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 }
             }
         }
