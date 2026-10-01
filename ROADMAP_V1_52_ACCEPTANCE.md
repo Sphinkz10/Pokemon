@@ -6,7 +6,7 @@
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
-## Checkpoint V1.56 · Pokémon 360 multiliga e edição de dados (6/10 implementados, CI pendente)
+## Checkpoint V1.56 · Pokémon 360 multiliga e edição de dados (9/10 verificados com código e CI)
 
 **Âmbito real:** Little / Great / Ultra / Master em todos os ecrãs de espécie e comparação; ficha ilustrada para exemplares; validação de CP, nível e ataques. As novas tarefas **não alteram automaticamente o progresso global de 7/50 gates (14%)**, que exige provas de uso real por tarefa completa.
 
@@ -18,9 +18,9 @@
 | V56-04 | Mostrar rankings indisponíveis sem inventar IV/rank | [x] `SpeciesLeaguePolicy.statusLabel` |
 | V56-05 | Melhorar o perfil Owned Pokémon com arte Shiny, IVs reais, fav e dados por confirmar | [x] `OwnedPokemonDetailScreen` |
 | V56-06 | Validar CP, nível e moves antes de guardar, sem limpar campos mal escritos | [x] `OwnedBuildValidation.kt` |
-| V56-07 | Passar 9 novos testes JVM (5 de ligas, 4 de validação), mantendo 7 testes Pokédex | [ ] `app/src/test/.../SpeciesLeaguePolicyTest.kt` e `OwnedBuildValidationTest.kt` |
-| V56-08 | Passar regressão estrutural de 27 checks + todas as anteriores | [ ] `tests/v1_56_league_360/verify_wiring.py` |
-| V56-09 | Construir, verificar assinatura e disponibilizar APK V1.56 isolada | [ ] [GitHub Actions](https://github.com/Sphinkz10/Pokemon/actions) |
+| V56-07 | Passar 9 novos testes JVM (5 de ligas, 4 de validação), mantendo 7 testes Pokédex | [x] 16/16 JUnit · [CI #36942297296](https://github.com/Sphinkz10/Pokemon/actions/runs/36942297296) |
+| V56-08 | Passar regressão estrutural de 30 checks + todas as anteriores | [x] `tests/v1_56_league_360/verify_wiring.py` + CI verde |
+| V56-09 | Construir, verificar assinatura e disponibilizar APK V1.56 isolada | [x] `com.rui.pvpgo.installtestv156` · assinatura v2 e artefacto #11200532066 verificados |
 | V56-10 | Testar 4 ligas, rankings, 320/390/430dp, edição válida/inválida no Android | [ ] Telefone do Rui, capturas e logs |
 
 **Limites:** o cálculo de ranking não substitui testes externos de paridade numérica do motor, uma liga não é prova de elegibilidade competitiva, e estes ecrãs ainda não foram validados no dispositivo. A versão de desenvolvimento mantém ID `com.rui.pvpgo.installtestv156` para não interferir com a instalação V1.55.
