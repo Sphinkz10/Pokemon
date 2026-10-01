@@ -89,7 +89,7 @@ fun IvTargetsScreen(
                 style = MaterialTheme.typography.bodySmall
             )
         }
-        item { IvSpeciesHero(species, bestOwned) }
+        item { IvSpeciesHero(species, bestOwned, owned.size, loading) }
         item { IvSectionHeader("DOIS CONCEITOS DIFERENTES") }
         item { IvConcepts(league) }
         item { IvSectionHeader("TOP IVS · ${SpeciesLeaguePolicy.title(league).uppercase()}") }
@@ -113,7 +113,7 @@ fun IvTargetsScreen(
             }
         }
         item { IvSectionHeader("AÇÃO") }
-        item { IvActionCard(bestOwned, league) }
+        item { IvActionCard(bestOwned, league, owned.size, loading) }
     }
 }
 
@@ -139,7 +139,7 @@ private fun IvTargetsHeader(name: String, league: League, onBack: () -> Unit) {
 }
 
 @Composable
-private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon, PvPRankEntry>?) {
+private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon, PvPRankEntry>?, ownedCount: Int, loading: Boolean) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -152,7 +152,13 @@ private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon,
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(species.name, color = PvpColors.TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
                 if (bestOwned == null) {
-                    Text("Ainda não tens um exemplar desta espécie.", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        if (loading) "A calcular os IVs da liga…"
+                        else if (ownedCount > 0) "Tens $ownedCount exemplares, mas nenhum ranking elegível nesta liga."
+                        else "Ainda não tens um exemplar desta espécie.",
+                        color = PvpColors.TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     Text("OBJETIVO · encontrar um bom IV PvP", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                 } else {
                     val (owned, rank) = bestOwned
@@ -245,8 +251,10 @@ private fun IvOwnedDivider(rank: Int) {
 }
 
 @Composable
-private fun IvActionCard(bestOwned: Pair<OwnedPokemon, PvPRankEntry>?, league: League) {
+private fun IvActionCard(bestOwned: Pair<OwnedPokemon, PvPRankEntry>?, league: League, ownedCount: Int, loading: Boolean) {
     val text = when {
+        loading -> "Os rankings da liga estão a ser calculados. Não interpretes resultados incompletos."
+        bestOwned == null && ownedCount > 0 -> "Há $ownedCount exemplares registados, mas nenhum ranking elegível nesta liga com a configuração atual. Confirma o CP e os dados da espécie."
         bestOwned == null -> "Ainda não tens um exemplar com rank disponível para ${SpeciesLeaguePolicy.title(league)}. Compara os IVs e os custos antes de investir recursos."
         bestOwned.second.rank == 1 -> "O teu exemplar tem Rank #1 de stat product para ${SpeciesLeaguePolicy.title(league)}. Isto não mede o meta; confirma ataques, elegibilidade e custos."
         bestOwned.second.rank <= 50 -> "O teu melhor exemplar já está no Top 50. Compara o custo de melhoria antes de substituir um build utilizável."
