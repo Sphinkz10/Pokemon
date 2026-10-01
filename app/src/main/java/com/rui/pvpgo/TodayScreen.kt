@@ -231,27 +231,35 @@ private fun EventHeroCard(
                     },
                     color = TodayAmber,
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = if (calendar == null) "A obter" else if (calendar.stale) "Cache" else if (calendar.isAvailable) "${calendar.events.size} eventos" else "Indisponível",
                     color = PvpColors.TextPrimary,
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1
                 )
             }
             Column(Modifier.width(210.dp)) {
                 Text(
                     text = event?.title ?: "Eventos\nPokémon GO",
                     color = PvpColors.TextPrimary,
-                    fontSize = 28.sp,
-                    lineHeight = 31.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontSize = 25.sp,
+                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = event?.category ?: "Informação comunitária",
                     color = PvpColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
