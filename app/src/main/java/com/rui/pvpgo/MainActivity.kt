@@ -27,6 +27,8 @@ import androidx.compose.material3.*
 import com.rui.pvpgo.ui.components.PvpScreen
 import com.rui.pvpgo.ui.theme.PvpColors
 import com.rui.pvpgo.ui.theme.PvpTheme
+import com.rui.pvpgo.ui.theme.PvpSkin
+import com.rui.pvpgo.ui.theme.PvpSkinPreferences
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +63,7 @@ class MainActivity : ComponentActivity() {
         requestedSpeciesId = intent.getStringExtra("speciesId")
         RadarNotifier.ensureChannel(this)
         RadarWatchScheduler.sync(this)
+        PvpColors.useSkin(PvpSkinPreferences.load(this))
         setContent {
             PvPGoApp(
                 initialSpeciesId = requestedSpeciesId,
@@ -105,7 +108,7 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
                         .weight(1f)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (selected) Color(0xFF163451) else Color.Transparent)
+                        .background(if (selected) PvpColors.AccentDeep else Color.Transparent)
                         .clickable { onSelect(tab) }
                         .padding(vertical = 7.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,7 +116,7 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
                 ) {
                     Text(
                         tab.glyph,
-                        color = if (selected) Color(0xFF75D5FF) else PvpColors.TextSecondary,
+                        color = if (selected) PvpColors.AccentSky else PvpColors.TextSecondary,
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
@@ -131,6 +134,7 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
 @Composable
 private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () -> Unit = {}) {
     val context = LocalContext.current
+    var skin by remember { mutableStateOf(PvpSkinPreferences.load(context)) }
     var catalog by remember { mutableStateOf<List<PokemonSpecies>>(emptyList()) }
     var moves by remember { mutableStateOf<List<PvpMove>>(emptyList()) }
     var source by remember { mutableStateOf("a carregar…") }
@@ -171,7 +175,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
         }
     }
 
-    PvpTheme {
+    PvpTheme(skin = skin) {
         PvpScreen {
             Surface(Modifier.fillMaxSize(), color = Color.Transparent) {
             val current = selected
@@ -230,7 +234,15 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                             AppTab.COLLECTION -> CollectionModuleScreen(catalog = catalog, moves = moves)
                             AppTab.TEAMS -> TeamLabRootScreen(catalog = catalog, moves = moves)
                             AppTab.BATTLES -> BattlesRootScreen(catalog = catalog, moves = moves)
-                            AppTab.MORE -> MoreRootScreen(catalog = catalog, moves = moves, startRoute = moreStartRoute)
+                            AppTab.MORE -> MoreRootScreen(
+                                catalog = catalog, moves = moves, startRoute = moreStartRoute,
+                                selectedSkin = skin,
+                                onSkinSelected = { chosen ->
+                                    skin = chosen
+                                    PvpColors.useSkin(chosen)
+                                    PvpSkinPreferences.save(context, chosen)
+                                }
+                            )
                         }
                     }
                 }
