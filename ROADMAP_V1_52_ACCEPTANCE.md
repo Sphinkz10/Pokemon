@@ -50,7 +50,7 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 ## Checkpoint V1.56 — Pokémon 360 e IV Targets multi-liga
 
-**Estado de implementação:** 8/10 tarefas de código/guardas estruturais concluídas (80%). A build Android e o teste em dispositivo estão separados. **Aceitação global:** continua 7/50 (14%), sem aumento artificial por existir código.
+**Estado verificado:** 9/10 gates da V1.56 concluídos (90%). [CI #36942297296](https://github.com/Sphinkz10/Pokemon/actions/runs/36942297296) com 35/35 verificações de integração, 16/16 JUnit (7 Pokédex + 5 ligas + 4 validação), assinatura APK V2 e artefacto publicado. Continua pendente o teste de utilização num Android. **Aceitação global:** continua 7/50 (14%), sem aumento artificial por existir código.
 
 | Gate | Requisito e evidência | Estado |
 |---|---|---|
@@ -62,7 +62,7 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 | V56-06 | Distinguir «a calcular», «sem exemplares» e «exemplares sem rank elegível» | [x] |
 | V56-07 | Componentes multi-liga e IV Targets com tokens das 4 skins e alvos de toque ≥48 dp | [x] |
 | V56-08 | Testes de políticas (labels/CP/seleção) e verificador de integração V1.56 no CI | [x] |
-| V56-09 | Confirmar build V1.56 e assinatura debug, com APK descarregada | [ ] |
+| V56-09 | Confirmar build V1.56 e assinatura debug, com APK descarregada | [x] |
 | V56-10 | Testar os 4 contextos com Pokémon reais, trocar liga e comparar no Android | [ ] |
 
 **Limites:** O Rank exibido é o ranking matemático de stat product e não um ranking competitivo por meta. O motor usa níveis até 50 no perfil padrão; casos com requisitos de formas, elegibilidade ou regras especiais exigem verificação. Não usar um Rank para decidir transferências de forma automática. As builds debug continuam com identificador isolado para evitar conflitos de assinatura; a versão final precisará de chave persistente e estratégia de migração.
