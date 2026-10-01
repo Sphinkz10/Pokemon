@@ -24,7 +24,7 @@ checks={
  'search by name and dex': 'entry.slug.contains(q)' in policy and 'entry.dex.toString() == q' in policy,
  'generation filters present': all(f'"{n}"' in ui for n in ['G1','G2','G3','G4','G5','G6','G7','G8','G9','Novas']),
  'future entries retained': 'else -> "Novas"' in policy,
- 'PvP fields not invented': 'hasBattleData = battleSpecies != null' in ui and 'onClick = battleSpecies?.let' in ui,
+ 'PvP fields not invented': 'hasBattleData = battleSpecies != null' in ui and 'onOpenIvTargets = battleSpecies?.let' in ui,
  'artwork keyed by real national name': 'PokemonArtworkIndex.updateNationalDex(it.entries)' in ui,
  'form policy refuses incorrect base': 'if (dex !in 1..NationalDexPolicy.MAX_DEX || !supportedBaseForm(form))' in urls,
  'shiny never downgraded': 'other/official-artwork/shiny/$dex.png' in urls,
@@ -35,7 +35,7 @@ checks={
  'concurrent fetch semaphore': 'Semaphore(4)' in art and 'imageFetchSlots.withPermit' in art,
  'one network request per image key': 'imageLocks.computeIfAbsent(key)' in art,
  'bitmap downsample': 'inSampleSize = factor' in art,
- 'version bump': 'versionName = "1.51.0-dev"' in (root/'app/build.gradle.kts').read_text(),
+ 'version bump': 'versionCode = 55' in (root/'app/build.gradle.kts').read_text(),
  'engine untouched by new feature': 'engine' not in str(src.relative_to(root)),
 }
 for label,ok in checks.items():
