@@ -49,11 +49,11 @@ import java.util.Locale
 
 /* C04/C05/C06 - presentation only. Ownership and write operations remain in the Room repository.
    Rankings are computed by the existing engine, never inferred from Figma sample values. */
-private val speciesBlue = Color(0xFF75D5FF)
-private val speciesGreen = Color(0xFF7BE0A1)
-private val speciesAmber = Color(0xFFFFC84D)
-private val speciesCard = Color(0xFF101D31)
-private val speciesBorder = Color(0xFF263C55)
+private val speciesBlue: Color get() = PvpColors.AccentSky
+private val speciesGreen: Color get() = PvpColors.AccentGreen
+private val speciesAmber: Color get() = PvpColors.AccentAmber
+private val speciesCard: Color get() = PvpColors.SurfaceCard
+private val speciesBorder: Color get() = PvpColors.BorderDefault
 
 @Composable
 private fun rememberGreatRanks(species: PokemonSpecies, owned: List<OwnedPokemon>): Map<String, PvPRankEntry>? {
@@ -81,7 +81,7 @@ private fun CollectionDetailHeader(title: String, subtitle: String, onBack: () -
         Surface(
             modifier = Modifier.size(48.dp).clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF0B1728),
+            color = PvpColors.CanvasMiddle,
             border = BorderStroke(1.dp, speciesBorder)
         ) { Box(contentAlignment = Alignment.Center) { Text("‹", color = PvpColors.TextPrimary, fontSize = 30.sp) } }
         Column(Modifier.weight(1f)) {
@@ -114,7 +114,7 @@ private fun DetailSection(title: String, action: String? = null, onAction: (() -
 private fun DetailChip(text: String, modifier: Modifier = Modifier, selected: Boolean = false, onClick: (() -> Unit)? = null) {
     Surface(
         modifier = modifier.heightIn(min = if (onClick == null) 30.dp else 44.dp).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
-        color = if (selected) Color(0xFF173A57) else Color(0xFF0C192B),
+        color = if (selected) PvpColors.AccentDeep else PvpColors.SurfaceRaised,
         shape = RoundedCornerShape(13.dp),
         border = BorderStroke(1.dp, if (selected) speciesBlue else speciesBorder)
     ) {
@@ -126,7 +126,7 @@ private fun DetailChip(text: String, modifier: Modifier = Modifier, selected: Bo
 
 @Composable
 private fun SpeciesMetric(title: String, value: String, foot: String, modifier: Modifier = Modifier) {
-    Surface(modifier, color = Color(0xFF0C192A), shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, speciesBorder)) {
+    Surface(modifier, color = PvpColors.SurfaceRaised, shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, speciesBorder)) {
         Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, color = PvpColors.TextSecondary, fontSize = 12.sp, maxLines = 1)
             Text(value, color = PvpColors.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -146,7 +146,7 @@ private fun ExemplarRow(
 ) {
     Surface(
         Modifier.fillMaxWidth().heightIn(min = 75.dp).clickable(onClick = onClick),
-        color = if (checked) Color(0xFF113046) else speciesCard,
+        color = if (checked) PvpColors.AccentDeep else speciesCard,
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(1.dp, if (checked) speciesBlue else speciesBorder)
     ) {
