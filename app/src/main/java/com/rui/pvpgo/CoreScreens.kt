@@ -827,12 +827,45 @@ private fun OwnedPokemonDetailScreen(
     }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
+    var showDiscardConfirm by remember(owned.id) { mutableStateOf(false) }
+    val hasUnsavedBuild = cpText != owned.cp?.toString().orEmpty() ||
+        levelText.replace(',', '.') != owned.level?.let(::formatCompactLevel).orEmpty() ||
+        fastMoveId != owned.fastMoveId || chargedMoveIds != owned.chargedMoveIds
+    val currentPlan = plans.firstOrNull { it.league == league }
+    val hasUnsavedPlan = planStatus != (currentPlan?.status ?: BuildStatus.IDEA) ||
+        priority != (currentPlan?.priority ?: 50) ||
+        notes.trim() != currentPlan?.notes.orEmpty().trim()
+    val hasUnsavedChanges = hasUnsavedBuild || hasUnsavedPlan
+    val exitDetail = {
+        if (busy) {
+            message = "Espera que a gravação termine."
+        } else if (hasUnsavedChanges) {
+            showDiscardConfirm = true
+        } else onBack()
+    }
 
     LaunchedEffect(league, plans) {
         val plan = plans.firstOrNull { it.league == league }
         planStatus = plan?.status ?: BuildStatus.IDEA
         priority = plan?.priority ?: 50
         notes = plan?.notes.orEmpty()
+    }
+
+    if (showDiscardConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirm = false },
+            title = { Text("Alterações por guardar") },
+            text = { Text("Há alterações no exemplar ou no plano PvP que ainda não foram guardadas. Queres sair sem as guardar?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDiscardConfirm = false
+                    onBack()
+                }) { Text("Descartar alterações") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardConfirm = false }) { Text("Continuar a editar") }
+            }
+        )
     }
 
     Scaffold(
@@ -844,7 +877,7 @@ private fun OwnedPokemonDetailScreen(
                         Text("${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina}", style = MaterialTheme.typography.labelSmall)
                     }
                 },
-                navigationIcon = { TextButton(onClick = onBack) { Text("←") } }
+                navigationIcon = { TextButton(onClick = exitDetail) { Text("←") } }
             )
         }
     ) { padding ->
@@ -1017,7 +1050,15 @@ private fun OwnedPokemonDetailScreen(
                         val validationError = listOfNotNull(
                             OwnedBuildValidation.cpError(cpText),
                             OwnedBuildValidation.levelError(levelText),
-                            OwnedBuildValidation.chargedMovesError(chargedMoveIds)
+                            OwnedBuildValidation.chargedMovesError(chargedMoveIds),
+                            OwnedBuildValidation.movePoolError(
+                                fastMoveId = fastMoveId,
+                                chargedMoveIds = chargedMoveIds,
+                                allowedFastIds = fastPool.map { it.moveId }.toSet(),
+                                allowedChargedIds = chargedPool.map { it.moveId }.toSet(),
+                                previousFastId = owned.fastMoveId,
+                                previousChargedIds = owned.chargedMoveIds
+                            )
                         ).firstOrNull()
                         if (validationError != null) {
                             message = validationError
@@ -1049,17 +1090,17 @@ private fun OwnedPokemonDetailScreen(
                                         },
                                         uncertainFields = uncertain,
                                         updatedAtEpochMs = now,
-                                        lastVerifiedAtEpochMs = now
+                                        lastVerifiedAtEpochMs = if (uncertain.isEmpty()) now else null
                                     )
                                 )
-                            }.onSuccess { message = "Build guardado na Collection." }
+                            }.onSuccess { message = "Alterações guardadas. Campos incompletos continuam por confirmar." }
                                 .onFailure { message = it.message ?: "Não foi possível guardar." }
                             busy = false
                         }
                     },
                     enabled = !busy,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(if (busy) "A guardar…" else "Guardar build confirmado") }
+                ) { Text(if (busy) "A guardar…" else "Guardar alterações") }
                 message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary) }
             }
 
