@@ -29,6 +29,20 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 **Roadmap global de 50 gates:** mantém **7/50 (14%) verificados**. Os 9/10 gates acima são implementação parcial em novas subáreas, não justificam alterar automaticamente os gates globais B2/C3/J3.
 
+## Checkpoint V1.54 · Qualidade visual e integridade de eventos
+
+**Estado neste commit:** 3/5 tarefas implementadas e com inspeção de código (60%), à espera da recompilação CI e do teste Android. Os critérios globais de aceitação **continuam 7/50 (14%)** até haver provas adicionais. A recompilação definitiva desta versão encontra-se na [execução V1.54](https://github.com/Sphinkz10/Pokemon/actions/runs/36938413798).
+
+| ID | Tarefa | Resultado / Critério | Situação |
+|---|---|---|---|
+| V54-1 | Inspecionar o JSON público de eventos | Confirmados grupos com datas locais ISO e timestamps UNIX em [events.json](https://raw.githubusercontent.com/zhenga8533/leak-duck/data/events.json) | [x] |
+| V54-2 | Migrar cores de interface do Hoje e aumentar alvos | 19 ocorrências / 13 famílias convertidas para tokens; CTA de 48 dp, sem substituir as cores próprias das ilustrações | [x] |
+| V54-3 | Proteger agenda contra formato inválido e títulos longos | Não gravar JSON sem eventos válidos; cache anterior preservada; título limitado a 2 linhas | [x] |
+| V54-4 | Passar 14+23+11 verificações e produzir APK V1.54 | Compilação Android, assinatura e ZIP verificáveis | [ ] |
+| V54-5 | Verificar no telemóvel a Agenda e as quatro skins | Screenshot 320/390/430, rede/offline, fusos e persistência | [ ] |
+
+**Ainda pendente:** migrar para tokens todas as cores fixas dos restantes módulos; contrastes da skin Classic; validar a pontualidade das notificações/WorkManager; testar se os eventos carregam realmente em pelo menos um Android com Internet, sem inventar horários.
+
 ## Progresso por módulo
 
 | Módulo | Gates confirmados | Percentagem | Próximo gate |
