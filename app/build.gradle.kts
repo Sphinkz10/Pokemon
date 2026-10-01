@@ -21,7 +21,7 @@ android {
     // Instalação de diagnóstico independente: não substitui a app já instalada.
     buildTypes {
         getByName("debug") {
-            applicationIdSuffix = ".installtest"
+            applicationIdSuffix = ".installtestv154"
             versionNameSuffix = "-installtest"
         }
     }
