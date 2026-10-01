@@ -11,6 +11,12 @@
 - Os botões principais usam `MaterialTheme.colorScheme.onPrimary`, melhorando o contraste sobretudo no tema Classic; ações de secção têm alvo >=48 dp.
 - CI com gates herdados V1.52, V1.53 e novos testes V1.54, incluindo verificação do formato publicado pelo feed comunitário.
 
+## Correção de instalação
+
+Ao comparar os logs de assinatura, confirmei que a V1.53 e a primeira tentativa V1.54 tinham o mesmo package `com.rui.pvpgo.installtest`, **mas hashes SHA-256 de certificados debug diferentes**. O Android exige a mesma assinatura para atualizar um package existente. A entrega revista V1.54 usa o package separado `com.rui.pvpgo.installtestv154`, pelo que pode ser instalada lado a lado.
+
+Isto evita o conflito na instalação, mas significa que os dados locais da variante anterior **não são migrados automaticamente** para a nova. A solução estável para versões futuras será uma assinatura de release consistente, guardada com segurança (fora de GitHub público), e um package definitivo.
+
 ## Ainda não concluído
 
 - **Não há prova de que o calendário carregue corretamente no Android do Rui.** É indispensável testar Internet, sem Internet, refresh, horas de Lisboa e atualização persistente.
@@ -29,5 +35,5 @@
 
 ## Evidência de CI
 
-[Acompanhar a build V1.54](https://github.com/Sphinkz10/Pokemon/actions/runs/36938547368).
+[Acompanhar a build V1.54](https://github.com/Sphinkz10/Pokemon/actions/runs/36938928935).
 O estado da APK só deve ser considerado pronto depois de CI concluir `success` e publicar o artefacto `PokemonPvP-v1.54-installtest-debug-apk`.
