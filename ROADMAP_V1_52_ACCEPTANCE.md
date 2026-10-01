@@ -29,9 +29,9 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 **Roadmap global de 50 gates:** mantém **7/50 (14%) verificados**. Os 9/10 gates acima são implementação parcial em novas subáreas, não justificam alterar automaticamente os gates globais B2/C3/J3.
 
-## Checkpoint V1.55 · Pokédex Nacional e Pokémon 360 (8/10 implementados)
+## Checkpoint V1.55 · Pokédex Nacional e Pokémon 360 (9/10 verificados por código e CI)
 
-**Progresso de implementação nesta ronda:** 8/10 tarefas com alterações concretas no código; duas aguardam resultados independentes. **Progresso global de aceitação:** mantém-se **7/50 (14%)** até existir teste em dispositivo e evidência integral para um gate global.
+**Progresso desta ronda:** 9/10 tarefas com prova de código, testes JUnit ou CI; falta a verificação num dispositivo Android. **Progresso global de aceitação:** mantém-se **7/50 (14%)** até existir teste em dispositivo e evidência integral para um gate global.
 
 | Gate | Trabalho | Evidência | Estado |
 |---|---|---|---|
@@ -43,7 +43,7 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 | V55-6 | KPIs reais da Coleção: Exemplares/Espécies/Shiny/IV 100% | `CollectionStatsStrip` com dados de `OwnedPokemon` | [x] |
 | V55-7 | Remover cores fixas da Coleção e dos ecrãs de espécie/360 | `CollectionOverviewScreen.kt` e `SpeciesCollectionScreens.kt` sem `Color(0xFF...)` | [x] |
 | V55-8 | Criar testes JUnit e verificadores de navegação/escala | `NationalDexPolicyTest.kt` (7 testes) + dois scripts Python (50+ checks) | [x] |
-| V55-9 | Executar JUnit no Gradle, CI de ponta a ponta e verificar APK | [GitHub Actions](https://github.com/Sphinkz10/Pokemon/actions) | [ ] |
+| V55-9 | Executar JUnit no Gradle, CI de ponta a ponta e verificar APK | [Execução verde #36940790132](https://github.com/Sphinkz10/Pokemon/actions/runs/36940790132): 7/7 JUnit, 28/28 escala, 22/22 navegação, APK V2 assinada | [x] |
 | V55-10 | Validar perfis, imagens, filtros, pesquisa, regressos e skins no Android | Testes reais e capturas 320/390/430 dp | [ ] |
 
 **Limitações abertas:** existem formas alternativas para as quais o índice nacional é apenas informativo; estas não recebem simulações inventadas. O detalhe informativo não equivale ao Pokémon 360 completo e ainda faltam migrações, avaliações de acessibilidade e testes em dispositivos físicos. A nova assinatura debug volta a ter um ID de teste separado para não entrar em conflito com builds anteriores, até termos uma assinatura de release persistente.
