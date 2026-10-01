@@ -14,14 +14,14 @@ android {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 55
-        versionName = "1.55.0-dev"
+        versionCode = 56
+        versionName = "1.56.0-dev"
     }
 
     // Instalação de diagnóstico independente: não substitui a app já instalada.
     buildTypes {
         getByName("debug") {
-            applicationIdSuffix = ".installtestv155"
+            applicationIdSuffix = ".installtestv156"
             versionNameSuffix = "-installtest"
         }
     }
