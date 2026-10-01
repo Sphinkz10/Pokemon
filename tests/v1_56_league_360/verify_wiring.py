@@ -11,6 +11,7 @@ league=read("SpeciesLeaguePolicy.kt")
 ranking=read("RankRepository.kt")
 policy=read("SpeciesCollectionPolicy.kt")
 validation=read("OwnedBuildValidation.kt")
+targets=read("IvTargetsScreen.kt")
 build=(root/"app/build.gradle.kts").read_text(encoding="utf-8")
 checks={
  "four selectable leagues": all("League."+x in league for x in ["LITTLE","GREAT","ULTRA","MASTER"]),
@@ -18,15 +19,20 @@ checks={
  "actual league passed to ranking engine": "RankRepository.find(species, league, item.iv, settings)" in screen,
  "rank calculation reacts to league": "LaunchedEffect(species.speciesId, owned, league)" in screen,
  "ranking state scoped by league": "remember(species.speciesId, owned, league)" in screen,
- "shared league selector": "private fun SpeciesLeagueSelector(" in screen,
+ "shared league selector": "fun SpeciesLeagueSelector(" in screen,
  "overview has league selector": 'item { SpeciesLeagueSelector(league, onLeagueChange) }' in screen,
  "league switcher on all three subpages": screen.count("SpeciesLeagueSelector(league, onLeagueChange)") == 3,
  "league selection owned by navigation": "var speciesLeague by remember" in core,
- "league persists across routes": core.count("league = speciesLeague") == 3,
- "league changed in all subroutes": core.count("onLeagueChange = { speciesLeague = it }") == 3,
+ "league persists across routes": core.count("league = speciesLeague") == 4,
+ "league changed in all subroutes": core.count("onLeagueChange = { speciesLeague = it }") == 4,
  "overview reads generic best policy": "SpeciesCollectionPolicy.bestForLeague(owned, ranks)" in screen,
  "rank comparison not hardwired to Great": "SpeciesCollectionPolicy.betterLeagueRank(first, second, ranks)" in screen,
  "compare dynamically labels correct league": "ComparisonMetricRow(SpeciesLeaguePolicy.title(league)" in screen,
+ "iv targets use shared selector": "SpeciesLeagueSelector(league, onLeagueChange)" in targets,
+ "iv targets recalculate actual league": "RankRepository.ranks(species, league, settings)" in targets and "RankRepository.find(species, league, pokemon.iv, settings)" in targets,
+ "iv targets state keyed by league": "LaunchedEffect(species.speciesId, owned, league)" in targets and "remember(species.speciesId, owned, league)" in targets,
+ "iv targets distinguish calculating vs ineligible": "if (loading)" in targets and "nenhum ranking elegível" in targets,
+ "iv targets avoid hardcoded color values": "Color(0xFF" not in targets,
  "rank table cache is bounded": "MAX_TABLES = 24" in ranking,
  "legacy rank policy remains compatible": "fun bestForGreat(" in policy,
  "owned detail uses real artwork": "PokemonArtwork(species.name, Modifier.size(90.dp), shiny = owned.isShiny" in core,
