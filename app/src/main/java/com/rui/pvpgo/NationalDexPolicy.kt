@@ -31,9 +31,11 @@ object NationalDexPolicy {
 
     fun filter(entries: List<NationalDexEntry>, search: String, generation: String = "Todas"): List<NationalDexEntry> {
         val q = normalized(search.removePrefix("#"))
+        // Accept #1, #0001, 1 and 0001 without forcing name-only matching.
+        val exactDex = q.toIntOrNull()?.takeIf { it in 1..MAX_DEX }
         return entries.filter { entry ->
             (generation == "Todas" || generation == generation(entry.dex)) &&
-                (q.isEmpty() || entry.slug.contains(q) || entry.dex.toString() == q ||
+                (q.isEmpty() || entry.slug.contains(q) || entry.dex == exactDex ||
                     normalized(entry.name).contains(q))
         }
     }
