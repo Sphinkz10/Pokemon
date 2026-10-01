@@ -34,8 +34,8 @@ checks = {
  "national Dex targets return to list": "targetsReturnRoute = CollectionRoute.LIST" in core,
  "search handles zero-padded numeric identifiers": "q.toIntOrNull()" in policy and "entry.dex == exactDex" in policy,
  "small screen filters scroll horizontally": "Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())" in index,
- "all Collection semantic colors": not re.search(r"Color\\(0xFF[0-9A-Fa-f]{6}\\)", index),
- "all Species360 semantic colors": not re.search(r"Color\\(0xFF[0-9A-Fa-f]{6}\\)", species),
+ "all Collection semantic colors": "Color(0xFF" not in index,
+ "all Species360 semantic colors": "Color(0xFF" not in species,
  "real JVM policy unit tests": ":app:testDebugUnitTest" in workflow and "testImplementation(\"junit:junit:4.13.2\")" in build,
  "v155 isolated APK": 'applicationIdSuffix = ".installtestv155"' in build,
 }
