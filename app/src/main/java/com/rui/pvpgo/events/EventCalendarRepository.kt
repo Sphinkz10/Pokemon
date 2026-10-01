@@ -106,6 +106,7 @@ object EventCalendarRepository {
     private fun snapshot(json: String, fetchedAt: Long, now: Long): CalendarSnapshot {
         val root = JSONObject(json)
         val items = mutableListOf<PokemonGoCalendarEvent>()
+        var recognizedEntries = 0
         val endHorizon = now + 30L * 24 * 60 * 60 * 1000
         val keys = root.keys()
         while (keys.hasNext()) {
@@ -116,7 +117,10 @@ object EventCalendarRepository {
                 val local = entry.optBoolean("is_local_time", false)
                 val start = parseTime(entry.opt("start_time"), local) ?: continue
                 val end = parseTime(entry.opt("end_time"), local) ?: continue
-                if (end <= start || end < now || start > endHorizon) continue
+                if (end <= start) continue
+                // A valid event may be outside our 30-day display window.
+                recognizedEntries++
+                if (end < now || start > endHorizon) continue
                 val title = entry.optString("title").trim().take(140)
                 if (title.isBlank()) continue
                 val link = entry.optString("article_url")
@@ -127,6 +131,9 @@ object EventCalendarRepository {
                 )
             }
         }
+        // Never promote a blank/changed provider schema to a successful refresh:
+        // preserve the previous cache and warn the user instead.
+        require(recognizedEntries > 0) { "Estrutura do feed de eventos inválida" }
         return CalendarSnapshot(
             events = items.distinctBy { it.articleUrl + ":" + it.startMs }.sortedBy { it.startMs },
             fetchedAtMs = fetchedAt,
@@ -136,8 +143,10 @@ object EventCalendarRepository {
 
     private fun parseTime(value: Any?, local: Boolean): Long? = try {
         when (value) {
-            is Number -> value.toLong() * 1000
-            is String -> if (local) {
+            is Number -> epochMillis(value.toLong())
+            is String -> if (value.all(Char::isDigit) && value.isNotBlank()) {
+                epochMillis(value.toLong())
+            } else if (local) {
                 LocalDateTime.parse(value).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             } else {
                 try { Instant.parse(value).toEpochMilli() }
@@ -146,6 +155,9 @@ object EventCalendarRepository {
             else -> null
         }
     } catch (_: Exception) { null }
+
+    private fun epochMillis(value: Long): Long =
+        if (value > 100_000_000_000L) value else Math.multiplyExact(value, 1000L)
 
     /** WorkManager guarantees resilient periodic updates; Android may defer runs. */
     fun schedule(context: Context) {
