@@ -23,6 +23,29 @@ object OwnedBuildValidation {
         return null
     }
 
+    /**
+     * Reject newly selected attacks not in the species' known move lists.
+     * Previously saved legacy/event attacks are tolerated unchanged, because
+     * external catalogs can be incomplete; this prevents accidental data loss.
+     * An empty allowed pool means no authoritative list has been loaded.
+     */
+    fun movePoolError(
+        fastMoveId: String?,
+        chargedMoveIds: List<String>,
+        allowedFastIds: Set<String>,
+        allowedChargedIds: Set<String>,
+        previousFastId: String?,
+        previousChargedIds: List<String>
+    ): String? {
+        if (fastMoveId != null && allowedFastIds.isNotEmpty() &&
+            fastMoveId !in allowedFastIds && fastMoveId != previousFastId
+        ) return "Este ataque rápido não consta dos dados disponíveis para a espécie."
+        if (allowedChargedIds.isNotEmpty() &&
+            chargedMoveIds.any { it !in allowedChargedIds && it !in previousChargedIds }
+        ) return "Foi selecionado um ataque carregado que não consta dos dados disponíveis."
+        return null
+    }
+
     fun chargedMovesError(moveIds: List<String>): String? = when {
         moveIds.size > 2 -> "Só podes selecionar até 2 ataques carregados."
         moveIds.distinct().size != moveIds.size -> "Os ataques carregados não podem repetir-se."
