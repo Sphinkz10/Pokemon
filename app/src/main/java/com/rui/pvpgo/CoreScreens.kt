@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -80,7 +82,8 @@ fun CollectionModuleScreen(
 ) {
     val context = LocalContext.current
     val repository = remember(context) { CollectionRepository.get(context) }
-    var route by remember { mutableStateOf(CollectionRoute.LIST) }
+    val collectionScreenState = rememberSaveableStateHolder()
+    var route by rememberSaveable { mutableStateOf(CollectionRoute.LIST) }
     var collection by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var pending by remember { mutableStateOf<List<CandidateInboxItem>>(emptyList()) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
@@ -105,7 +108,8 @@ fun CollectionModuleScreen(
     }
 
     when (route) {
-        CollectionRoute.LIST -> CollectionOverviewScreen(
+        CollectionRoute.LIST -> collectionScreenState.SaveableStateProvider("collection-list") {
+            CollectionOverviewScreen(
             catalog = catalog,
             collection = collection,
             buildPlans = buildPlans,
@@ -122,7 +126,8 @@ fun CollectionModuleScreen(
                 targetsReturnRoute = CollectionRoute.LIST
                 route = CollectionRoute.IV_TARGETS
             }
-        )
+            )
+        }
         CollectionRoute.SPECIES -> {
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
