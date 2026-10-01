@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rui.pvpgo.events.CalendarSnapshot
 import com.rui.pvpgo.engine.PokemonSpecies
 import com.rui.pvpgo.ui.theme.PvpColors
 import com.rui.pvpgo.ui.theme.PvpRadius
@@ -46,17 +48,18 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val TodayBlue = Color(0xFF75D5FF)
-private val TodayBlueDeep = Color(0xFF163651)
-private val TodayAmber = Color(0xFFFFC84D)
-private val TodayGreen = Color(0xFF7BE0A1)
-private val TodayRed = Color(0xFFFF735F)
-private val TodayCard = Color(0xFF101D31)
-private val TodayCardRaised = Color(0xFF172B43)
-private val TodayBorder = Color(0xFF2D5E7B)
+private val TodayBlue: Color get() = PvpColors.AccentSky
+private val TodayBlueDeep: Color get() = PvpColors.AccentDeep
+private val TodayAmber: Color get() = PvpColors.AccentAmber
+private val TodayGreen: Color get() = PvpColors.AccentGreen
+private val TodayRed: Color get() = PvpColors.AccentRed
+private val TodayCard: Color get() = PvpColors.TodayCard
+private val TodayCardRaised: Color get() = PvpColors.TodayCardRaised
+private val TodayBorder: Color get() = PvpColors.TodayBorder
 
 @Composable
 fun TodayScreen(
+    calendar: CalendarSnapshot?,
     catalog: List<PokemonSpecies>,
     loading: Boolean,
     onSelectPokemon: (PokemonSpecies) -> Unit,
@@ -80,6 +83,7 @@ fun TodayScreen(
         item { TodayHeader(onSearch = onSearch) }
         item {
             EventHeroCard(
+                calendar = calendar,
                 loading = loading,
                 onExplore = onExploreEvent
             )
@@ -138,7 +142,7 @@ fun TodayScreen(
                 onAction = onOpenAgenda
             )
         }
-        item { TodayTimelineCard() }
+        item { TodayTimelineCard(calendar) }
     }
 }
 
@@ -180,6 +184,7 @@ private fun TodayHeader(onSearch: () -> Unit) {
 
 @Composable
 private fun EventHeroCard(
+    calendar: CalendarSnapshot?,
     loading: Boolean,
     onExplore: () -> Unit,
     actionLabel: String = "VER AGENDA"
