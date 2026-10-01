@@ -1,27 +1,29 @@
-# Pokémon PvP — Android V1.51 (em preparação)
+# Pokémon PvP — Android V1.51
 
-Repositório de compilação da aplicação **Pokémon PvP** (Android / Kotlin / Jetpack Compose), com design no [Figma](https://www.figma.com/design/Y85bgqW7K2jEnrXdqDnwBE).
+Aplicação Android em Kotlin/Jetpack Compose, com funcionalidades de Coleção, Pokédex Nacional, Equipa, Batalhas e Companion (parcial). Design: [Figma · Pokémon Companion](https://www.figma.com/design/Y85bgqW7K2jEnrXdqDnwBE).
 
-> **Estado:** preparação da primeira APK debug. Este repositório público ainda **não contém o projeto-fonte completo** nem uma APK validada. A existência do workflow não equivale a uma compilação bem-sucedida.
+## Código importado
 
-## Fonte de verdade
+Em 1 de outubro de 2026, foram importados **227 ficheiros** de código-fonte, infraestrutura, testes e ferramentas de um arquivo local da V1.51, incluindo `app/`, `engine/`, `gradle/`, `tests/`, `tools/` e as configurações Gradle. A documentação histórica de evidências não foi importada.
 
-Pacote preparado: `PokemonPvP-v1.51-CI-APK-ready.zip` (360 entradas; Java 17, Gradle 8.9 e Android SDK 35). O ZIP foi preparado na conversa ChatGPT do projeto e ainda necessita de transferência para este repositório.
+Não é necessário enviar outro ZIP para iniciar a compilação: o workflow lê diretamente os ficheiros do repositório.
 
-## Compilação
+## Gerar APK debug
 
-O workflow `.github/workflows/android-debug-apk.yml` foi configurado para compilar a fonte V1.51 numa máquina GitHub Actions. Após o ZIP ser colocado na raiz do repositório, use **Actions → Build PokemonPvP APK (debug) → Run workflow**. Se a compilação e os testes passarem, descarregue o artefacto `PokemonPvP-v1.51-debug-apk` da execução.
+1. Abrir [GitHub Actions](https://github.com/Sphinkz10/Pokemon/actions/workflows/android-debug-apk.yml).
+2. Selecionar **Run workflow** na branch `main`, caso não exista uma execução automática recente.
+3. Esperar pelos passos JDK 17 → Android SDK 35 → Gradle 8.9 → `:engine:compileKotlin` → `:app:assembleDebug`.
+4. Se tudo passar, abrir a execução e descarregar o artefacto `PokemonPvP-v1.51-debug-apk` (contém `app-debug.apk`).
 
-## Limitações e segurança
+Primeira execução com fonte importada: [run #36929906509](https://github.com/Sphinkz10/Pokemon/actions/runs/36929906509). **A existência de uma execução não prova que a APK tenha sido gerada.** Verificar a conclusão e os artefactos.
 
-- A APK ainda não foi compilada nem testada num dispositivo real.
-- O Companion automático/reconhecimento visual não está concluído.
-- Este repositório é **público** por decisão do proprietário. Não colocar chaves, tokens, keystores, dados de utilizadores ou ficheiros privados.
-- Os nomes e imagens de Pokémon pertencem aos respetivos titulares dos direitos; não presumir autorização de distribuição comercial.
+## Verificações ainda necessárias
 
-## Próximos gates
+- Confirmar compilação final do Android sem erros.
+- Instalar APK em dispositivo físico e validar permissões, consumo, navegação e performance.
+- Rever paridade entre app e Figma em 320/390/430 px.
+- Verificar limites e tratamentos de erro de API, persistência, cache e dados offline.
+- Completar e validar o Companion com reconhecimento automático, ainda incompleto.
+- Confirmar condições de licença antes de publicar ilustrações, nomes ou outros ativos relacionados com Pokémon.
 
-1. Importar o ZIP do projeto-fonte, sem acrescentar segredos ou binários licenciados.
-2. Executar GitHub Actions e corrigir erros reais de compilação.
-3. Instalar a APK debug e testar os fluxos essenciais.
-4. Testar responsividade, permissões, cache e dados da Pokédex Nacional.
+**Importante:** este repositório está configurado como **público** por decisão do proprietário. Nunca carregar tokens, credenciais, keystores de assinatura, identificadores de utilizadores ou dados privados.
