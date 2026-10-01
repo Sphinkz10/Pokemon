@@ -30,4 +30,42 @@ class OwnedBuildValidationTest {
         assertNotNull(OwnedBuildValidation.chargedMovesError(listOf("one", "two", "three")))
         assertNotNull(OwnedBuildValidation.chargedMovesError(listOf("one", "one")))
     }
+    @Test fun newMoveMustExistWhenCatalogKnown() {
+        val allowedFast = setOf("vine-whip", "tackle")
+        val allowedCharged = setOf("frenzy-plant", "sludge-bomb")
+        assertNull(OwnedBuildValidation.movePoolError(
+            "vine-whip", listOf("frenzy-plant"), allowedFast, allowedCharged,
+            previousFastId = "tackle", previousChargedIds = listOf("sludge-bomb")
+        ))
+        assertNotNull(OwnedBuildValidation.movePoolError(
+            "invented-move", listOf("frenzy-plant"), allowedFast, allowedCharged,
+            previousFastId = "tackle", previousChargedIds = emptyList()
+        ))
+        assertNotNull(OwnedBuildValidation.movePoolError(
+            "vine-whip", listOf("invented-charged"), allowedFast, allowedCharged,
+            previousFastId = "tackle", previousChargedIds = emptyList()
+        ))
+    }
+
+    @Test fun legacyEventMovesRemainIntactWithoutBeingOfferedAsNew() {
+        val allowedFast = setOf("tackle")
+        val allowedCharged = setOf("sludge-bomb")
+        assertNull(OwnedBuildValidation.movePoolError(
+            "legacy-fast", listOf("legacy-charged"), allowedFast, allowedCharged,
+            previousFastId = "legacy-fast", previousChargedIds = listOf("legacy-charged")
+        ))
+        assertNotNull(OwnedBuildValidation.movePoolError(
+            "legacy-fast", listOf("legacy-charged", "new-unknown"),
+            allowedFast, allowedCharged,
+            previousFastId = "legacy-fast", previousChargedIds = listOf("legacy-charged")
+        ))
+    }
+
+    @Test fun unavailableCatalogDoesNotInventMoveRestrictions() {
+        assertNull(OwnedBuildValidation.movePoolError(
+            "unlisted", listOf("move-one", "move-two"),
+            emptySet(), emptySet(), null, emptyList()
+        ))
+    }
+
 }
