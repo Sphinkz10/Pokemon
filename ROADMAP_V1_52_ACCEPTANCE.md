@@ -4,13 +4,13 @@
 
 **Objetivo:** chegar a uma aplicação real, modular, com qualidade visual e funções completas. O roadmap mede apenas **gates de implementação/verificação explicitamente definidos**. Não mede linhas de código nem a percentagem global real do produto; ecrãs existentes no Figma não contam como ecrãs Android terminados.
 
-**Linha de base documentada:** 6/50 gates com prova de fonte/código ou relato de instalação (**12% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
+**Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 ## Progresso por módulo
 
 | Módulo | Gates confirmados | Percentagem | Próximo gate |
 |---|---:|---:|---|
-| A — APK e entrega | 2/5 | 40% | APK V1.52 gerada com CI e assinatura verificada, sem falhas. |
+| A — APK e entrega | 3/5 | 60% | Teste real: arranque, navegação 5 tabs, regresso, rotação e logs sem crash. |
 | B — Design System e UI | 1/5 | 20% | Ecrã Android Hoje comparado com GOLDEN Figma a 320, 390 e 430 dp. |
 | C — Dashboard · Hoje | 2/5 | 40% | Ligar dados oficiais ou origem configurável de eventos, com proveniência/data. |
 | D — Coleção e Pokédex | 1/5 | 20% | Pesquisar nome/#Dex/tag/IV em Android e medir UX com coleções grandes. |
@@ -27,7 +27,7 @@
 
 - [x] **A1** — Repo Android no GitHub e workflow com compilação V1.51 verde.
 - [x] **A2** — APK de diagnóstico instalada e aberta pelo Rui num Android.
-- [ ] **A3** — APK V1.52 gerada com CI e assinatura verificada, sem falhas.
+- [x] **A3** — APK V1.52 gerada com CI e assinatura verificada, sem falhas. [Build #36934661709](https://github.com/Sphinkz10/Pokemon/actions/runs/36934661709), artefacto Android validado.
 - [ ] **A4** — Teste real: arranque, navegação 5 tabs, regresso, rotação e logs sem crash.
 - [ ] **A5** — Release assinada estável, versionada e instalável por atualização.
 
@@ -112,7 +112,7 @@
 
 ## Ordem de execução sugerida (não saltar gates sem registo)
 
-1. **A3** — obter APK V1.52 CI green e descarregável; depois **A4** testar no telemóvel.
+1. **A4** — instalar a APK V1.52 e testar no telemóvel, incluindo 5 tabs, regresso, rotação e logs.
 2. **B2+B3+C5** — corrigir correspondência visual de Hoje e navegação inferior com Figma e screenshots 320/390/430.
 3. **D2–D5 e E1–E5** — completar Coleção, catálogo, importação e Pokémon 360, validar persistência.
 4. **F1–F5** — Equipas com dados reais.
