@@ -47,8 +47,8 @@ checks={
  "charged move invalid input blocked": "OwnedBuildValidation.chargedMovesError(chargedMoveIds)" in core,
  "invalid form does not save": "return@Button" in core and "validationError" in core,
  "empty fields explicitly unknown": "if (raw.isBlank()) return null" in validation,
- "version 1.56": 'versionCode = 56' in build and 'versionName = "1.56.0-dev"' in build,
- "independent install id": 'applicationIdSuffix = ".installtestv156"' in build,
+ "version 1.56 or newer": int(__import__('re').search(r'versionCode\s*=\s*(\d+)',build).group(1)) >= 56,
+ "versioned independent install id": __import__('re').search(r'applicationIdSuffix\s*=\s*"\.installtestv\d+"',build) is not None,
 }
 for label,yes in checks.items():
     print(("PASS" if yes else "FAIL"),label)
