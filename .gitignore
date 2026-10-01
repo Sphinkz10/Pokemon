@@ -1,0 +1,18 @@
+# Machine-specific Android configuration
+local.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+.env
+.env.*
+!*.example
+.gradle/
+.idea/
+build/
+**/build/
+captures/
+*.apk
+*.aab
+.DS_Store
