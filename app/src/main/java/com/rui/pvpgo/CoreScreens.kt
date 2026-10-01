@@ -84,6 +84,7 @@ fun CollectionModuleScreen(
     var selectedOwnedId by remember { mutableStateOf<String?>(null) }
     var selectedSpeciesId by remember { mutableStateOf<String?>(null) }
     var compareIds by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var speciesLeague by remember { mutableStateOf(League.GREAT) }
     // Preserve the entry route; the detail screen can be opened from more
     // than one part of Collection, and Back should reverse that path.
     var detailReturnRoute by remember { mutableStateOf(CollectionRoute.SPECIES) }
@@ -129,6 +130,8 @@ fun CollectionModuleScreen(
                     species = species,
                     owned = owned,
                     plans = buildPlans,
+                    league = speciesLeague,
+                    onLeagueChange = { speciesLeague = it },
                     onBack = { route = CollectionRoute.LIST },
                     onOpenExemplars = { route = CollectionRoute.EXEMPLARS },
                     onOpenTargets = {
@@ -157,6 +160,8 @@ fun CollectionModuleScreen(
                     species = species,
                     owned = collection.filter { it.speciesId == species.speciesId },
                     plans = buildPlans,
+                    league = speciesLeague,
+                    onLeagueChange = { speciesLeague = it },
                     onBack = { route = CollectionRoute.SPECIES },
                     onOpenOwned = { id ->
                         selectedOwnedId = id
@@ -182,6 +187,8 @@ fun CollectionModuleScreen(
                 SpeciesCompareScreen(
                     species = species, first = a, second = b,
                     plans = buildPlans,
+                    league = speciesLeague,
+                    onLeagueChange = { speciesLeague = it },
                     onBack = { route = compareReturnRoute }
                 )
             }
