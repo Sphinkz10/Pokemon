@@ -7,12 +7,13 @@ root = Path(__file__).resolve().parents[2]
 today = (root / "app/src/main/java/com/rui/pvpgo/TodayScreen.kt").read_text(encoding="utf-8")
 main = (root / "app/src/main/java/com/rui/pvpgo/MainActivity.kt").read_text(encoding="utf-8")
 gradle = (root / "app/build.gradle.kts").read_text(encoding="utf-8")
+event_screens = (root / "app/src/main/java/com/rui/pvpgo/events/EventCalendarScreens.kt").read_text(encoding="utf-8")
 checks = {
     "catalogue count comes from loaded species": "speciesCount = catalog.size" in today,
     "catalogue count displayed": "$speciesCount espécies disponíveis" in today,
-    "event feed is explicitly unsynced": "AGENDA NÃO SINCRONIZADA" in today,
-    "event page includes missing-feed state": "SEM FONTE DE EVENTOS" in today,
-    "agenda includes empty state": "Sem calendário oficial sincronizado" in today,
+    "event feed has attribution": "Leek Duck" in today,
+    "event page includes missing-feed state": "Sem ligação à fonte" in event_screens,
+    "agenda includes empty state": "Nenhum evento sincronizado" in event_screens,
     "catalogue has accessible action": "onOpenCollection = onSearch" in today,
     "event and agenda can be opened from home": "onExploreEvent =" in main and "onOpenAgenda =" in main,
     "versionCode at least 52": int(re.search(r"versionCode\s*=\s*(\d+)", gradle).group(1)) >= 52,
