@@ -836,6 +836,46 @@ private fun OwnedPokemonDetailScreen(
             contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp)
         ) {
             item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = PvpColors.SurfaceCard,
+                    border = BorderStroke(1.dp, PvpColors.BorderDefault)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (species != null) {
+                            PokemonArtwork(species.name, Modifier.size(90.dp), shiny = owned.isShiny, form = species.form)
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                owned.nickname?.takeIf(String::isNotBlank) ?: species?.name ?: owned.speciesId,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = PvpColors.TextPrimary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "IV ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · ${owned.iv.total}/45",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = PvpColors.TextSecondary
+                            )
+                            Text(
+                                listOfNotNull(
+                                    if (owned.isShiny) "SHINY" else null,
+                                    if (owned.isFavorite) "FAVORITO" else null,
+                                    if (owned.uncertainFields.isNotEmpty()) "DADOS POR CONFIRMAR" else null
+                                ).joinToString(" · ").ifBlank { "Exemplar da tua coleção" },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (owned.uncertainFields.isNotEmpty()) PvpColors.StateWarning else PvpColors.BrandBlue
+                            )
+                        }
+                    }
+                }
+            }
+            item {
                 Text("Build real", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text("Regista apenas dados que confirmaste no Pokémon GO. Campos em falta continuam UNKNOWN.", style = MaterialTheme.typography.bodySmall)
             }
@@ -908,12 +948,17 @@ private fun OwnedPokemonDetailScreen(
             item {
                 Button(
                     onClick = {
-                        val cp = cpText.toIntOrNull()
-                        val level = levelText.replace(',', '.').toDoubleOrNull()
-                        if (level != null && (level !in 1.0..51.0 || level * 2 != (level * 2).toInt().toDouble())) {
-                            message = "O nível tem de estar entre 1 e 51 em passos de 0,5."
+                        val validationError = listOfNotNull(
+                            OwnedBuildValidation.cpError(cpText),
+                            OwnedBuildValidation.levelError(levelText),
+                            OwnedBuildValidation.chargedMovesError(chargedMoveIds)
+                        ).firstOrNull()
+                        if (validationError != null) {
+                            message = validationError
                             return@Button
                         }
+                        val cp = cpText.toIntOrNull()
+                        val level = levelText.replace(',', '.').toDoubleOrNull()
                         scope.launch {
                             busy = true
                             message = null
