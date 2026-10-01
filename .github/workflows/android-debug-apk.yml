@@ -51,6 +51,10 @@ jobs:
         run: python3 tests/v1_53_skins_events/verify_architecture.py
       - name: Validate V1.54 real events and skin integration
         run: python3 tests/v1_54_feed_theme/verify_v154.py --live
+      - name: Validate National Dex scaling and image cache
+        run: python3 tests/v1_51_national_scale/verify_scale_wiring.py
+      - name: Validate National Dex detail and navigation
+        run: python3 tests/v1_55_national_navigation/verify_navigation.py
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
       - name: Run Android policy unit tests
