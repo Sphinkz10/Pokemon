@@ -1,10 +1,29 @@
-# Pokémon PvP — Roadmap mestre de aceitação · atualizado até V1.53
+# Pokémon PvP — Roadmap mestre de aceitação · atualizado até V1.56
 
 **Data:** 2026-10-01 · **GitHub:** [Sphinkz10/Pokemon](https://github.com/Sphinkz10/Pokemon) · **Figma:** [Pokémon Companion](https://www.figma.com/design/Y85bgqW7K2jEnrXdqDnwBE)
 
 **Objetivo:** chegar a uma aplicação real, modular, com qualidade visual e funções completas. O roadmap mede apenas **gates de implementação/verificação explicitamente definidos**. Não mede linhas de código nem a percentagem global real do produto; ecrãs existentes no Figma não contam como ecrãs Android terminados.
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
+
+## Checkpoint V1.56 · Pokémon 360 multiliga e edição de dados (6/10 implementados, CI pendente)
+
+**Âmbito real:** Little / Great / Ultra / Master em todos os ecrãs de espécie e comparação; ficha ilustrada para exemplares; validação de CP, nível e ataques. As novas tarefas **não alteram automaticamente o progresso global de 7/50 gates (14%)**, que exige provas de uso real por tarefa completa.
+
+| Gate | Tarefa | Estado e prova |
+|---|---|---|
+| V56-01 | Classificar e nomear todas as quatro ligas, incluindo CP máximos | [x] `SpeciesLeaguePolicy.kt` |
+| V56-02 | Calcular ranking pela liga escolhida com `RankRepository` e coroutines | [x] `SpeciesCollectionScreens.kt` |
+| V56-03 | Partilhar a escolha da liga entre espécie, exemplares e comparação | [x] `CollectionModuleScreen` e `SpeciesLeagueSelector` |
+| V56-04 | Mostrar rankings indisponíveis sem inventar IV/rank | [x] `SpeciesLeaguePolicy.statusLabel` |
+| V56-05 | Melhorar o perfil Owned Pokémon com arte Shiny, IVs reais, fav e dados por confirmar | [x] `OwnedPokemonDetailScreen` |
+| V56-06 | Validar CP, nível e moves antes de guardar, sem limpar campos mal escritos | [x] `OwnedBuildValidation.kt` |
+| V56-07 | Passar 9 novos testes JVM (5 de ligas, 4 de validação), mantendo 7 testes Pokédex | [ ] `app/src/test/.../SpeciesLeaguePolicyTest.kt` e `OwnedBuildValidationTest.kt` |
+| V56-08 | Passar regressão estrutural de 27 checks + todas as anteriores | [ ] `tests/v1_56_league_360/verify_wiring.py` |
+| V56-09 | Construir, verificar assinatura e disponibilizar APK V1.56 isolada | [ ] [GitHub Actions](https://github.com/Sphinkz10/Pokemon/actions) |
+| V56-10 | Testar 4 ligas, rankings, 320/390/430dp, edição válida/inválida no Android | [ ] Telefone do Rui, capturas e logs |
+
+**Limites:** o cálculo de ranking não substitui testes externos de paridade numérica do motor, uma liga não é prova de elegibilidade competitiva, e estes ecrãs ainda não foram validados no dispositivo. A versão de desenvolvimento mantém ID `com.rui.pvpgo.installtestv156` para não interferir com a instalação V1.55.
 
 ## Checkpoint V1.53 · Eventos automáticos e skins (9/10 gates validados por código/CI)
   
@@ -50,7 +69,7 @@ Este checkpoint mede **trabalho de implementação**, não certificação final.
 
 ## Checkpoint V1.54 · Qualidade visual e integridade de eventos
 
-**Estado nesta entrega:** 4/5 tarefas verificadas por código, testes e CI (80%). Continua pendente a validação real no Android. Os critérios globais de aceitação **continuam 7/50 (14%)** até haver provas adicionais. A recompilação definitiva desta versão encontra-se na [execução V1.54](https://github.com/Sphinkz10/Pokemon/actions/runs/36938413798).
+**Estado nesta entrega:** 4/5 tarefas verificadas por código, testes e CI (80%). Continua pendente a validação real no Android. Os critérios globais de aceitação **continuam 7/50 (14%)** até haver provas adicionais. A recompilação definitiva desta versão encontra-se na [execução V1.54](https://github.com/Sphinkz10/Pokemon/actions/runs/36938928935).
 
 | ID | Tarefa | Resultado / Critério | Situação |
 |---|---|---|---|
