@@ -471,7 +471,7 @@ private fun CollectionOwnedRow(
         isHundo -> CollectionStatus("HUNDO", CollectionAmber)
         "READY" in categories -> CollectionStatus("PRONTO", CollectionGreen)
         "IMPORTANT" in categories -> CollectionStatus("FORTE", CollectionBlue)
-        "CANDIDATE" in categories -> CollectionStatus("CANDIDATO", Color(0xFFA8B4FF))
+        "CANDIDATE" in categories -> CollectionStatus("CANDIDATO", PvpColors.BrandBlue)
         else -> CollectionStatus("OK", PvpColors.TextSecondary)
     }
     Surface(
