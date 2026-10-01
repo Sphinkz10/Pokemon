@@ -113,7 +113,7 @@ private fun DetailSection(title: String, action: String? = null, onAction: (() -
 @Composable
 private fun DetailChip(text: String, modifier: Modifier = Modifier, selected: Boolean = false, onClick: (() -> Unit)? = null) {
     Surface(
-        modifier = modifier.heightIn(min = if (onClick == null) 30.dp else 44.dp).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        modifier = modifier.heightIn(min = if (onClick == null) 30.dp else 48.dp).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         color = if (selected) PvpColors.AccentDeep else PvpColors.SurfaceRaised,
         shape = RoundedCornerShape(13.dp),
         border = BorderStroke(1.dp, if (selected) speciesBlue else speciesBorder)
@@ -136,7 +136,7 @@ private fun SpeciesMetric(title: String, value: String, foot: String, modifier: 
 }
 
 @Composable
-private fun SpeciesLeagueSelector(league: League, onLeagueChange: (League) -> Unit) {
+fun SpeciesLeagueSelector(league: League, onLeagueChange: (League) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Text(
             "LIGA PVP · ${SpeciesLeaguePolicy.cpLimitLabel(league)}",
@@ -208,7 +208,7 @@ fun SpeciesOverviewScreen(
     val best = SpeciesCollectionPolicy.bestForLeague(owned, ranks)
     val favorite = owned.count { it.isFavorite }
     val hundo = owned.count { it.iv.total == 45 }
-    val sorted = SpeciesCollectionPolicy.sortedForGreat(owned, ranks)
+    val sorted = SpeciesCollectionPolicy.sortedForLeague(owned, ranks)
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
@@ -283,7 +283,7 @@ fun SpeciesExemplarsScreen(
         ExemplarsFilter.PVP -> (ranks?.get(item.id)?.rank ?: Int.MAX_VALUE) <= 100 || plans.any { it.ownedPokemonId == item.id }
         ExemplarsFilter.FAVORITES -> item.isFavorite
         ExemplarsFilter.REVIEW -> item.uncertainFields.isNotEmpty() || (!item.isFavorite && plans.none { it.ownedPokemonId == item.id })
-    } }.let { SpeciesCollectionPolicy.sortedForGreat(it, ranks) }
+    } }.let { SpeciesCollectionPolicy.sortedForLeague(it, ranks) }
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
