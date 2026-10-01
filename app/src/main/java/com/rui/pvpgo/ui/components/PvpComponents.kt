@@ -84,6 +84,7 @@ fun PvpSectionHeader(
         if (action != null && onAction != null) {
             Button(
                 onClick = onAction,
+                modifier = Modifier.heightIn(min = PvpSpacing.TouchTarget),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = PvpColors.BrandBlue
@@ -109,8 +110,8 @@ fun PvpPrimaryButton(
         modifier = modifier.heightIn(min = PvpSpacing.TouchTarget),
         shape = RoundedCornerShape(PvpRadius.Button),
         colors = ButtonDefaults.buttonColors(
-            containerColor = PvpColors.BrandYellow,
-            contentColor = PvpColors.CanvasStart,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             disabledContainerColor = PvpColors.SurfaceRaised,
             disabledContentColor = PvpColors.TextSecondary
         )
