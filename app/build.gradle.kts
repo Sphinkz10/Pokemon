@@ -14,8 +14,8 @@ android {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 52
-        versionName = "1.52.0-dev"
+        versionCode = 53
+        versionName = "1.53.0-dev"
     }
 
     // Instalação de diagnóstico independente: não substitui a app já instalada.
