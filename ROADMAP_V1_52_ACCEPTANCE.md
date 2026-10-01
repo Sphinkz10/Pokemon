@@ -6,6 +6,27 @@
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
+## Checkpoint V1.57 · Coleção estável e edição protegida
+
+**Âmbito:** fechar o percurso Coleção → Pokédex/Pokémon 360 → Exemplar → Editar → Regressar, preservando filtros e sem perda silenciosa de alterações.
+
+**Estado desta implementação:** **8/10 itens de código/testes definidos (80%)**, pendentes build assinado e validação no Android. O progresso global de aceitação mantém-se em **7/50 (14%)**; este checkpoint não é equivalente a ecrãs finais testados.
+
+| Item | Requisito | Evidência | Estado |
+|---|---|---|---|
+| V57-1 | Preservar estado da lista ao navegar entre rotas | `rememberSaveableStateHolder` em `CollectionModuleScreen` | [x] |
+| V57-2 | Preservar pesquisa, tab, filtros, ordenação e geração | `rememberSaveable` em `CollectionOverviewScreen` | [x] |
+| V57-3 | Preservar posição separada das listas Coleção/Pokédex | Dois estados `rememberLazyListState` | [x] |
+| V57-4 | Identificar espécie selecionada por número Dex, não objeto serializado | `selectedDex` persistente; registo reobtido do índice | [x] |
+| V57-5 | Detetar alterações não guardadas em CP/nível/ataques/plano | `hasUnsavedBuild` e `hasUnsavedPlan` | [x] |
+| V57-6 | Confirmar descarte pela seta e pelo Back Android | `AlertDialog` e `BackHandler` | [x] |
+| V57-7 | Impedir ataques novos fora do movepool conhecido sem descartar ataques legados | `movePoolError`, respeitando o catálogo incompleto | [x] |
+| V57-8 | Não assinalar campos desconhecidos como totalmente verificados; três testes JUnit novos | `lastVerifiedAtEpochMs` condicionado + `OwnedBuildValidationTest` | [x] |
+| V57-9 | Concluir integração 22/22, JUnit, APK e assinatura | [GitHub Actions V1.57](https://github.com/Sphinkz10/Pokemon/actions/runs/36943530662) | [ ] |
+| V57-10 | Prova em Android: pesquisa → ficha → exemplar → editar → voltar, rotação e dados persistentes | Capturas e teste real do Rui | [ ] |
+
+**Limites:** o mecanismo de estado salvável protege a memória de navegação em Compose, mas a persistência após morte do processo e restauração integral exige teste em aparelho. A edição não é sincronização remota. A variante debug tem `applicationIdSuffix=.installtestv157`, separado das instalações anteriores. A versão de produção requer ID e assinatura estáveis, bem como migração de dados.
+
 ## Checkpoint V1.56 · Pokémon 360 multiliga e edição de dados (9/10 verificados com código e CI)
 
 **Âmbito real:** Little / Great / Ultra / Master em todos os ecrãs de espécie e comparação; ficha ilustrada para exemplares; validação de CP, nível e ataques. As novas tarefas **não alteram automaticamente o progresso global de 7/50 gates (14%)**, que exige provas de uso real por tarefa completa.
