@@ -6,6 +6,29 @@
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
+## Checkpoint V1.53 · Eventos automáticos e skins (8/10 implementados em código)
+  
+Este checkpoint mede **trabalho de implementação**, não certificação final. A aplicação precisa de teste no dispositivo, observação real do feed e auditoria visual/contraste.
+
+| Gate | Tarefa concreta | Evidência | Estado |
+|---|---|---|---|
+| T1 | Quatro paletas semânticas Deep/AMOLED/Mystic/Classic | `PvpSkins.kt` | [x] |
+| T2 | Persistir skin no dispositivo e restaurar no arranque | `PvpSkinPreferences`, `MainActivity` | [x] |
+| T3 | Controlos de skin em Mais → Aparência | `CoreScreens.kt` | [x] |
+| T4 | Migrar os tokens centrais e a navegação/Hoje | `PvpTheme.kt`, `MainActivity.kt`, `TodayScreen.kt` | [x] |
+| T5 | Conector comunitário que interpreta datas locais e UTC | `events/EventCalendarRepository.kt` | [x] |
+| T6 | Cache 6h, aviso de obsolescência 24h e WorkManager 6h | `EventCalendarRepository` | [x] |
+| T7 | Integrar lista e agenda com atribuição, atualizar e estados vazios | `events/EventCalendarScreens.kt`, `TodayScreen.kt` | [x] |
+| T8 | Guardas de regressão sem dados fictícios + temas/eventos | `tests/v1_52_dashboard_truth` + `tests/v1_53_skins_events` | [x] |
+| T9 | Compilação Android V1.53 assinada e pacote extraído | [GitHub Actions](https://github.com/Sphinkz10/Pokemon/actions) | [ ] |
+| T10 | Teste em dispositivo: 4 skins, cache, sincronização, timezone, off-line, contraste | Evidência de dispositivo | [ ] |
+
+**Fonte de eventos:** adaptador de leitura HTTPS da API comunitária automatizada [leak-duck](https://github.com/zhenga8533/leak-duck), baseada no Leek Duck. **Não é uma fonte oficial da Niantic** e pode ficar desatualizada ou mudar de formato. A app identifica a fonte e evita inventar eventos. A atualização automática por WorkManager é aproximada (o Android pode adiar os trabalhos periódicos); não garante sincronização à hora exata.
+
+**Limitações de skins:** as cores semânticas e o menu já têm suporte no código, mas ainda existem cores hex fixas em ecrãs/ilustrações antigos; a skin Classic clara exige auditoria de contraste antes da entrega final. A skin não é, ainda, 100% transversal.
+
+**Roadmap global de 50 gates:** mantém **7/50 (14%) verificados**. Os 8/10 gates acima são implementação parcial em novas subáreas, não justificam alterar automaticamente os gates globais B2/C3/J3.
+
 ## Progresso por módulo
 
 | Módulo | Gates confirmados | Percentagem | Próximo gate |
