@@ -6,7 +6,6 @@ on:
     branches: [main]
     paths:
       - 'PokemonPvP-v1.51-CI-APK-ready.zip'
-      - '.github/workflows/android-debug-apk.yml'
 
 permissions:
   contents: read
