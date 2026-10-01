@@ -53,6 +53,20 @@ jobs:
         run: python3 tests/v1_54_feed_theme/verify_v154.py --live
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
+      - name: Run Android policy unit tests
+        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest
+      - name: Confirm unit test report
+        run: |
+          test -s app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.NationalDexPolicyTest.xml
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.NationalDexPolicyTest.xml"
+          doc = ET.parse(path).getroot()
+          tests = int(doc.get("tests", 0))
+          failures = int(doc.get("failures", 0)) + int(doc.get("errors", 0))
+          print(f"NationalDexPolicyTest: {tests} tests, {failures} failures")
+          assert tests >= 7 and failures == 0, "National Dex unit tests failed"
+          PY
       - name: Confirm generated APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
@@ -63,11 +77,11 @@ jobs:
           APK=app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs --min-sdk-version 26 "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -E '^(package:|sdkVersion:|targetSdkVersion:|application-label:)'
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "name='com.rui.pvpgo.installtestv154'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "name='com.rui.pvpgo.installtestv155'"
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonPvP-v1.54-installtest-debug-apk
+          name: PokemonPvP-v1.55-installtest-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
