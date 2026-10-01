@@ -17,9 +17,9 @@ workflow = (root/".github/workflows/android-debug-apk.yml").read_text(encoding="
 build = (root/"app/build.gradle.kts").read_text(encoding="utf-8")
 
 checks = {
- "all national entries openable": "onClick = { selectedNational = entry }" in index,
- "list includes dedicated national route": "selectedNational?.let { entry ->" in index and "NationalDexDetailScreen(" in index,
- "national detail has route back": "onBack = { selectedNational = null }" in index,
+ "all national entries openable": "onClick = { selectedDex = entry.dex }" in index,
+ "list includes dedicated national route": "selectedNational?.let { entry ->" in index and "national?.entries?.firstOrNull { it.dex == selectedDex }" in index and "NationalDexDetailScreen(" in index,
+ "national detail has route back": "onBack = { selectedDex = null }" in index,
  "entry does not require battle record": "battleAvailable = battleSpecies != null" in index and "onClick = battleSpecies?.let" not in index,
  "PvP actions only if verified": "onOpenIvTargets = battleSpecies?.let" in index,
  "owned actions require actual owned record": "onOpenOwned = firstOwnedId?.let" in index,
@@ -38,7 +38,7 @@ checks = {
  "all Species360 semantic colors": "Color(0xFF" not in species,
  "real JVM policy unit tests": ":app:testDebugUnitTest" in workflow and "testImplementation(\"junit:junit:4.13.2\")" in build,
  "collection stats derive from actual owned records": "CollectionStatsStrip(collection)" in index and "owned.map { it.speciesId }.distinct().size" in index and "owned.count { it.isShiny }" in index and "it.iv.total == 45" in index,
- "independent APK suffix remains present": 'applicationIdSuffix = ".installtestv156"' in build,
+ "independent APK suffix remains present": re.search(r'applicationIdSuffix\s*=\s*"\.installtestv\d+"', build) is not None,
 }
 for name, yes in checks.items():
     print(("PASS" if yes else "FAIL"), name)
