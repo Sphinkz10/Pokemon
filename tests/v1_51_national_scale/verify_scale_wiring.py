@@ -35,7 +35,7 @@ checks={
  'concurrent fetch semaphore': 'Semaphore(4)' in art and 'imageFetchSlots.withPermit' in art,
  'one network request per image key': 'imageLocks.computeIfAbsent(key)' in art,
  'bitmap downsample': 'inSampleSize = factor' in art,
- 'version bump': 'versionCode = 56' in (root/'app/build.gradle.kts').read_text(),
+ 'version bump': int(__import__('re').search(r'versionCode\s*=\s*(\d+)', (root/'app/build.gradle.kts').read_text()).group(1)) >= 56,
  'engine untouched by new feature': 'engine' not in str(src.relative_to(root)),
 }
 for label,ok in checks.items():
