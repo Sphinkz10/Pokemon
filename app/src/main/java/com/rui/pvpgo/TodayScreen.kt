@@ -85,8 +85,15 @@ fun TodayScreen(
             )
         }
         item {
+            TodayCatalogStatus(
+                speciesCount = catalog.size,
+                loading = loading,
+                onOpenCollection = onSearch
+            )
+        }
+        item {
             TodaySectionHeader(
-                title = "AS TUAS PRIORIDADES",
+                title = "ESPÉCIES DE REFERÊNCIA",
                 action = "Ver radar ↗",
                 onAction = onOpenRadar
             )
@@ -105,8 +112,8 @@ fun TodayScreen(
                 MiniPriorityCard(
                     modifier = Modifier.weight(1f),
                     species = "Vulpix",
-                    reason = "IV PvP em falta",
-                    action = "PROCURAR IV ↗",
+                    reason = "Analisar IV · PvP",
+                    action = "VER PERFIL ↗",
                     actionColor = TodayAmber,
                     art = ArtKind.VULPIX,
                     enabled = species("Vulpix") != null,
@@ -115,8 +122,8 @@ fun TodayScreen(
                 MiniPriorityCard(
                     modifier = Modifier.weight(1f),
                     species = "Paras",
-                    reason = "Bónus de Poeira",
-                    action = "FARMAR ↗",
+                    reason = "Consultar espécie",
+                    action = "VER PERFIL ↗",
                     actionColor = TodayGreen,
                     art = ArtKind.PARAS,
                     enabled = species("Paras") != null,
@@ -126,7 +133,7 @@ fun TodayScreen(
         }
         item {
             TodaySectionHeader(
-                title = "A SEGUIR",
+                title = "AGENDA",
                 action = "Agenda ↗",
                 onAction = onOpenAgenda
             )
@@ -175,7 +182,7 @@ private fun TodayHeader(onSearch: () -> Unit) {
 private fun EventHeroCard(
     loading: Boolean,
     onExplore: () -> Unit,
-    actionLabel: String = "EXPLORAR EVENTO"
+    actionLabel: String = "VER AGENDA"
 ) {
     val shape = RoundedCornerShape(22.dp)
     Box(
@@ -213,20 +220,20 @@ private fun EventHeroCard(
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "●  EVENTO ATIVO",
+                    text = "●  AGENDA NÃO SINCRONIZADA",
                     color = TodayAmber,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (loading) "a carregar…" else "3h 42m",
+                    text = if (loading) "A carregar" else "Sem feed",
                     color = PvpColors.TextPrimary,
                     style = MaterialTheme.typography.labelMedium
                 )
             }
             Column(Modifier.width(210.dp)) {
                 Text(
-                    text = "Harvest\nFestival",
+                    text = "Eventos\nPokémon GO",
                     color = PvpColors.TextPrimary,
                     fontSize = 28.sp,
                     lineHeight = 31.sp,
@@ -234,14 +241,14 @@ private fun EventHeroCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "3 prioridades para ti",
+                    text = "Horários ainda por confirmar",
                     color = PvpColors.TextSecondary,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SmallBonus("✦ 2× Poeira", TodayAmber)
-                SmallBonus("✧ Shiny ↑", Color(0xFF99D9D3))
+                SmallBonus("Bónus: —", TodayAmber)
+                SmallBonus("Shiny: —", Color(0xFF99D9D3))
             }
             Row(
                 modifier = Modifier
@@ -328,7 +335,7 @@ private fun CarbinkPriorityCard(enabled: Boolean, onClick: () -> Unit) {
         Spacer(Modifier.width(9.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Text(
-                "PRIORIDADE 01  ·  PvP",
+                "EXEMPLO DE IV  ·  PvP",
                 color = TodayBlue,
                 style = MaterialTheme.typography.labelSmall
             )
@@ -339,7 +346,7 @@ private fun CarbinkPriorityCard(enabled: Boolean, onClick: () -> Unit) {
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                "Melhorar IV · Great League",
+                "Consultar IV · Great League",
                 color = PvpColors.TextSecondary,
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
@@ -351,7 +358,7 @@ private fun CarbinkPriorityCard(enabled: Boolean, onClick: () -> Unit) {
                 color = Color(0xFF23546D)
             ) {
                 Text(
-                    "Caçar agora ↗",
+                    "VER POKÉMON ↗",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                     color = Color(0xFF9DE7FF),
                     style = MaterialTheme.typography.labelSmall,
@@ -422,15 +429,59 @@ private fun MiniPriorityCard(
 }
 
 @Composable
+private fun TodayCatalogStatus(speciesCount: Int, loading: Boolean, onOpenCollection: () -> Unit) {
+    Surface(
+        color = TodayCard,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("POKÉDEX NACIONAL", color = TodayBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                Text(
+                    if (loading) "A carregar espécies…" else "$speciesCount espécies disponíveis",
+                    color = PvpColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Contagem do catálogo carregado, não da tua coleção.",
+                    color = PvpColors.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Box(
+                modifier = Modifier.heightIn(min = 44.dp).clickable(onClick = onOpenCollection),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Abrir ›", color = TodayBlue, style = MaterialTheme.typography.labelMedium)
+            }
+        }
+    }
+}
+
+@Composable
 private fun TodayTimelineCard() {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = TodayCard,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
     ) {
-        Column(Modifier.padding(11.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            TimelineRow("18:00", "Spotlight Hour", "Vulpix · Candy e evolução", TodayBlue)
-            TimelineRow("20:00", "Raid Hour", "Xerneas · Raids", TodayAmber)
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                "Sem calendário oficial sincronizado",
+                color = PvpColors.TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                "Não apresentamos horas, eventos ou bónus como ativos sem uma fonte verificada. Consulta a agenda para saber o estado da integração.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -569,27 +620,32 @@ fun EventOverviewScreen(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { DetailHeader(title = "Harvest Festival", subtitle = "Evento ativo", onBack = onBack) }
-        item { EventHeroCard(loading = false, onExplore = onOpenRadar, actionLabel = "ABRIR RADAR") }
-        item { TodaySectionHeader("BÓNUS ATIVOS", "Abrir radar ↗", onOpenRadar) }
+        item { DetailHeader(title = "Eventos", subtitle = "Estado real das fontes", onBack = onBack) }
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                EventInfoCard(Modifier.weight(1f), "2× Poeira", "Capturas do evento", TodayAmber)
-                EventInfoCard(Modifier.weight(1f), "Shiny ↑", "Espécies em destaque", Color(0xFF99D9D3))
+            Surface(
+                color = TodayCard,
+                shape = RoundedCornerShape(18.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, TodayBorder)
+            ) {
+                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("SEM FONTE DE EVENTOS", color = TodayAmber, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text("Eventos por confirmar", color = PvpColors.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(
+                        "A aplicação ainda não está ligada a um calendário oficial verificado. Por segurança, não apresenta contagens decrescentes, bónus ou horários inventados.",
+                        color = PvpColors.TextSecondary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
-        item { TodaySectionHeader("TARGETS DO EVENTO", "Radar ↗", onOpenRadar) }
+        item { TodaySectionHeader("EXPLORAR", "Abrir radar ↗", onOpenRadar) }
         item {
-            EventTargetRow("Carbink", "Prioridade PvP · melhorar IV", ArtKind.CARBINK, TodayBlue)
+            Text(
+                "No Radar podes consultar os teus targets. A informação só deve ser tratada como em tempo real quando a fonte tiver sido validada.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
-        item {
-            EventTargetRow("Vulpix", "Falta exemplar competitivo", ArtKind.VULPIX, TodayAmber)
-        }
-        item {
-            EventTargetRow("Paras", "Farm de Poeira", ArtKind.PARAS, TodayGreen)
-        }
-        item { TodaySectionHeader("JANELA", "", {}) }
-        item { TodayTimelineCard() }
     }
 }
 
@@ -605,37 +661,16 @@ fun AgendaOverviewScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item { DetailHeader(title = "Agenda", subtitle = todayDateLabel(), onBack = onBack) }
+        item { TodayTimelineCard() }
+        item { TodaySectionHeader("FONTES", "Ver eventos ↗", onOpenEvent) }
         item {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenEvent),
-                shape = RoundedCornerShape(18.dp),
-                color = Color(0xFF132B43),
-                border = androidx.compose.foundation.BorderStroke(1.dp, TodayBorder)
-            ) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("EVENTO ATIVO", color = TodayAmber, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                    Text("Harvest Festival", color = PvpColors.TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-                    Text("Spawns e bónus continuam a alterar as tuas prioridades.", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                }
-            }
+            Text(
+                "Não há eventos confirmados para apresentar. Só mostraremos datas quando a fonte de calendário estiver integrada e sincronizada.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
-        item { TodaySectionHeader("HOJE", "Ver radar ↗", onOpenRadar) }
-        item {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = TodayCard,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF263C55))
-            ) {
-                Column(Modifier.padding(11.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AgendaRow("AGORA", "Harvest Festival", "até 20:00 · bónus e spawns", TodayAmber, onOpenEvent)
-                    AgendaRow("18:00", "Spotlight Hour", "Vulpix · 2× XP evolução", TodayBlue, onOpenEvent)
-                    AgendaRow("19:00", "Evento termina", "prioridades normalizam", TodayRed, onOpenEvent)
-                    AgendaRow("20:00", "Raid Hour", "Xerneas · raids em destaque", TodayAmber, onOpenEvent)
-                }
-            }
-        }
+        item { TodaySectionHeader("TARGETS", "Abrir radar ↗", onOpenRadar) }
     }
 }
 
