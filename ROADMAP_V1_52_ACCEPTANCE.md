@@ -7,6 +7,17 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.85 — Substituição de Pokémon numa equipa guardada
+- [x] V1.84 recompilado e testes unitários aprovados ([run #37042546769](https://github.com/Sphinkz10/Pokemon/actions/runs/37042546769)).
+- [x] Mutação pura de substituição preserva os restantes papéis e identidade, valida coleção, movimentos, nível, CP por liga e duplicados (`685017c`).
+- [x] Pesquisa e seleção paginada até 75 resultados num diálogo por papel (`e17785c`).
+- [x] Gravação na equipa existente via Room e feedback de sucesso/erro (`7a73397`).
+- [x] Cinco testes unitários e guard CI para treze testes de política (`d4d96df`, `703a41d`).
+- [ ] CI [#37043585028](https://github.com/Sphinkz10/Pokemon/actions/runs/37043585028) e teste físico.
+- [ ] Rever comportamento visual em coleções de milhares de exemplares e substituições consecutivas.
+
+**Implementação V1.85:** 5/7 (71%, CI/Android pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.84 — Reorganizar Lead, Safe Switch e Closer
 - [x] V1.83 migração Room e preservação de Coleção aprovadas em emulador ([run #37040132346](https://github.com/Sphinkz10/Pokemon/actions/runs/37040132346)).
 - [x] Política imutável de troca de papéis (`106aa06`) e três testes unitários (`7989571`).
