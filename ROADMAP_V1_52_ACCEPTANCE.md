@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.69 — Duplicação de equipas
+- [x] Ação visível no detalhe (`c7270de`).
+- [x] Cópia persistente com novo UUID, sem alterar original nem tornar a cópia principal (`f79b681`).
+- [x] Guard CI (`02adc82`).
+- [ ] Compilação e testes em Android; validar duplicação na lista e reabertura.
+
+**Implementação V1.69:** 3/4 (75%, CI e dispositivo pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.68 — Feedback de gravação Room
 - [x] Detalhe recebe mensagem de resultado (`6edfd93`).
 - [x] `runCatching` em upsert, estados de progresso/sucesso/falha (`8f7a339`).
