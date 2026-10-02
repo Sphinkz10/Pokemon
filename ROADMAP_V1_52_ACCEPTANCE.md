@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.81 — Persistência após reabertura da base de dados
+- [x] V1.80: quatro testes Room em emulador aprovados ([run #37038237116](https://github.com/Sphinkz10/Pokemon/actions/runs/37038237116)).
+- [x] Compilação APK aprovada ([run #37038236950](https://github.com/Sphinkz10/Pokemon/actions/runs/37038236950)).
+- [x] Teste instrumentado novo cria ficheiro SQLite real, guarda equipa, fecha a base, reabre e verifica ID, nome e notas (`24811ca`).
+- [ ] Confirmar execução do teste de reabertura ([run #37039051714](https://github.com/Sphinkz10/Pokemon/actions/runs/37039051714)).
+- [ ] Validar persistência após reinício de Activity/processo em dispositivo físico.
+
+**Implementação V1.81:** 3/5 (60%, execução pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.80 — Integridade da Coleção ao eliminar equipas
 - [x] Primeiro workflow instrumentado Android Room aprovado: [run #37037728284](https://github.com/Sphinkz10/Pokemon/actions/runs/37037728284).
 - [x] CI APK com compilação de testes instrumentados aprovado: [run #37037711044](https://github.com/Sphinkz10/Pokemon/actions/runs/37037711044).
