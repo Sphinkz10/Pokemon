@@ -40,6 +40,19 @@ class UserDatabaseMigrationTest {
                     "INSERT INTO saved_team (id, name, league, members, isPrimary, notes, createdAtEpochMs, updatedAtEpochMs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                     arrayOf("legacy-team", "Equipa anterior", "GREAT", "legacy-member", 0, "Preservar", 100L, 100L)
                 )
+                sqlite.execSQL(
+                    """INSERT INTO owned_pokemon (
+                        id, speciesId, ivAttack, ivDefense, ivStamina, cp, level,
+                        isShadow, isPurified, isShiny, isLucky, isBestBuddy, isFavorite,
+                        chargedMoveIds, tags, acquisitionMethod, createdAtEpochMs,
+                        updatedAtEpochMs, verificationSource, uncertainFields
+                    ) VALUES (
+                        'legacy-owned', 'pikachu', 10, 11, 12, 500, 20.0,
+                        0, 0, 0, 0, 0, 1,
+                        '', '', 'UNKNOWN', 100,
+                        100, 'UNVERIFIED', ''
+                    )""".trimIndent()
+                )
                 sqlite.version = 1
             } finally {
                 sqlite.close()
@@ -53,6 +66,11 @@ class UserDatabaseMigrationTest {
                 assertEquals("legacy-team", rows.single().id)
                 assertEquals("Equipa anterior", rows.single().name)
                 assertEquals("Preservar", rows.single().notes)
+                val owned = upgraded.collectionDao().collection()
+                assertEquals(1, owned.size)
+                assertEquals("legacy-owned", owned.single().id)
+                assertEquals("pikachu", owned.single().speciesId)
+                assertTrue(owned.single().isFavorite)
                 assertTrue(upgraded.collectionDao().observeBattleRecords().first().isEmpty())
             } finally {
                 upgraded.close()
