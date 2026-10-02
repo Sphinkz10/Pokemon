@@ -169,7 +169,8 @@ fun TeamsGoldenHomeScreen(
 fun TeamsGoldenDetailScreen(
     team: SavedTeam, owned: List<OwnedPokemon>, catalog: List<PokemonSpecies>,
     plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit,
-    onRename: (String) -> Unit, renameMessage: String?
+    onRename: (String) -> Unit, renameMessage: String?,
+    onDuplicate: () -> Unit
 ) {
     var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
     var draftName by rememberSaveable(team.id) { mutableStateOf(team.name) }
@@ -222,6 +223,7 @@ fun TeamsGoldenDetailScreen(
             }
         }
         if (!team.notes.isNullOrBlank()) item { TeamsCard { Text("NOTAS", style = MaterialTheme.typography.labelMedium); Text(team.notes.orEmpty()) } }
+        item { OutlinedButton(onClick = onDuplicate, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Duplicar equipa") } }
         item { OutlinedButton(onClick = onAdjust, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
     }
 }
