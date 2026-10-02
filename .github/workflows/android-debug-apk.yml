@@ -139,7 +139,7 @@ jobs:
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
-              "SavedTeamMutationPolicyTest": 13,
+              "SavedTeamMutationPolicyTest": 15,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
