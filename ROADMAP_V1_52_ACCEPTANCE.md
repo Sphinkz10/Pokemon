@@ -8,7 +8,7 @@
 
 ## Checkpoint V1.58 · Restaurar navegação após mudança de aba e recriação Android
 
-**Estado de implementação:** 8/10 trabalhos no código com testes definidos (80%). **Ainda dependem de prova** a compilação assinada e o teste real em Android. Os **50 gates de aceitação globais mantêm 7/50 (14%)**, porque nenhuma nova fase foi aceite em dispositivo.
+**Estado de implementação/CI:** **9/10 tarefas demonstradas (90%)**, com compilação assinada e testes automáticos aprovados. Continua pendente apenas o teste funcional no Android. Os **50 gates de aceitação globais mantêm 7/50 (14%)**, porque nenhuma nova fase foi aceite em dispositivo.
 
 | ID | Trabalho concreto | Evidência / critério | Estado |
 |---|---|---|---|
@@ -20,7 +20,7 @@
 | V58-6 | Evitar descartar fichas restauradas antes de o Room carregar | `collectionLoaded` só depois de primeira emissão | [x] |
 | V58-7 | Evitar regressar a Lista durante carregamento do catálogo PvP | `LaunchedEffect` condicionada a catálogo disponível | [x] |
 | V58-8 | Usar política testável de navegação para o Back do Android | `CollectionNavigationPolicy`, 7 JUnit e 25 verificações estruturais | [x] |
-| V58-9 | Compilar V1.58, passar JUnit, verificar assinatura e extrair APK | [CI V1.58](https://github.com/Sphinkz10/Pokemon/actions/runs/36948417165) | [ ] |
+| V58-9 | Compilar V1.58, passar JUnit, verificar assinatura e extrair APK | [CI #36948417165](https://github.com/Sphinkz10/Pokemon/actions/runs/36948417165): 25/25 guards, 26/26 JUnit, APK v2 verificada, artefacto #11202658262 íntegro | [x] |
 | V58-10 | Rodar ecrã, alternar abas, reabrir ficheiro e confirmar estado + dados no Android | Testes físicos + screenshots e logs | [ ] |
 
 **Limite importante:** `rememberSaveable` e `SaveableStateHolder` melhoram a restauração de estado Android, mas não são sincronização entre instalações, nem substituem testes de rotação e *process death*; o armazenamento persistente dos exemplares continua no Room. A versão debug V1.58 instala-se isoladamente, não faz migração de dados da V1.57. O menu e o Figma continuam sujeitos a auditoria visual.
