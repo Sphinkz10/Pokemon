@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.77 — Bloqueio completo de edição durante persistência
+- [x] Impedir abrir/fechar edição e navegar para Team Lab enquanto uma mutação Room decorre (`978fe03`).
+- [x] Diálogo de eliminação não muda de estado durante gravação (`bd4a60c`).
+- [x] V1.75 e V1.76 com CI aprovado: runs #37031840930 e #37031991999.
+- [ ] Validar nova compilação e testes físicos T01–T15.
+
+**Implementação V1.77:** 3/4 (75%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.76 — Limite de nomes nas cópias
 - [x] Cópia limita nome original a 52 caracteres antes de acrescentar ` (cópia)` (`3fb9505`).
 - [x] Teste unitário com nome original de 60 caracteres (`778ff5f`).
