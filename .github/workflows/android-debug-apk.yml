@@ -117,7 +117,7 @@ jobs:
           print("TEAM_LOCKED_SLOT_GUARD_OK (structural only)")
           PY
       - name: Build debug APK directly from repository
-        run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
+        run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug :app:assembleDebugAndroidTest
       - name: Run Android policy unit tests
         run: gradle --no-daemon --stacktrace :app:testDebugUnitTest
       - name: Confirm unit test report
