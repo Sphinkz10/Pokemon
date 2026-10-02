@@ -69,6 +69,9 @@ jobs:
           fixture = Path("tools/TeamAdvisorV122Validation.kt").read_text()
           assert "!TeamLockPolicy.hasValidLockCount(constraints.lockedOwnedPokemonIds.size)" in advisor
           assert "TeamAdvisorStatus.REFUSED" in fixture and "tooManyLocks" in fixture
+          lineup = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenResultsScreen.kt").read_text()
+          assert "(0..2).forEach { index ->" in lineup
+          assert "ids.getOrNull(index)" in lineup
           print("TEAM_LOCKED_SLOT_GUARD_OK (structural only)")
           PY
       - name: Build debug APK directly from repository
