@@ -260,11 +260,7 @@ fun TeamsGoldenDetailScreen(
     if (activeRole != null) {
         val complete = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
         val assignedElsewhere = team.members.filter { it.role != activeRole }.map { it.ownedPokemonId }.toSet()
-        val cap = when (team.league) {
-            League.GREAT -> 1500
-            League.ULTRA -> 2500
-            else -> null
-        }
+        val cap = SpeciesLeaguePolicy.cpLimit(team.league)
         val normalizedReplacementQuery = replacementQuery.trim()
         val candidates = complete.filter { candidate ->
             candidate.id !in assignedElsewhere &&
