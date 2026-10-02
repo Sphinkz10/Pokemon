@@ -266,7 +266,7 @@ fun TeamsGoldenDetailScreen(
         }
         val candidates = complete.filter { candidate ->
             candidate.id !in assignedElsewhere &&
-                (cap == null || (candidate.cp != null && candidate.cp <= cap)) &&
+                (cap == null || (candidate.cp?.let { it <= cap } == true)) &&
                 (replacementQuery.isBlank() ||
                     (names[candidate.speciesId] ?: candidate.speciesId).contains(replacementQuery.trim(), ignoreCase = true) ||
                     (candidate.nickname ?: "").contains(replacementQuery.trim(), ignoreCase = true))
