@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.72 — Pesquisa com estado vazio correto
+- [x] Distinguir coleção sem candidatos de pesquisa sem correspondências (`09b00b3`).
+- [x] Ação limpar pesquisa e repor paginação (`09b00b3`).
+- [x] Guard CI (`d1033b1`).
+- [ ] CI aprovado e teste físico de pesquisa sem resultados.
+
+**Implementação V1.72:** 3/4 (75%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.71 — Política de duplicação testável
 - [x] Transformação pura separada da UI, sem mutar a equipa original (`a5862ac`).
 - [x] Integração com persistência Room (`1a0476c`).
@@ -21,7 +29,8 @@
 - [x] Diálogo de confirmação e cancelamento (`430cbb0`).
 - [x] Tratamento de erro e regresso à lista só após sucesso (`c49db90`).
 - [x] Guard CI estrutural (`594381b`).
-- [ ] CI Android aprovado e validação física de eliminar/cancelar.
+- [x] CI Android aprovado: [run #37029998762](https://github.com/Sphinkz10/Pokemon/actions/runs/37029998762).
+- [ ] Validação física de eliminar/cancelar.
 
 **Implementação V1.70:** 4/5 (80% código, validação pendente). **Aceitação global:** 7/50 (14%).
 
