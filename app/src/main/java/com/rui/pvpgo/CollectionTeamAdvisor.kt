@@ -133,7 +133,7 @@ class CollectionTeamAdvisor(
             Candidate(owned, sp)
         }
 
-        if (constraints.lockedOwnedPokemonIds.size > 3) {
+        if (!TeamLockPolicy.hasValidLockCount(constraints.lockedOwnedPokemonIds.size)) {
             return refused(meta, ruleset, certification.selectedRoute?.name,
                 "A team has three slots; at most three Pokémon can be locked.", exclusions)
         }
