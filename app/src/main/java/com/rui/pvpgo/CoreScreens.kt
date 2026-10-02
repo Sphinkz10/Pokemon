@@ -1889,7 +1889,9 @@ fun TeamLabRootScreen(
                                     selected, UUID.randomUUID().toString(), now
                                 ))
                             }.onSuccess {
-                                renameMessage = "Equipa duplicada."
+                                selectedTeamId = null
+                                renameMessage = null
+                                view = TeamsGoldenView.HOME
                             }.onFailure {
                                 renameMessage = "Falha ao duplicar equipa. Tenta novamente."
                             }
