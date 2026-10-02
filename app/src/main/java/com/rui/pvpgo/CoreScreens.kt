@@ -1814,13 +1814,13 @@ fun TeamLabRootScreen(
     var owned by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var plans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var teams by remember { mutableStateOf<List<SavedTeam>>(emptyList()) }
-    var league by remember { mutableStateOf(League.GREAT) }
-    var style by remember { mutableStateOf(TeamStyleBias.BALANCED) }
+    var league by rememberSaveable { mutableStateOf(League.GREAT) }
+    var style by rememberSaveable { mutableStateOf(TeamStyleBias.BALANCED) }
     var anchorId by remember { mutableStateOf<String?>(null) }
     var selectedTeamId by remember { mutableStateOf<String?>(null) }
     var renameMessage by remember { mutableStateOf<String?>(null) }
     var operationInProgress by remember { mutableStateOf(false) }
-    var view by remember { mutableStateOf(TeamsGoldenView.HOME) }
+    var view by rememberSaveable { mutableStateOf(TeamsGoldenView.HOME) }
 
     LaunchedEffect(repository) { repository.collection.collectLatest { owned = it } }
     LaunchedEffect(repository) { repository.buildPlans.collectLatest { plans = it } }
