@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.89 — Limites de CP centralizados por liga
+- [x] V1.88 CI de APK aprovado ([run #37047475731](https://github.com/Sphinkz10/Pokemon/actions/runs/37047475731)).
+- [x] Contrato partilhado `SpeciesLeaguePolicy.cpLimit`: Little 500, Great 1500, Ultra 2500, Master sem limite (`e385a11`).
+- [x] Mutação e seletor usam o mesmo limite (`d002caf`, `2994484`).
+- [x] Três testes de fronteira Little/Master; total de 18 testes de mutação exigidos no CI (`8fb354b`, `048de0d`).
+- [ ] CI integrado [#37048012503](https://github.com/Sphinkz10/Pokemon/actions/runs/37048012503).
+- [ ] Validar interação Android e dados de liga em dispositivo real.
+
+**Implementação V1.89:** 4/6 (67%, CI/dispositivo pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.88 — Pesquisa escalável no seletor de substituição
 - [x] V1.87 APK e testes instrumentados aprovados ([APK #37046519787](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519787), [Room #37046519722](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519722)).
 - [x] Seletor mostra 75 resultados iniciais e botão «Mostrar mais 75 Pokémon» até esgotar candidatos (`cd2a98f`).
