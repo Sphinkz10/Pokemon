@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.73 — Fecho verificável de Equipas
+- [x] CI V1.71 e V1.72 aprovados: runs #37030210991, #37030389759 e #37030398353.
+- [x] Artefacto APK renomeado para identificar corretamente main atual (`337e974`).
+- [x] Matriz de 15 casos para testes físicos com evidência e critérios de fecho (`docs/TEAMS_ANDROID_ACCEPTANCE_V1_73.md`).
+- [ ] Novo CI verde e 15 casos executados em dispositivo real.
+
+**Preparação V1.73:** 3/4 (75%, dispositivo e CI novo pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.72 — Pesquisa com estado vazio correto
 - [x] Distinguir coleção sem candidatos de pesquisa sem correspondências (`09b00b3`).
 - [x] Ação limpar pesquisa e repor paginação (`09b00b3`).
