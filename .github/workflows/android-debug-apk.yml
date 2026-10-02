@@ -99,8 +99,11 @@ jobs:
           assert "onReplaceMember = {" in root
           assert "Substituir ${role.name.replace" in picker
           assert "replacementVisibleLimit += 75" in picker
-          assert "SpeciesLeaguePolicy.cpLimit(team.league)" in picker
-          assert "candidate.id.contains(normalizedReplacementQuery" in picker
+          candidate_policy = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenPolicy.kt").read_text()
+          assert "TeamsGoldenPolicy.replacementCandidates(team, activeRole, owned, replacementQuery, names)" in picker
+          assert "TeamsGoldenPolicy.replacementCandidates(original, role, collection)" in mutation_policy
+          assert "SpeciesLeaguePolicy.cpLimit(team.league)" in candidate_policy
+          assert "candidate.id.contains(normalized, ignoreCase = true)" in candidate_policy
           assert "Trocar Lead ↔ Safe Switch" in picker
           assert "onDelete = {" in root
           assert "operationInProgress = operationInProgress" in root
