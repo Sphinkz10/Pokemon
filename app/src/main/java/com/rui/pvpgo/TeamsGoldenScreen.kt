@@ -211,6 +211,7 @@ fun TeamsGoldenBuilderScreen(
 ) {
     var query by remember { mutableStateOf("") }
     var pickerOpen by remember { mutableStateOf(false) }
+    var visibleLimit by remember { mutableIntStateOf(75) }
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     val speciesById = remember(catalog) { catalog.associateBy { it.speciesId } }
     val eligible = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
@@ -219,8 +220,9 @@ fun TeamsGoldenBuilderScreen(
         eligible.filter { candidate ->
             val name = names[candidate.speciesId] ?: candidate.speciesId
             TeamPickerSearchPolicy.matches(candidate, name, speciesById[candidate.speciesId]?.dex, query)
-        }.take(75)
+        }
     }
+    val visibleCandidates = filtered.take(visibleLimit)
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { TeamsHeading("Criar equipa", "Simples, assistido, sem ruído", onBack) }
         item { TeamsSection("1 · LIGA") }
@@ -243,9 +245,9 @@ fun TeamsGoldenBuilderScreen(
         }
         if (pickerOpen) {
             item { PvpSearchField(query, onValueChange = { query = it }, placeholder = "Nome, alcunha ou #Pokédex…") }
-            item { Text("${filtered.size}${if (eligible.size > 75 && filtered.size == 75) "+" else ""} de ${eligible.size} exemplares apresentados · máximo 75", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
+            item { Text("${visibleCandidates.size} de ${filtered.size} resultados · ${eligible.size} exemplares elegíveis", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
             if (filtered.isEmpty()) item { TeamsCard { Text("Sem exemplares com nível e moves completos.") } }
-            items(filtered, key = { it.id }) { pokemon ->
+            items(visibleCandidates, key = { it.id }) { pokemon ->
                 TeamsCard(onClick = { onAnchorChange(pokemon.id); pickerOpen = false }) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         PokemonArtwork(names[pokemon.speciesId] ?: pokemon.speciesId, Modifier.size(42.dp))
@@ -258,6 +260,11 @@ fun TeamsGoldenBuilderScreen(
                     }
                 }
             }
+        }
+        if (pickerOpen && visibleCandidates.size < filtered.size) {
+            item { OutlinedButton(onClick = { visibleLimit += 75 }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text("Mostrar mais ${minOf(75, filtered.size - visibleCandidates.size)} Pokémon")
+            } }
         }
         item { TeamsSection("3 · ESTILO") }
         item {
