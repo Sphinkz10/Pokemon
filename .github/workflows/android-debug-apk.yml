@@ -147,7 +147,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonPvP-v1.58-installtest-debug-apk
+          name: PokemonPvP-current-main-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
