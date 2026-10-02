@@ -3,7 +3,7 @@
 **Estado: por executar em dispositivo.** A compilação e os testes unitários do GitHub Actions não comprovam persistência Room após reinício, navegação ou acessibilidade real.
 
 ## Pré-condições
-1. Instalar o artefacto **PokemonPvP-current-main-debug-apk** do último GitHub Actions verde, com o mesmo `applicationId` da app já instalada. Guardar ID da execução, SHA e Android/API do dispositivo.
+1. Instalar o artefacto **PokemonPvP-current-main-debug-apk** do último GitHub Actions verde, com o identificador **`com.rui.pvpgo.installtestv158`**, que é deliberadamente diferente do identificador de produção (`com.rui.pvpgo`). Guardar ID da execução, SHA e Android/API do dispositivo. A build de diagnóstico usa uma base de dados própria; **não contém automaticamente a coleção da instalação de produção**.
 2. Usar coleção de teste com **pelo menos três Pokémon diferentes** com nível e movimentos completos; confirmar cópia de segurança antes de operações destrutivas.
 3. Registar para cada caso: PASS/FAIL, SHA, modelo, Android, evidência (captura ou vídeo), observações.
 
@@ -29,4 +29,4 @@
 **Não marcar Equipas como validado** enquanto T01–T12 não passarem no dispositivo, T13–T15 não forem analisados e o build testado não estiver associado a um SHA e execução CI verificáveis. Qualquer falha exige issue com passos de reprodução e nova validação.
 
 ## Instalação
-GitHub → Actions → último workflow Android verde → Artifacts → `PokemonPvP-current-main-debug-apk` → extrair ZIP → instalar `app-debug.apk`. Se já existir instalação com assinatura incompatível, **não desinstalar sem exportar/guardar os dados**, pois desinstalar pode eliminar a coleção local.
+GitHub → Actions → último workflow Android verde → Artifacts → `PokemonPvP-current-main-debug-apk` → extrair ZIP → instalar `app-debug.apk`. Esta APK de diagnóstico instala-se em paralelo à versão de produção devido ao sufixo `.installtestv158`. Preparar uma coleção de teste nesta instalação. Se já existir outra versão de diagnóstico com assinatura incompatível, **não a desinstalar sem exportar/guardar os dados**: a desinstalação pode apagar a coleção local dessa instalação.
