@@ -19,11 +19,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Instalação de diagnóstico independente: não substitui a app já instalada.
+    // Pacote de diagnóstico isolado V1.90: não altera nem apaga dados das instalações anteriores.
     buildTypes {
         getByName("debug") {
-            applicationIdSuffix = ".installtestv158"
-            versionNameSuffix = "-installtest"
+            applicationIdSuffix = ".installtestv190"
+            versionNameSuffix = "-installtestv190"
         }
     }
 
