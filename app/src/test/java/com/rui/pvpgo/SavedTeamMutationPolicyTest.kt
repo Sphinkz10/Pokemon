@@ -103,6 +103,44 @@ class SavedTeamMutationPolicyTest {
         SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, missing, emptyList(), 300L)
     }
 
+    @Test fun pickerAndMutationAgreeOnEligibleSpecimens() {
+        val original = original()
+        val collection = listOf(
+            specimen("one"), specimen("four", cp = 1500),
+            specimen("five", cp = 1501), specimen("six", ready = false)
+        )
+        val candidates = TeamsGoldenPolicy.replacementCandidates(
+            original, TeamRole.SAFE_SWITCH, collection
+        )
+        assertEquals(listOf("four"), candidates.map { it.id })
+        val result = SavedTeamMutationPolicy.replaceMember(
+            original, TeamRole.SAFE_SWITCH, candidates.single(), collection, 300L
+        )
+        assertEquals("four", result.members.single { it.role == TeamRole.SAFE_SWITCH }.ownedPokemonId)
+    }
+
+    @Test fun replacementSearchSupportsNicknameAndSpecimenId() {
+        val source = original()
+        val specimen = specimen("rare-owned-id").copy(nickname = "Raio Azul")
+        assertEquals(1, TeamsGoldenPolicy.replacementCandidates(
+            source, TeamRole.LEAD, listOf(specimen), "raio"
+        ).size)
+        assertEquals(1, TeamsGoldenPolicy.replacementCandidates(
+            source, TeamRole.LEAD, listOf(specimen), "OWNED-ID"
+        ).size)
+        assertTrue(TeamsGoldenPolicy.replacementCandidates(
+            source, TeamRole.LEAD, listOf(specimen), "não existe"
+        ).isEmpty())
+    }
+
+    @Test fun replacementSearchExcludesAlreadyAssignedRoleEvenIfNameMatches() {
+        val source = original()
+        val assigned = specimen("three")
+        assertTrue(TeamsGoldenPolicy.replacementCandidates(
+            source, TeamRole.LEAD, listOf(assigned), "pikachu"
+        ).isEmpty())
+    }
+
     @Test fun duplicateKeepsSpecimensRolesLeagueAndNotes() {
         val original = original()
         val copy = SavedTeamMutationPolicy.duplicate(original, "copy", 300L)
