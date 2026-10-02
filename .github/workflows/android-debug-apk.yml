@@ -76,6 +76,8 @@ jobs:
           assert "TeamPickerSearchPolicy.matches(candidate" in picker
           assert "visibleCandidates = filtered.take(visibleLimit)" in picker
           assert "visibleLimit += 75" in picker
+          assert "Nenhum Pokémon corresponde à pesquisa" in picker
+          assert "Limpar pesquisa" in picker
           assert "var query by rememberSaveable" in picker
           assert "var pickerOpen by rememberSaveable" in picker
           assert "var visibleLimit by rememberSaveable" in picker
