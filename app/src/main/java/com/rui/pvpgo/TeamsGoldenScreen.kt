@@ -172,11 +172,14 @@ fun TeamsGoldenDetailScreen(
     onRename: (String) -> Unit, renameMessage: String?,
     onDuplicate: () -> Unit, onDelete: () -> Unit,
     onSwapRoles: (TeamRole, TeamRole) -> Unit,
+    onReplaceMember: (TeamRole, String) -> Unit,
     operationInProgress: Boolean
 ) {
     var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
     var draftName by rememberSaveable(team.id) { mutableStateOf(team.name) }
     var confirmDelete by rememberSaveable(team.id) { mutableStateOf(false) }
+    var replacingRole by remember(team.id) { mutableStateOf<TeamRole?>(null) }
+    var replacementQuery by remember(team.id) { mutableStateOf("") }
     val validName = draftName.trim().isNotEmpty() && draftName.trim().length <= 60
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     val ownedById = remember(owned) { owned.associateBy { it.id } }
@@ -223,6 +226,11 @@ fun TeamsGoldenDetailScreen(
                 Text(specimen?.let { "CP ${it.cp ?: "?"} · ${it.iv.attack}/${it.iv.defense}/${it.iv.stamina}" }
                     ?: "Este exemplar foi removido ou não está disponível.",
                     color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                OutlinedButton(
+                    onClick = { replacingRole = role; replacementQuery = "" },
+                    enabled = !operationInProgress,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) { Text("Substituir ${role.name.replace('_', ' ')}") }
             }
         }
         item {
@@ -246,6 +254,59 @@ fun TeamsGoldenDetailScreen(
         item { OutlinedButton(onClick = onDuplicate, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Duplicar equipa") } }
         item { OutlinedButton(onClick = { confirmDelete = true }, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Eliminar equipa") } }
         item { OutlinedButton(onClick = onAdjust, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
+    }
+    val activeRole = replacingRole
+    if (activeRole != null) {
+        val complete = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
+        val assignedElsewhere = team.members.filter { it.role != activeRole }.map { it.ownedPokemonId }.toSet()
+        val cap = when (team.league) {
+            League.GREAT -> 1500
+            League.ULTRA -> 2500
+            else -> null
+        }
+        val candidates = complete.filter { candidate ->
+            candidate.id !in assignedElsewhere &&
+                (cap == null || (candidate.cp != null && candidate.cp <= cap)) &&
+                (replacementQuery.isBlank() ||
+                    (names[candidate.speciesId] ?: candidate.speciesId).contains(replacementQuery.trim(), ignoreCase = true) ||
+                    (candidate.nickname ?: "").contains(replacementQuery.trim(), ignoreCase = true))
+        }
+        AlertDialog(
+            onDismissRequest = { if (!operationInProgress) replacingRole = null },
+            title = { Text("Substituir ${activeRole.name.replace('_', ' ')}") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = replacementQuery,
+                        onValueChange = { replacementQuery = it },
+                        label = { Text("Pesquisar na Coleção") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text("${candidates.size} exemplares elegíveis · ${team.league.name}",
+                        style = MaterialTheme.typography.bodySmall)
+                    if (candidates.isEmpty()) Text("Nenhum exemplar disponível com movimentos, nível e CP válidos.")
+                    LazyColumn(Modifier.heightIn(max = 320.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(candidates.take(75), key = { it.id }) { candidate ->
+                            OutlinedButton(
+                                enabled = !operationInProgress,
+                                onClick = {
+                                    replacingRole = null
+                                    onReplaceMember(activeRole, candidate.id)
+                                },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            ) {
+                                Text("${names[candidate.speciesId] ?: candidate.speciesId} · CP ${candidate.cp ?: "?"}",
+                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                    if (candidates.size > 75) Text("Mostrados 75 resultados. Refina a pesquisa.")
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(enabled = !operationInProgress, onClick = { replacingRole = null }) { Text("Cancelar") } }
+        )
     }
     if (confirmDelete) AlertDialog(
         onDismissRequest = { if (!operationInProgress) confirmDelete = false },
