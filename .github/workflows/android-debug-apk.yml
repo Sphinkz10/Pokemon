@@ -73,7 +73,9 @@ jobs:
           assert "(0..2).forEach { index ->" in lineup
           assert "ids.getOrNull(index)" in lineup
           picker = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenScreen.kt").read_text()
-          assert "species?.dex?.toString() == term" in picker
+          assert "TeamPickerSearchPolicy.matches(candidate" in picker
+          search_policy = Path("app/src/main/java/com/rui/pvpgo/TeamPickerSearchPolicy.kt").read_text()
+          assert "dex?.toString() == term" in search_policy
           assert "candidate.nickname?.contains(term" in picker
           result_policy = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenResultPolicy.kt").read_text()
           assert "primaryCoverage.isFinite()" in result_policy
@@ -94,6 +96,7 @@ jobs:
               "OwnedBuildValidationTest": 7,
               "CollectionNavigationPolicyTest": 7,
               "TeamLockPolicyTest": 3,
+              "TeamPickerSearchPolicyTest": 3,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
