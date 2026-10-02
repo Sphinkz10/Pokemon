@@ -1874,12 +1874,8 @@ fun TeamLabRootScreen(
                         scope.launch {
                             val now = System.currentTimeMillis()
                             runCatching {
-                                repository.upsertSavedTeam(selected.copy(
-                                    id = UUID.randomUUID().toString(),
-                                    name = "${selected.name} (cópia)",
-                                    isPrimary = false,
-                                    createdAtEpochMs = now,
-                                    updatedAtEpochMs = now
+                                repository.upsertSavedTeam(SavedTeamMutationPolicy.duplicate(
+                                    selected, UUID.randomUUID().toString(), now
                                 ))
                             }.onSuccess {
                                 renameMessage = "Equipa duplicada."
