@@ -27,6 +27,8 @@ object TeamsGoldenResultPolicy {
                         alternatives: List<Pair<List<String>, Double>>): List<String> {
         if (!validIds(primaryIds)) return emptyList()
         val eligible = alternatives.filter { validIds(it.first) && it.second.isFinite() && it.second in 0.0..100.0 }
-        return (eligible + (primaryIds to primaryCoverage)).maxByOrNull { it.second }?.first ?: primaryIds
+        val baseline = if (primaryCoverage.isFinite() && primaryCoverage in 0.0..100.0)
+            listOf(primaryIds to primaryCoverage) else emptyList()
+        return (eligible + baseline).maxByOrNull { it.second }?.first ?: primaryIds
     }
 }
