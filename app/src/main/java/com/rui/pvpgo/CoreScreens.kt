@@ -1819,6 +1819,7 @@ fun TeamLabRootScreen(
     var anchorId by remember { mutableStateOf<String?>(null) }
     var selectedTeamId by remember { mutableStateOf<String?>(null) }
     var renameMessage by remember { mutableStateOf<String?>(null) }
+    var operationInProgress by remember { mutableStateOf(false) }
     var view by remember { mutableStateOf(TeamsGoldenView.HOME) }
 
     LaunchedEffect(repository) { repository.collection.collectLatest { owned = it } }
@@ -1830,7 +1831,7 @@ fun TeamLabRootScreen(
             catalog = catalog, owned = owned, plans = plans, teams = teams, league = league,
             onLeagueChange = { league = it },
             onCreate = { view = TeamsGoldenView.BUILDER },
-            onOpenTeam = { selectedTeamId = it; renameMessage = null; view = TeamsGoldenView.DETAIL }
+            onOpenTeam = { selectedTeamId = it; renameMessage = null; operationInProgress = false; view = TeamsGoldenView.DETAIL }
         )
         TeamsGoldenView.BUILDER -> TeamsGoldenBuilderScreen(
             catalog = catalog, owned = owned, plans = plans, league = league, style = style,
@@ -1856,6 +1857,8 @@ fun TeamLabRootScreen(
                     onRename = { name ->
                         val normalized = name.trim()
                         if (normalized.isNotEmpty() && normalized.length <= 60) {
+                            if (operationInProgress) return@TeamsGoldenDetailScreen
+                            operationInProgress = true
                             renameMessage = "A guardar alterações…"
                             scope.launch {
                                 runCatching {
@@ -1865,11 +1868,14 @@ fun TeamLabRootScreen(
                                     ))
                                 }.onSuccess { renameMessage = "Nome guardado." }
                                     .onFailure { renameMessage = "Falha ao guardar o nome. Tenta novamente." }
+                                operationInProgress = false
                             }
                         }
                     },
                     renameMessage = renameMessage,
                     onDuplicate = {
+                        if (!operationInProgress) {
+                        operationInProgress = true
                         renameMessage = "A duplicar equipa…"
                         scope.launch {
                             val now = System.currentTimeMillis()
@@ -1882,16 +1888,23 @@ fun TeamLabRootScreen(
                             }.onFailure {
                                 renameMessage = "Falha ao duplicar equipa. Tenta novamente."
                             }
+                            operationInProgress = false
+                        }
                         }
                     },
                     onDelete = {
+                        if (!operationInProgress) {
+                        operationInProgress = true
                         renameMessage = "A eliminar equipa…"
                         scope.launch {
                             runCatching { repository.deleteSavedTeam(selected.id) }
                                 .onSuccess { selectedTeamId = null; view = TeamsGoldenView.HOME }
                                 .onFailure { renameMessage = "Falha ao eliminar equipa. Tenta novamente." }
+                            operationInProgress = false
                         }
-                    }
+                        }
+                    },
+                    operationInProgress = operationInProgress
                 )
             }
         }
