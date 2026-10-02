@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.82 — Teste instrumentado da migração Room v1→v2
+- [x] V1.81: teste de reabertura de SQLite em disco aprovado ([run #37039051714](https://github.com/Sphinkz10/Pokemon/actions/runs/37039051714)).
+- [x] APK V1.81 aprovado ([run #37039051468](https://github.com/Sphinkz10/Pokemon/actions/runs/37039051468)).
+- [x] Teste instrumentado cria esquema v1 a partir das definições exportadas, insere equipa, abre com migração v1→v2, valida equipa e tabela battle_record (`6b7aac1`).
+- [ ] Confirmar CI de emulador [#37039798629](https://github.com/Sphinkz10/Pokemon/actions/runs/37039798629) e compilação [#37039798479](https://github.com/Sphinkz10/Pokemon/actions/runs/37039798479).
+- [ ] Testar migração em dispositivo físico com dados existentes.
+
+**Implementação V1.82:** 3/5 (60%, execução pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.81 — Persistência após reabertura da base de dados
 - [x] V1.80: quatro testes Room em emulador aprovados ([run #37038237116](https://github.com/Sphinkz10/Pokemon/actions/runs/37038237116)).
 - [x] Compilação APK aprovada ([run #37038236950](https://github.com/Sphinkz10/Pokemon/actions/runs/37038236950)).
