@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.84 — Reorganizar Lead, Safe Switch e Closer
+- [x] V1.83 migração Room e preservação de Coleção aprovadas em emulador ([run #37040132346](https://github.com/Sphinkz10/Pokemon/actions/runs/37040132346)).
+- [x] Política imutável de troca de papéis (`106aa06`) e três testes unitários (`7989571`).
+- [x] Controlos no detalhe da equipa para trocar Lead↔Safe Switch ou Safe Switch↔Closer (`1c4e644`).
+- [x] Gravação Room e mensagens de resultado (`3ac8f42`), guard CI com oito testes (`0f307d0`).
+- [ ] CI Android [#37042546769](https://github.com/Sphinkz10/Pokemon/actions/runs/37042546769) e testes físicos de troca/persistência.
+- [ ] Edição de exemplares da equipa (substituição de um dos três) ainda pendente.
+
+**Implementação V1.84:** 4/6 (67%, CI/Android pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.83 — Preservação conjunta de equipas e coleção na migração
 - [x] Fixture da migração Room v1→v2 reforçada: inclui Pokémon pré-existente, com IV e favorito, e equipa guardada (`c31ad5e`).
 - [x] Asserções pós-migração confirmam IDs, espécie e favorito do Pokémon, equipa, notas e nova tabela de batalhas.
