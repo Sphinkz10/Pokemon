@@ -93,6 +93,9 @@ jobs:
           assert "isPrimary = false" in mutation_policy
           assert "original.name.take(52).trimEnd()" in mutation_policy
           assert "SavedTeamMutationPolicy.duplicate(" in root
+          assert "SavedTeamMutationPolicy.swapRoles(" in root
+          assert "onSwapRoles = {" in root
+          assert "Trocar Lead ↔ Safe Switch" in picker
           assert "onDelete = {" in root
           assert "operationInProgress = operationInProgress" in root
           assert "league = selected.league" in root
@@ -133,7 +136,7 @@ jobs:
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
-              "SavedTeamMutationPolicyTest": 5,
+              "SavedTeamMutationPolicyTest": 8,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
