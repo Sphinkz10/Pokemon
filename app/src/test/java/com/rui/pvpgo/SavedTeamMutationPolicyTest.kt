@@ -42,6 +42,31 @@ class SavedTeamMutationPolicyTest {
         assertEquals(60, original.name.length)
     }
 
+    @Test fun swapLeadAndCloserKeepsOwnedIdsAndOtherFields() {
+        val source = original()
+        val changed = SavedTeamMutationPolicy.swapRoles(source, TeamRole.LEAD, TeamRole.CLOSER, 300L)
+        assertEquals("three", changed.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+        assertEquals("one", changed.members.single { it.role == TeamRole.CLOSER }.ownedPokemonId)
+        assertEquals("two", changed.members.single { it.role == TeamRole.SAFE_SWITCH }.ownedPokemonId)
+        assertEquals(source.members.map { it.ownedPokemonId }.toSet(), changed.members.map { it.ownedPokemonId }.toSet())
+        assertEquals(source.id, changed.id)
+        assertEquals(source.name, changed.name)
+        assertEquals(source.league, changed.league)
+        assertEquals(source.createdAtEpochMs, changed.createdAtEpochMs)
+        assertEquals(300L, changed.updatedAtEpochMs)
+        assertEquals("one", source.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+    }
+
+    @Test fun swapSameRoleIsNoOp() {
+        val source = original()
+        assertSame(source, SavedTeamMutationPolicy.swapRoles(source, TeamRole.LEAD, TeamRole.LEAD, 300L))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun swapRejectsBackwardTimestamp() {
+        SavedTeamMutationPolicy.swapRoles(original(), TeamRole.LEAD, TeamRole.CLOSER, 199L)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun rejectsOriginalIdentity() {
         SavedTeamMutationPolicy.duplicate(original(), "original", 300L)
