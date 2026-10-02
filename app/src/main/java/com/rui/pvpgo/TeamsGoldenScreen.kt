@@ -171,6 +171,7 @@ fun TeamsGoldenDetailScreen(
     plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit,
     onRename: (String) -> Unit, renameMessage: String?,
     onDuplicate: () -> Unit, onDelete: () -> Unit,
+    onSwapRoles: (TeamRole, TeamRole) -> Unit,
     operationInProgress: Boolean
 ) {
     var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
@@ -222,6 +223,23 @@ fun TeamsGoldenDetailScreen(
                 Text(specimen?.let { "CP ${it.cp ?: "?"} · ${it.iv.attack}/${it.iv.defense}/${it.iv.stamina}" }
                     ?: "Este exemplar foi removido ou não está disponível.",
                     color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        item {
+            TeamsCard {
+                Text("REORGANIZAR POSIÇÕES", fontWeight = FontWeight.Bold)
+                Text("Troca os papéis sem alterar os três Pokémon guardados.",
+                    color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                OutlinedButton(
+                    onClick = { onSwapRoles(TeamRole.LEAD, TeamRole.SAFE_SWITCH) },
+                    enabled = !operationInProgress,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) { Text("Trocar Lead ↔ Safe Switch") }
+                OutlinedButton(
+                    onClick = { onSwapRoles(TeamRole.SAFE_SWITCH, TeamRole.CLOSER) },
+                    enabled = !operationInProgress,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) { Text("Trocar Safe Switch ↔ Closer") }
             }
         }
         if (!team.notes.isNullOrBlank()) item { TeamsCard { Text("NOTAS", style = MaterialTheme.typography.labelMedium); Text(team.notes.orEmpty()) } }
