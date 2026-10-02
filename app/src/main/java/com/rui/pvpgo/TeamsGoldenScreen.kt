@@ -258,18 +258,8 @@ fun TeamsGoldenDetailScreen(
     }
     val activeRole = replacingRole
     if (activeRole != null) {
-        val complete = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
-        val assignedElsewhere = team.members.filter { it.role != activeRole }.map { it.ownedPokemonId }.toSet()
-        val cap = SpeciesLeaguePolicy.cpLimit(team.league)
-        val normalizedReplacementQuery = replacementQuery.trim()
-        val candidates = complete.filter { candidate ->
-            candidate.id !in assignedElsewhere &&
-                (cap == null || (candidate.cp?.let { it <= cap } == true)) &&
-                (normalizedReplacementQuery.isBlank() ||
-                    (names[candidate.speciesId] ?: candidate.speciesId).contains(normalizedReplacementQuery, ignoreCase = true) ||
-                    candidate.speciesId.contains(normalizedReplacementQuery, ignoreCase = true) ||
-                    candidate.id.contains(normalizedReplacementQuery, ignoreCase = true) ||
-                    (candidate.nickname ?: "").contains(normalizedReplacementQuery, ignoreCase = true))
+        val candidates = remember(team, activeRole, owned, replacementQuery, names) {
+            TeamsGoldenPolicy.replacementCandidates(team, activeRole, owned, replacementQuery, names)
         }
         AlertDialog(
             onDismissRequest = { if (!operationInProgress) replacingRole = null },
