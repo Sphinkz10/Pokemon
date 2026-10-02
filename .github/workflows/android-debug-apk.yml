@@ -74,6 +74,8 @@ jobs:
           assert "ids.getOrNull(index)" in lineup
           picker = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenScreen.kt").read_text()
           assert "TeamPickerSearchPolicy.matches(candidate" in picker
+          assert "visibleCandidates = filtered.take(visibleLimit)" in picker
+          assert "visibleLimit += 75" in picker
           search_policy = Path("app/src/main/java/com/rui/pvpgo/TeamPickerSearchPolicy.kt").read_text()
           assert "dex?.toString() == term" in search_policy
           assert "candidate.nickname?.contains(term" in search_policy
