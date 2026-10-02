@@ -201,6 +201,9 @@ interface CollectionDao {
     @Upsert
     suspend fun upsertSavedTeam(item: SavedTeamEntity)
 
+    @Query("DELETE FROM saved_team WHERE id = :id")
+    suspend fun deleteSavedTeam(id: String)
+
     @Query("SELECT * FROM battle_record ORDER BY playedAtEpochMs DESC, id ASC")
     fun observeBattleRecords(): Flow<List<BattleRecordEntity>>
 
@@ -326,6 +329,7 @@ class CollectionRepository private constructor(private val db: PvpUserDatabase) 
     suspend fun deleteOwned(id: String) = dao.deleteOwned(id)
     suspend fun upsertBuildPlan(item: PvpBuildPlan) = dao.upsertBuildPlan(item.toEntity())
     suspend fun upsertSavedTeam(item: SavedTeam) = dao.upsertSavedTeam(item.toEntity())
+    suspend fun deleteSavedTeam(id: String) = dao.deleteSavedTeam(id)
     suspend fun upsertBattleRecord(item: BattleRecord) = dao.upsertBattleRecord(item.toEntity())
     suspend fun deleteBattleRecord(id: String) = dao.deleteBattleRecord(id)
 
