@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -209,9 +210,9 @@ fun TeamsGoldenBuilderScreen(
     onLeagueChange: (League) -> Unit, onStyleChange: (TeamStyleBias) -> Unit,
     onAnchorChange: (String?) -> Unit, onBack: () -> Unit, onGenerate: () -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
-    var pickerOpen by remember { mutableStateOf(false) }
-    var visibleLimit by remember { mutableIntStateOf(75) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var pickerOpen by rememberSaveable { mutableStateOf(false) }
+    var visibleLimit by rememberSaveable { mutableIntStateOf(75) }
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     val speciesById = remember(catalog) { catalog.associateBy { it.speciesId } }
     val eligible = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
@@ -244,7 +245,7 @@ fun TeamsGoldenBuilderScreen(
             }
         }
         if (pickerOpen) {
-            item { PvpSearchField(query, onValueChange = { query = it }, placeholder = "Nome, alcunha ou #Pokédex…") }
+            item { PvpSearchField(query, onValueChange = { newQuery -> query = newQuery; visibleLimit = 75 }, placeholder = "Nome, alcunha ou #Pokédex…") }
             item { Text("${visibleCandidates.size} de ${filtered.size} resultados · ${eligible.size} exemplares elegíveis", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
             if (filtered.isEmpty()) item { TeamsCard { Text("Sem exemplares com nível e moves completos.") } }
             items(visibleCandidates, key = { it.id }) { pokemon ->
