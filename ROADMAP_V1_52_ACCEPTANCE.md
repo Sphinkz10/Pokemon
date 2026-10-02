@@ -7,10 +7,18 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.64 — Seletor sem limite definitivo de 75
+- [x] Paginação progressiva de resultados locais (75 de cada vez) e contador completo (`d7e1a81`).
+- [x] Guard de wiring no CI (`ca57370`).
+- [ ] CI Android aprovado e testes de navegação com coleção grande.
+- [ ] Verificação física Android e scroll/estado.
+
+**Implementação V1.64:** 2/4 (50%); **aceitação global:** 7/50 (14%).
+
 ### V1.63 — Pesquisa testável e feedback no seletor
 - [x] `TeamPickerSearchPolicy` independente (`b237de8`) e integração no Builder com contador/placeholder (`d5426b0`).
 - [x] Três testes JUnit de pesquisa (`8fbe061`) e exigência no workflow (`ee9ac8c`).
-- [ ] CI aprovado após esta alteração.
+- [ ] CI aprovado após esta alteração; primeira execução V1.63 falhou por assert estrutural desatualizado, corrigido em `cbb633e`.
 - [ ] Verificação visual Android, incluindo coleção superior a 75 exemplares.
 
 **Implementação V1.63:** 2/4 (50%, testes escritos, CI pendente). **Aceitação global:** 7/50 (14%).
