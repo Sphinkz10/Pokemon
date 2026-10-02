@@ -58,6 +58,11 @@ class CollectionNavigationPolicyTest {
         assertFalse(CollectionNavigationPolicy.canRestoreSpecies(CollectionRoute.LIST))
     }
 
+    @Test fun missingSpeciesWaitsForCatalogBeforeFallback() {
+        assertFalse(CollectionNavigationPolicy.shouldFallbackMissingSpecies(false))
+        assertTrue(CollectionNavigationPolicy.shouldFallbackMissingSpecies(true))
+    }
+
     @Test fun comparisonOnlyRestoredWithOriginalPair() {
         assertTrue(CollectionNavigationPolicy.canRestorePair(CollectionRoute.COMPARE))
         assertFalse(CollectionNavigationPolicy.canRestorePair(CollectionRoute.DETAIL))
