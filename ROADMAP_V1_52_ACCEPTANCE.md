@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.76 — Limite de nomes nas cópias
+- [x] Cópia limita nome original a 52 caracteres antes de acrescentar ` (cópia)` (`3fb9505`).
+- [x] Teste unitário com nome original de 60 caracteres (`778ff5f`).
+- [x] Workflow passa a exigir 5 testes da política (`1524114`).
+- [ ] Confirmar CI e validação física.
+
+**Implementação V1.76:** 3/4 (75%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.75 — Recuperação de estado após recriação Android
 - [x] Navegação, equipa selecionada, liga, estilo e âncora em `rememberSaveable` (`e7c03e5`, `64f6c75`).
 - [x] Aguardar primeiro carregamento Room antes de redirecionar detalhe restaurado (`6006cc4`).
