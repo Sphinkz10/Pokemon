@@ -95,6 +95,9 @@ jobs:
           assert "SavedTeamMutationPolicy.duplicate(" in root
           assert "onDelete = {" in root
           assert "operationInProgress = operationInProgress" in root
+          assert "league = selected.league" in root
+          assert "selectedTeamId = null" in root
+          assert "view = TeamsGoldenView.HOME" in root
           assert "var selectedTeamId by rememberSaveable" in root
           assert "var view by rememberSaveable" in root
           assert "var teamsLoaded by remember" in root
