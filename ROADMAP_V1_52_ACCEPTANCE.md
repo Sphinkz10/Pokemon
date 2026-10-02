@@ -10,7 +10,7 @@
 
 **Âmbito:** fechar o percurso Coleção → Pokédex/Pokémon 360 → Exemplar → Editar → Regressar, preservando filtros e sem perda silenciosa de alterações.
 
-**Estado desta implementação:** **8/10 itens de código/testes definidos (80%)**, pendentes build assinado e validação no Android. O progresso global de aceitação mantém-se em **7/50 (14%)**; este checkpoint não é equivalente a ecrãs finais testados.
+**Estado desta implementação:** **9/10 itens verificados por código, JUnit e CI (90%)**. Continua pendente a validação funcional/visual num Android. O progresso global de aceitação mantém-se em **7/50 (14%)**; este checkpoint não é equivalente a ecrãs finais testados.
 
 | Item | Requisito | Evidência | Estado |
 |---|---|---|---|
@@ -22,7 +22,7 @@
 | V57-6 | Confirmar descarte pela seta e pelo Back Android | `AlertDialog` e `BackHandler` | [x] |
 | V57-7 | Impedir ataques novos fora do movepool conhecido sem descartar ataques legados | `movePoolError`, respeitando o catálogo incompleto | [x] |
 | V57-8 | Não assinalar campos desconhecidos como totalmente verificados; três testes JUnit novos | `lastVerifiedAtEpochMs` condicionado + `OwnedBuildValidationTest` | [x] |
-| V57-9 | Concluir integração 22/22, JUnit, APK e assinatura | [GitHub Actions V1.57](https://github.com/Sphinkz10/Pokemon/actions/runs/36943530662) | [ ] |
+| V57-9 | Concluir integração 22/22, 19/19 JUnit, APK e assinatura | [Build verde #36943601185](https://github.com/Sphinkz10/Pokemon/actions/runs/36943601185); artefacto #11200584238 (APKv2) | [x] |
 | V57-10 | Prova em Android: pesquisa → ficha → exemplar → editar → voltar, rotação e dados persistentes | Capturas e teste real do Rui | [ ] |
 
 **Limites:** o mecanismo de estado salvável protege a memória de navegação em Compose, mas a persistência após morte do processo e restauração integral exige teste em aparelho. A edição não é sincronização remota. A variante debug tem `applicationIdSuffix=.installtestv157`, separado das instalações anteriores. A versão de produção requer ID e assinatura estáveis, bem como migração de dados.
