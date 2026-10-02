@@ -1810,6 +1810,7 @@ fun TeamLabRootScreen(
 ) {
     val context = LocalContext.current
     val repository = remember(context) { CollectionRepository.get(context) }
+    val scope = rememberCoroutineScope()
     var owned by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var plans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var teams by remember { mutableStateOf<List<SavedTeam>>(emptyList()) }
@@ -1850,6 +1851,17 @@ fun TeamLabRootScreen(
                         league = selected.league
                         anchorId = null
                         view = TeamsGoldenView.BUILDER
+                    },
+                    onRename = { name ->
+                        val normalized = name.trim()
+                        if (normalized.isNotEmpty() && normalized.length <= 60) {
+                            scope.launch {
+                                repository.upsertSavedTeam(selected.copy(
+                                    name = normalized,
+                                    updatedAtEpochMs = maxOf(System.currentTimeMillis(), selected.updatedAtEpochMs)
+                                ))
+                            }
+                        }
                     }
                 )
             }
