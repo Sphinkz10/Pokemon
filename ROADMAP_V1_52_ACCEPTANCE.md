@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.79 — Integração Room no emulador Android
+- [x] Dependências e runner AndroidX instrumentado (`c054651`).
+- [x] Três testes SQLite/Room reais: duplicação+eliminação, renomeação, eliminação desconhecida (`512b0d6`).
+- [x] CI APK compila fontes instrumentadas (`ded8740`).
+- [x] Workflow de emulador Android 35 criado e disparado (`f03a92b`, run #37037728284).
+- [ ] Confirmar resultados dos workflows e corrigir eventuais falhas.
+- [ ] Validar UX num Android físico.
+
+**Implementação V1.79:** 4/6 (67%, execução/aceitação pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.78 — Duplicação com resultado visível
 - [x] Após sucesso do Room, regressar à lista de equipas para visualizar a cópia (`dfe6018`).
 - [x] Repor filtro para a liga da equipa duplicada (`bc40d90`).
