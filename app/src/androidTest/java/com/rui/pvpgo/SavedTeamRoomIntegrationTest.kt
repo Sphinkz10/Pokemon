@@ -107,6 +107,32 @@ class SavedTeamRoomIntegrationTest {
         assertTrue(preserved.single().isFavorite)
     }
 
+    @Test fun teamsSurviveDatabaseReopen() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val filename = "team-reopen-test.db"
+        context.deleteDatabase(filename)
+        try {
+            val first = Room.databaseBuilder(context, PvpUserDatabase::class.java, filename).build()
+            try {
+                first.collectionDao().upsertSavedTeam(team("persisted", "Equipa persistente"))
+            } finally {
+                first.close()
+            }
+            val second = Room.databaseBuilder(context, PvpUserDatabase::class.java, filename).build()
+            try {
+                val saved = second.collectionDao().observeSavedTeams().first()
+                assertEquals(1, saved.size)
+                assertEquals("persisted", saved.single().id)
+                assertEquals("Equipa persistente", saved.single().name)
+                assertEquals("Original notes", saved.single().notes)
+            } finally {
+                second.close()
+            }
+        } finally {
+            context.deleteDatabase(filename)
+        }
+    }
+
     @Test fun deletingUnknownTeamDoesNotAffectOtherRows() = runBlocking {
         dao.upsertSavedTeam(team("kept"))
         dao.deleteSavedTeam("unknown")
