@@ -7,14 +7,22 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.63 — Pesquisa testável e feedback no seletor
+- [x] `TeamPickerSearchPolicy` independente (`b237de8`) e integração no Builder com contador/placeholder (`d5426b0`).
+- [x] Três testes JUnit de pesquisa (`8fbe061`) e exigência no workflow (`ee9ac8c`).
+- [ ] CI aprovado após esta alteração.
+- [ ] Verificação visual Android, incluindo coleção superior a 75 exemplares.
+
+**Implementação V1.63:** 2/4 (50%, testes escritos, CI pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.62 — Pesquisa no Builder e cobertura defensiva
 - [x] Pesquisa de exemplar por nome, alcunha, speciesId e número Dex (com ou sem `#`) (`9769b1b`).
 - [x] Ignorar cobertura primária não finita/fora de 0–100 no ranking de variantes (`694380d`).
 - [x] Guard estrutural acrescentado ao CI (`de388aa`).
-- [ ] CI aprovado para estas novas alterações.
+- [x] CI aprovado: [run #37019771241](https://github.com/Sphinkz10/Pokemon/actions/runs/37019771241), commit `de388aa`.
 - [ ] Teste funcional/visual Android.
 
-**Implementação V1.62:** 3/5 (60%, CI e Android pendentes). **Aceitação global:** 7/50 (14%).
+**Implementação/CI V1.62:** 4/5 (80%, Android pendente). **Aceitação global:** 7/50 (14%).
 
 ### V1.61 — Equipas: resultados com três posições seguras
 - [x] UI: `GoldenTeamLineup` apresenta sempre três posições, mesmo perante listas incompletas ou excessivas (`182bb90`).
