@@ -72,6 +72,11 @@ jobs:
           lineup = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenResultsScreen.kt").read_text()
           assert "(0..2).forEach { index ->" in lineup
           assert "ids.getOrNull(index)" in lineup
+          picker = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenScreen.kt").read_text()
+          assert "species?.dex?.toString() == term" in picker
+          assert "candidate.nickname?.contains(term" in picker
+          result_policy = Path("app/src/main/java/com/rui/pvpgo/TeamsGoldenResultPolicy.kt").read_text()
+          assert "primaryCoverage.isFinite()" in result_policy
           print("TEAM_LOCKED_SLOT_GUARD_OK (structural only)")
           PY
       - name: Build debug APK directly from repository
