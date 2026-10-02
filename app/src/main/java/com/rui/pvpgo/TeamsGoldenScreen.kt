@@ -212,12 +212,18 @@ fun TeamsGoldenBuilderScreen(
     var query by remember { mutableStateOf("") }
     var pickerOpen by remember { mutableStateOf(false) }
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
+    val speciesById = remember(catalog) { catalog.associateBy { it.speciesId } }
     val eligible = remember(owned) { TeamsGoldenPolicy.completeCandidates(owned) }
     val selected = eligible.firstOrNull { it.id == selectedAnchorId }
-    val filtered = remember(eligible, names, query) {
+    val filtered = remember(eligible, names, speciesById, query) {
         eligible.filter { candidate ->
             val name = names[candidate.speciesId] ?: candidate.speciesId
-            name.contains(query.trim(), ignoreCase = true) || candidate.nickname?.contains(query.trim(), ignoreCase = true) == true
+            val term = query.trim().removePrefix("#")
+            val species = speciesById[candidate.speciesId]
+            term.isEmpty() || name.contains(term, ignoreCase = true) ||
+                candidate.nickname?.contains(term, ignoreCase = true) == true ||
+                candidate.speciesId.contains(term, ignoreCase = true) ||
+                (term.isNotEmpty() && species?.dex?.toString() == term)
         }.take(75)
     }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
