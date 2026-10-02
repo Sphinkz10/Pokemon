@@ -169,7 +169,7 @@ fun TeamsGoldenHomeScreen(
 fun TeamsGoldenDetailScreen(
     team: SavedTeam, owned: List<OwnedPokemon>, catalog: List<PokemonSpecies>,
     plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit,
-    onRename: (String) -> Unit
+    onRename: (String) -> Unit, renameMessage: String?
 ) {
     var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
     var draftName by rememberSaveable(team.id) { mutableStateOf(team.name) }
@@ -205,6 +205,9 @@ fun TeamsGoldenDetailScreen(
                     }
                 }
             }
+        }
+        if (renameMessage != null) item {
+            Text(renameMessage, color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
         }
         item { TeamsSection("EXEMPLARES", "3 posições") }
         items(listOf(TeamRole.LEAD, TeamRole.SAFE_SWITCH, TeamRole.CLOSER)) { role ->
