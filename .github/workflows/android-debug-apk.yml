@@ -94,6 +94,10 @@ jobs:
           assert "SavedTeamMutationPolicy.duplicate(" in root
           assert "onDelete = {" in root
           assert "operationInProgress = operationInProgress" in root
+          assert "var selectedTeamId by rememberSaveable" in root
+          assert "var view by rememberSaveable" in root
+          assert "var teamsLoaded by remember" in root
+          assert "if (teamsLoaded)" in root
           assert "operationInProgress = false" in root
           assert "enabled = !operationInProgress" in picker
           assert "repository.deleteSavedTeam(selected.id)" in root
