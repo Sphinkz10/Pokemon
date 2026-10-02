@@ -168,8 +168,12 @@ fun TeamsGoldenHomeScreen(
 @Composable
 fun TeamsGoldenDetailScreen(
     team: SavedTeam, owned: List<OwnedPokemon>, catalog: List<PokemonSpecies>,
-    plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit
+    plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit,
+    onRename: (String) -> Unit
 ) {
+    var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
+    var draftName by rememberSaveable(team.id) { mutableStateOf(team.name) }
+    val validName = draftName.trim().isNotEmpty() && draftName.trim().length <= 60
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     val ownedById = remember(owned) { owned.associateBy { it.id } }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -184,6 +188,22 @@ fun TeamsGoldenDetailScreen(
                 ThreeTeamMembers(team, ownedById, names)
                 Text(TeamsGoldenPolicy.summary(team, ownedById, plans), color = PvpColors.TextSecondary,
                     style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        item {
+            TeamsCard {
+                if (renaming) {
+                    OutlinedTextField(value = draftName, onValueChange = { draftName = it.take(60) },
+                        label = { Text("Nome da equipa") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { draftName = team.name; renaming = false }) { Text("Cancelar") }
+                        Button(onClick = { onRename(draftName.trim()); renaming = false }, enabled = validName) { Text("Guardar nome") }
+                    }
+                } else {
+                    OutlinedButton(onClick = { draftName = team.name; renaming = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("Alterar nome da equipa")
+                    }
+                }
             }
         }
         item { TeamsSection("EXEMPLARES", "3 posições") }
