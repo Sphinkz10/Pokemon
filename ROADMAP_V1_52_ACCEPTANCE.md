@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.90 — Fonte única de elegibilidade para substituições
+- [x] V1.89 CI verde ([run #37048012503](https://github.com/Sphinkz10/Pokemon/actions/runs/37048012503)).
+- [x] `TeamsGoldenPolicy.replacementCandidates` unifica CP por liga, nível, movimentos, exclusão de exemplares ocupados e pesquisa (`420b7b0`).
+- [x] Gravação e seletor usam exatamente a mesma política (`a27a203`, `54c2198`).
+- [x] Três regressões para equivalência entre seleção/gravação, pesquisa e exclusão de duplicados; CI exige 21 testes (`6273d85`, `cfe831f`).
+- [ ] CI integrado [#37048677229](https://github.com/Sphinkz10/Pokemon/actions/runs/37048677229).
+- [ ] Verificação manual de UI, estados e scroll no Android.
+
+**Implementação V1.90:** 4/6 (67%, CI/dispositivo pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.89 — Limites de CP centralizados por liga
 - [x] V1.88 CI de APK aprovado ([run #37047475731](https://github.com/Sphinkz10/Pokemon/actions/runs/37047475731)).
 - [x] Contrato partilhado `SpeciesLeaguePolicy.cpLimit`: Little 500, Great 1500, Ultra 2500, Master sem limite (`e385a11`).
