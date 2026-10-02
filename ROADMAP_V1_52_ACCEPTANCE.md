@@ -7,10 +7,19 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.67 — Renomear equipa guardada
+- [x] Edição do nome no detalhe com validação, cancelamento e máximo de 60 caracteres (`9c9cfbe`).
+- [x] Atualização persistente do mesmo ID e membros via `upsertSavedTeam` (`2c1ed7e`).
+- [x] Guard estrutural no CI (`9c039e0`).
+- [ ] CI aprovado, edição testada em Android e erros de gravação tratados na interface.
+
+**Implementação V1.67:** 3/4 (75% de código, validação pendente); **aceitação global:** 7/50 (14%).
+
 ### V1.66 — Testes executados de resultados de equipas
 - [x] Quatro testes Android JUnit: 3 IDs distintos, seleção verificada, herança de papéis, cobertura inválida (`11177ab`).
 - [x] CI exige relatório `TeamsGoldenResultPolicyTest` com quatro testes (`6a01ec6`).
-- [ ] CI confirmado para este commit; testar guardar/reabrir no dispositivo.
+- [x] CI aprovado: [run #37026390151](https://github.com/Sphinkz10/Pokemon/actions/runs/37026390151).
+- [ ] Testar guardar/reabrir no dispositivo.
 
 **Implementação V1.66:** 2/3 (67%, execução pendente). **Aceitação global:** 7/50 (14%).
 
