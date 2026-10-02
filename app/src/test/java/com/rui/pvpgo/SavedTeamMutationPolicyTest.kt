@@ -1,5 +1,7 @@
 package com.rui.pvpgo
 
+import com.rui.pvpgo.domain.OwnedPokemon
+import com.rui.pvpgo.engine.IvSpread
 import com.rui.pvpgo.domain.SavedTeam
 import com.rui.pvpgo.domain.TeamMember
 import com.rui.pvpgo.domain.TeamRole
@@ -18,6 +20,52 @@ class SavedTeamMutationPolicyTest {
         isPrimary = true, notes = "meta notes",
         createdAtEpochMs = 100L, updatedAtEpochMs = 200L
     )
+
+    private fun specimen(id: String, cp: Int = 1200, ready: Boolean = true) = OwnedPokemon(
+        id = id, speciesId = "pikachu", iv = IvSpread(10, 11, 12),
+        cp = cp, level = 20.0, fastMoveId = if (ready) "quick-attack" else null,
+        chargedMoveIds = if (ready) listOf("thunderbolt") else emptyList(),
+        createdAtEpochMs = 100L
+    )
+
+    @Test fun replaceMemberKeepsOtherRolesAndIdentity() {
+        val original = original()
+        val newPokemon = specimen("four")
+        val changed = SavedTeamMutationPolicy.replaceMember(
+            original, TeamRole.SAFE_SWITCH, newPokemon, listOf(newPokemon), 300L
+        )
+        assertEquals("four", changed.members.single { it.role == TeamRole.SAFE_SWITCH }.ownedPokemonId)
+        assertEquals("one", changed.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+        assertEquals("three", changed.members.single { it.role == TeamRole.CLOSER }.ownedPokemonId)
+        assertEquals(original.id, changed.id)
+        assertEquals(original.notes, changed.notes)
+        assertEquals(300L, changed.updatedAtEpochMs)
+        assertEquals("two", original.members.single { it.role == TeamRole.SAFE_SWITCH }.ownedPokemonId)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun replaceRejectsDuplicateSpecimen() {
+        val duplicate = specimen("one")
+        SavedTeamMutationPolicy.replaceMember(original(), TeamRole.CLOSER, duplicate, listOf(duplicate), 300L)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun replaceRejectsAboveLeagueCap() {
+        val aboveCap = specimen("four", cp = 1501)
+        SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, aboveCap, listOf(aboveCap), 300L)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun replaceRejectsIncompleteMoves() {
+        val incomplete = specimen("four", ready = false)
+        SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, incomplete, listOf(incomplete), 300L)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun replaceRejectsPokemonOutsideCollection() {
+        val missing = specimen("four")
+        SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, missing, emptyList(), 300L)
+    }
 
     @Test fun duplicateKeepsSpecimensRolesLeagueAndNotes() {
         val original = original()
