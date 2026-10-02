@@ -17,6 +17,32 @@ object TeamsGoldenPolicy {
         owned.filter { it.level != null && !it.fastMoveId.isNullOrBlank() && it.chargedMoveIds.isNotEmpty() }
             .sortedWith(compareBy<OwnedPokemon> { it.speciesId }.thenBy { it.id })
 
+    /**
+     * The same replacement eligibility is used by the picker and persistence policy.
+     * Does not claim PvP viability or battle strength; checks collection readiness and CP only.
+     */
+    fun replacementCandidates(
+        team: SavedTeam,
+        role: TeamRole,
+        owned: List<OwnedPokemon>,
+        query: String = "",
+        names: Map<String, String> = emptyMap()
+    ): List<OwnedPokemon> {
+        val assignedElsewhere = team.members.asSequence()
+            .filter { it.role != role }.map { it.ownedPokemonId }.toSet()
+        val cap = SpeciesLeaguePolicy.cpLimit(team.league)
+        val normalized = query.trim()
+        return completeCandidates(owned).filter { candidate ->
+            candidate.id !in assignedElsewhere &&
+                (cap == null || candidate.cp?.let { it <= cap } == true) &&
+                (normalized.isEmpty() ||
+                    (names[candidate.speciesId] ?: candidate.speciesId).contains(normalized, ignoreCase = true) ||
+                    candidate.speciesId.contains(normalized, ignoreCase = true) ||
+                    candidate.id.contains(normalized, ignoreCase = true) ||
+                    (candidate.nickname ?: "").contains(normalized, ignoreCase = true))
+        }
+    }
+
     fun memberNames(team: SavedTeam, ownedById: Map<String, OwnedPokemon>, names: Map<String, String>): String =
         listOf(TeamRole.LEAD, TeamRole.SAFE_SWITCH, TeamRole.CLOSER).joinToString(" · ") { role ->
             val member = team.members.firstOrNull { it.role == role }
