@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.74 — Escritas serializadas e instalação segura
+- [x] Estado de operação bloqueia múltiplos toques durante renomeação, duplicação e eliminação (`9c8333c`, `7d0a2f5`).
+- [x] Guard CI de bloqueio (`039541f`).
+- [x] Documentação corrige identificador separado da APK de diagnóstico e isolamento da base de dados (`45f2fdb`).
+- [x] CI anterior aprovado: run #37030787879.
+- [ ] CI do novo código e ensaios Android físicos.
+
+**Implementação V1.74:** 4/5 (80%, nova compilação e dispositivo pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.73 — Fecho verificável de Equipas
 - [x] CI V1.71 e V1.72 aprovados: runs #37030210991, #37030389759 e #37030398353.
 - [x] Artefacto APK renomeado para identificar corretamente main atual (`337e974`).
