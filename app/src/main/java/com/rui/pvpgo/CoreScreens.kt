@@ -1818,6 +1818,7 @@ fun TeamLabRootScreen(
     var style by remember { mutableStateOf(TeamStyleBias.BALANCED) }
     var anchorId by remember { mutableStateOf<String?>(null) }
     var selectedTeamId by remember { mutableStateOf<String?>(null) }
+    var renameMessage by remember { mutableStateOf<String?>(null) }
     var view by remember { mutableStateOf(TeamsGoldenView.HOME) }
 
     LaunchedEffect(repository) { repository.collection.collectLatest { owned = it } }
@@ -1829,7 +1830,7 @@ fun TeamLabRootScreen(
             catalog = catalog, owned = owned, plans = plans, teams = teams, league = league,
             onLeagueChange = { league = it },
             onCreate = { view = TeamsGoldenView.BUILDER },
-            onOpenTeam = { selectedTeamId = it; view = TeamsGoldenView.DETAIL }
+            onOpenTeam = { selectedTeamId = it; renameMessage = null; view = TeamsGoldenView.DETAIL }
         )
         TeamsGoldenView.BUILDER -> TeamsGoldenBuilderScreen(
             catalog = catalog, owned = owned, plans = plans, league = league, style = style,
@@ -1855,14 +1856,19 @@ fun TeamLabRootScreen(
                     onRename = { name ->
                         val normalized = name.trim()
                         if (normalized.isNotEmpty() && normalized.length <= 60) {
+                            renameMessage = "A guardar alterações…"
                             scope.launch {
-                                repository.upsertSavedTeam(selected.copy(
-                                    name = normalized,
-                                    updatedAtEpochMs = maxOf(System.currentTimeMillis(), selected.updatedAtEpochMs)
-                                ))
+                                runCatching {
+                                    repository.upsertSavedTeam(selected.copy(
+                                        name = normalized,
+                                        updatedAtEpochMs = maxOf(System.currentTimeMillis(), selected.updatedAtEpochMs)
+                                    ))
+                                }.onSuccess { renameMessage = "Nome guardado." }
+                                    .onFailure { renameMessage = "Falha ao guardar o nome. Tenta novamente." }
                             }
                         }
-                    }
+                    },
+                    renameMessage = renameMessage
                 )
             }
         }
