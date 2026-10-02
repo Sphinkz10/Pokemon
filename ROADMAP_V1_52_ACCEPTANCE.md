@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.68 — Feedback de gravação Room
+- [x] Detalhe recebe mensagem de resultado (`6edfd93`).
+- [x] `runCatching` em upsert, estados de progresso/sucesso/falha (`8f7a339`).
+- [x] Guard estrutural CI (`3c28cfb`).
+- [ ] CI verde e testes em dispositivo, incluindo falha induzida.
+
+**Implementação V1.68:** 3/4 (75%, validação pendente); **aceitação global:** 7/50 (14%).
+
 ### V1.67 — Renomear equipa guardada
 - [x] Edição do nome no detalhe com validação, cancelamento e máximo de 60 caracteres (`9c9cfbe`).
 - [x] Atualização persistente do mesmo ID e membros via `upsertSavedTeam` (`2c1ed7e`).
