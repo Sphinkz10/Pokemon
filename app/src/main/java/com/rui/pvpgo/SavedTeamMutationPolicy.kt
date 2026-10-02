@@ -35,16 +35,9 @@ internal object SavedTeamMutationPolicy {
                       replacement: com.rui.pvpgo.domain.OwnedPokemon,
                       collection: List<com.rui.pvpgo.domain.OwnedPokemon>, now: Long): SavedTeam {
         require(now >= original.updatedAtEpochMs) { "Timestamp must not move backwards" }
-        require(collection.any { it.id == replacement.id }) { "Specimen is not in collection" }
-        require(TeamsGoldenPolicy.completeCandidates(collection).any { it.id == replacement.id }) {
-            "Specimen needs complete moves and level"
-        }
-        val cap = SpeciesLeaguePolicy.cpLimit(original.league)
-        require(cap == null || (replacement.cp?.let { it <= cap } == true)) {
-            "Specimen exceeds league CP cap or has unknown CP"
-        }
-        require(original.members.none { it.role != role && it.ownedPokemonId == replacement.id }) {
-            "Specimen is already assigned to another role"
+        require(TeamsGoldenPolicy.replacementCandidates(original, role, collection)
+            .any { it.id == replacement.id }) {
+            "Specimen is missing, incomplete, over the CP cap or already assigned"
         }
         val updated = original.members.map { member ->
             if (member.role == role) member.copy(ownedPokemonId = replacement.id) else member
