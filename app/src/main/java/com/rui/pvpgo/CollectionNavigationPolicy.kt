@@ -30,6 +30,9 @@ internal object CollectionNavigationPolicy {
         CollectionRoute.INBOX -> CollectionRoute.LIST
     }
 
+    /** An empty asynchronous catalog is not proof that a saved species disappeared. */
+    fun shouldFallbackMissingSpecies(catalogLoaded: Boolean): Boolean = catalogLoaded
+
     fun canRestoreSpecies(route: CollectionRoute): Boolean =
         route in setOf(CollectionRoute.SPECIES, CollectionRoute.EXEMPLARS,
             CollectionRoute.COMPARE, CollectionRoute.IV_TARGETS)
