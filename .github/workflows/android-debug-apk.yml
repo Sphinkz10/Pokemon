@@ -61,6 +61,16 @@ jobs:
         run: python3 tests/v1_57_collection_flow/verify_flow.py
       - name: Validate V1.58 lifecycle-safe Collection navigation
         run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
+      - name: Validate Team Advisor locked-slot regression wiring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          advisor = Path("app/src/main/java/com/rui/pvpgo/CollectionTeamAdvisor.kt").read_text()
+          fixture = Path("tools/TeamAdvisorV122Validation.kt").read_text()
+          assert "constraints.lockedOwnedPokemonIds.size > 3" in advisor
+          assert "TeamAdvisorStatus.REFUSED" in fixture and "tooManyLocks" in fixture
+          print("TEAM_LOCKED_SLOT_GUARD_OK (structural only)")
+          PY
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
       - name: Run Android policy unit tests
