@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.88 — Pesquisa escalável no seletor de substituição
+- [x] V1.87 APK e testes instrumentados aprovados ([APK #37046519787](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519787), [Room #37046519722](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519722)).
+- [x] Seletor mostra 75 resultados iniciais e botão «Mostrar mais 75 Pokémon» até esgotar candidatos (`cd2a98f`).
+- [x] Pesquisa aceita nome, espécie, alcunha e identificador do exemplar; reinicia paginação após nova pesquisa.
+- [x] CI verifica paginação e pesquisa por identificador (`42e53be`).
+- [ ] Confirmar compilação integrada [#37047475731](https://github.com/Sphinkz10/Pokemon/actions/runs/37047475731).
+- [ ] Validar visualmente com coleção grande num dispositivo Android.
+
+**Implementação V1.88:** 4/6 (67%, compilação e teste físico pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.87 — Teste Android da persistência de substituições
 - [x] CI V1.85 falhou com dois erros Kotlin de smart cast de CP; correção publicada em V1.86.
 - [x] Teste Room instrumentado de substituição guarda equipa com três papéis, substitui Safe Switch, verifica identidade, papéis únicos, outros dois exemplares e notas (`40999a7`, `dc23ed6`).
