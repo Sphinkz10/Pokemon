@@ -1912,6 +1912,22 @@ fun TeamLabRootScreen(
                         }
                         }
                     },
+                    onSwapRoles = { first, second ->
+                        if (!operationInProgress) {
+                            operationInProgress = true
+                            renameMessage = "A guardar posições…"
+                            scope.launch {
+                                runCatching {
+                                    repository.upsertSavedTeam(SavedTeamMutationPolicy.swapRoles(
+                                        selected, first, second,
+                                        maxOf(System.currentTimeMillis(), selected.updatedAtEpochMs)
+                                    ))
+                                }.onSuccess { renameMessage = "Posições guardadas." }
+                                    .onFailure { renameMessage = "Falha ao guardar posições. Tenta novamente." }
+                                operationInProgress = false
+                            }
+                        }
+                    },
                     operationInProgress = operationInProgress
                 )
             }
