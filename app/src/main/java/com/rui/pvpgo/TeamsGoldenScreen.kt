@@ -281,7 +281,13 @@ fun TeamsGoldenBuilderScreen(
         if (pickerOpen) {
             item { PvpSearchField(query, onValueChange = { newQuery -> query = newQuery; visibleLimit = 75 }, placeholder = "Nome, alcunha ou #Pokédex…") }
             item { Text("${visibleCandidates.size} de ${filtered.size} resultados · ${eligible.size} exemplares elegíveis", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
-            if (filtered.isEmpty()) item { TeamsCard { Text("Sem exemplares com nível e moves completos.") } }
+            if (filtered.isEmpty()) item {
+                TeamsCard {
+                    Text(if (eligible.isEmpty()) "Não tens Pokémon elegíveis. Completa o nível e os movimentos na Coleção."
+                         else "Nenhum Pokémon corresponde à pesquisa. Experimenta o nome, alcunha ou número da Pokédex.")
+                    if (query.isNotBlank()) TextButton(onClick = { query = ""; visibleLimit = 75 }) { Text("Limpar pesquisa") }
+                }
+            }
             items(visibleCandidates, key = { it.id }) { pokemon ->
                 TeamsCard(onClick = { onAnchorChange(pokemon.id); pickerOpen = false }) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
