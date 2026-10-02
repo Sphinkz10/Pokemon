@@ -199,11 +199,11 @@ fun TeamsGoldenDetailScreen(
                     OutlinedTextField(value = draftName, onValueChange = { draftName = it.take(60) },
                         label = { Text("Nome da equipa") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { draftName = team.name; renaming = false }) { Text("Cancelar") }
+                        TextButton(onClick = { draftName = team.name; renaming = false }, enabled = !operationInProgress) { Text("Cancelar") }
                         Button(onClick = { onRename(draftName.trim()); renaming = false }, enabled = validName && !operationInProgress) { Text("Guardar nome") }
                     }
                 } else {
-                    OutlinedButton(onClick = { draftName = team.name; renaming = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    OutlinedButton(onClick = { draftName = team.name; renaming = true }, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text("Alterar nome da equipa")
                     }
                 }
@@ -227,7 +227,7 @@ fun TeamsGoldenDetailScreen(
         if (!team.notes.isNullOrBlank()) item { TeamsCard { Text("NOTAS", style = MaterialTheme.typography.labelMedium); Text(team.notes.orEmpty()) } }
         item { OutlinedButton(onClick = onDuplicate, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Duplicar equipa") } }
         item { OutlinedButton(onClick = { confirmDelete = true }, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Eliminar equipa") } }
-        item { OutlinedButton(onClick = onAdjust, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
+        item { OutlinedButton(onClick = onAdjust, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
     }
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
