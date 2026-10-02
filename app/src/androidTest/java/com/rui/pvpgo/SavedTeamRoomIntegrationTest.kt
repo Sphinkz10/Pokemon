@@ -66,6 +66,47 @@ class SavedTeamRoomIntegrationTest {
         assertEquals(original.members, saved.single().members)
     }
 
+    @Test fun deletingTeamPreservesOwnedPokemonCollection() = runBlocking {
+        val pokemon = OwnedPokemonEntity(
+            id = "pokemon-one",
+            speciesId = "pikachu",
+            ivAttack = 10,
+            ivDefense = 11,
+            ivStamina = 12,
+            cp = 500,
+            level = 20.0,
+            nickname = null,
+            isShadow = false,
+            isPurified = false,
+            isShiny = false,
+            isLucky = false,
+            isBestBuddy = false,
+            isFavorite = true,
+            fastMoveId = null,
+            chargedMoveIds = "",
+            secondChargedMoveUnlocked = null,
+            tags = "",
+            acquisitionMethod = "UNKNOWN",
+            caughtAtEpochMs = null,
+            createdAtEpochMs = 100L,
+            updatedAtEpochMs = 100L,
+            externalSource = null,
+            externalId = null,
+            lastVerifiedAtEpochMs = null,
+            verificationSource = "UNVERIFIED",
+            uncertainFields = ""
+        )
+        dao.upsertOwned(pokemon)
+        dao.upsertSavedTeam(team("deleted"))
+        dao.deleteSavedTeam("deleted")
+        assertTrue(dao.observeSavedTeams().first().isEmpty())
+        val preserved = dao.collection()
+        assertEquals(1, preserved.size)
+        assertEquals(pokemon.id, preserved.single().id)
+        assertEquals(pokemon.speciesId, preserved.single().speciesId)
+        assertTrue(preserved.single().isFavorite)
+    }
+
     @Test fun deletingUnknownTeamDoesNotAffectOtherRows() = runBlocking {
         dao.upsertSavedTeam(team("kept"))
         dao.deleteSavedTeam("unknown")
