@@ -74,8 +74,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
-private enum class CollectionRoute { LIST, SPECIES, EXEMPLARS, COMPARE, DETAIL, IV_TARGETS, IMPORT_HOME, MANUAL_QUICK, MANUAL_GUIDED, PASTE, INBOX }
-
 @Composable
 fun CollectionModuleScreen(
     catalog: List<PokemonSpecies>,
@@ -88,24 +86,42 @@ fun CollectionModuleScreen(
     var collection by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var pending by remember { mutableStateOf<List<CandidateInboxItem>>(emptyList()) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
-    var selectedOwnedId by remember { mutableStateOf<String?>(null) }
-    var selectedSpeciesId by remember { mutableStateOf<String?>(null) }
-    var compareIds by remember { mutableStateOf<Pair<String, String>?>(null) }
-    var speciesLeague by remember { mutableStateOf(League.GREAT) }
+    var selectedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedSpeciesId by rememberSaveable { mutableStateOf<String?>(null) }
+    var compareFirstId by rememberSaveable { mutableStateOf<String?>(null) }
+    var compareSecondId by rememberSaveable { mutableStateOf<String?>(null) }
+    val compareIds = compareFirstId?.let { a -> compareSecondId?.let { b -> a to b } }
+    var speciesLeague by rememberSaveable { mutableStateOf(League.GREAT) }
+    // Wait for the first Room emission before deciding that a restored record
+    // has disappeared. Empty list initially does not mean an empty database.
+    var collectionLoaded by remember { mutableStateOf(false) }
     // Preserve the entry route; the detail screen can be opened from more
     // than one part of Collection, and Back should reverse that path.
-    var detailReturnRoute by remember { mutableStateOf(CollectionRoute.SPECIES) }
-    var compareReturnRoute by remember { mutableStateOf(CollectionRoute.EXEMPLARS) }
-    var targetsReturnRoute by remember { mutableStateOf(CollectionRoute.SPECIES) }
+    var detailReturnRoute by rememberSaveable { mutableStateOf(CollectionRoute.SPECIES) }
+    var compareReturnRoute by rememberSaveable { mutableStateOf(CollectionRoute.EXEMPLARS) }
+    var targetsReturnRoute by rememberSaveable { mutableStateOf(CollectionRoute.SPECIES) }
 
     LaunchedEffect(repository) {
-        repository.collection.collectLatest { collection = it }
+        repository.collection.collectLatest {
+            collection = it
+            collectionLoaded = true
+        }
     }
     LaunchedEffect(repository) {
         repository.pendingInbox.collectLatest { pending = it }
     }
     LaunchedEffect(repository) {
         repository.buildPlans.collectLatest { buildPlans = it }
+    }
+
+    // DETAIL has a dedicated unsaved-edit BackHandler; it takes precedence.
+    BackHandler(enabled = route != CollectionRoute.LIST && route != CollectionRoute.DETAIL) {
+        route = CollectionNavigationPolicy.backTarget(
+            current = route,
+            detailOrigin = detailReturnRoute,
+            compareOrigin = compareReturnRoute,
+            targetsOrigin = targetsReturnRoute
+        )
     }
 
     when (route) {
@@ -132,7 +148,9 @@ fun CollectionModuleScreen(
         CollectionRoute.SPECIES -> {
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
-                LaunchedEffect(selectedSpeciesId) { route = CollectionRoute.LIST }
+                LaunchedEffect(selectedSpeciesId, catalog) {
+                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                }
             } else {
                 val owned = collection.filter { it.speciesId == species.speciesId }
                 SpeciesOverviewScreen(
@@ -153,7 +171,8 @@ fun CollectionModuleScreen(
                         route = CollectionRoute.DETAIL
                     },
                     onCompare = { a, b ->
-                        compareIds = a to b
+                        compareFirstId = a
+                        compareSecondId = b
                         compareReturnRoute = CollectionRoute.SPECIES
                         route = CollectionRoute.COMPARE
                     }
@@ -178,7 +197,8 @@ fun CollectionModuleScreen(
                         route = CollectionRoute.DETAIL
                     },
                     onCompare = { a, b ->
-                        compareIds = a to b
+                        compareFirstId = a
+                        compareSecondId = b
                         compareReturnRoute = CollectionRoute.EXEMPLARS
                         route = CollectionRoute.COMPARE
                     }
@@ -191,7 +211,11 @@ fun CollectionModuleScreen(
             val a = collection.firstOrNull { it.id == pair?.first && it.speciesId == species?.speciesId }
             val b = collection.firstOrNull { it.id == pair?.second && it.speciesId == species?.speciesId }
             if (species == null || a == null || b == null || !SpeciesCollectionPolicy.validComparison(collection, a.id, b.id)) {
-                LaunchedEffect(species, pair, collection) { route = CollectionRoute.EXEMPLARS }
+                LaunchedEffect(species, pair, collectionLoaded, catalog) {
+                    if (collectionLoaded && catalog.isNotEmpty()) {
+                        route = CollectionRoute.EXEMPLARS
+                    }
+                }
             } else {
                 SpeciesCompareScreen(
                     species = species, first = a, second = b,
@@ -205,7 +229,9 @@ fun CollectionModuleScreen(
         CollectionRoute.DETAIL -> {
             val owned = collection.firstOrNull { it.id == selectedOwnedId }
             if (owned == null) {
-                LaunchedEffect(selectedOwnedId, collection) { route = CollectionRoute.LIST }
+                LaunchedEffect(selectedOwnedId, collectionLoaded) {
+                    if (collectionLoaded) route = CollectionRoute.LIST
+                }
             } else {
                 OwnedPokemonDetailScreen(
                     owned = owned,
@@ -220,7 +246,9 @@ fun CollectionModuleScreen(
         CollectionRoute.IV_TARGETS -> {
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
-                LaunchedEffect(selectedSpeciesId, catalog) { route = CollectionRoute.LIST }
+                LaunchedEffect(selectedSpeciesId, catalog) {
+                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                }
             } else {
                 IvTargetsScreen(
                     species = species,
