@@ -25,6 +25,14 @@ object SpeciesLeaguePolicy {
         League.MASTER -> "Sem limite CP"
     }
 
+    /** Shared CP ceiling; null means the league has no CP limit. */
+    fun cpLimit(league: League): Int? = when (league) {
+        League.LITTLE -> 500
+        League.GREAT -> 1500
+        League.ULTRA -> 2500
+        League.MASTER -> null
+    }
+
     fun rankLabel(rank: Int?): String = rank?.let { "#$it" } ?: "—"
 
     fun statusLabel(rank: Int?, computing: Boolean): String =
