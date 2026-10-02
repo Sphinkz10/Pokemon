@@ -39,11 +39,7 @@ internal object SavedTeamMutationPolicy {
         require(TeamsGoldenPolicy.completeCandidates(collection).any { it.id == replacement.id }) {
             "Specimen needs complete moves and level"
         }
-        val cap = when (original.league) {
-            com.rui.pvpgo.engine.League.GREAT -> 1500
-            com.rui.pvpgo.engine.League.ULTRA -> 2500
-            else -> null
-        }
+        val cap = SpeciesLeaguePolicy.cpLimit(original.league)
         require(cap == null || (replacement.cp?.let { it <= cap } == true)) {
             "Specimen exceeds league CP cap or has unknown CP"
         }
