@@ -86,6 +86,9 @@ jobs:
           assert "repository.upsertSavedTeam(selected.copy(" in root
           assert "Falha ao guardar o nome. Tenta novamente." in root
           assert "renameMessage = renameMessage" in root
+          assert "onDuplicate = {" in root
+          assert "isPrimary = false" in root
+          assert "id = UUID.randomUUID().toString()" in root
           search_policy = Path("app/src/main/java/com/rui/pvpgo/TeamPickerSearchPolicy.kt").read_text()
           assert "dex?.toString() == term" in search_policy
           assert "candidate.nickname?.contains(term" in search_policy
