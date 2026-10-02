@@ -56,6 +56,18 @@ class SavedTeamMutationPolicyTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    fun replaceRejectsUnknownCpInCappedLeague() {
+        val unknown = specimen("four").copy(cp = null)
+        SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, unknown, listOf(unknown), 300L)
+    }
+
+    @Test fun replaceAllowsEligibleSpecimenAtExactCap() {
+        val atCap = specimen("four", cp = 1500)
+        val updated = SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, atCap, listOf(atCap), 300L)
+        assertEquals("four", updated.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
     fun replaceRejectsIncompleteMoves() {
         val incomplete = specimen("four", ready = false)
         SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, incomplete, listOf(incomplete), 300L)
