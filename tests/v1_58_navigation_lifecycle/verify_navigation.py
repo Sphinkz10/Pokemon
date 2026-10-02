@@ -39,7 +39,7 @@ checks={
   "National Dex scroll retained": "nationalScroll = rememberLazyListState()" in overview,
   "seven pure navigation unit cases": test.count("@Test fun ") >= 7,
   "v158 version": 'versionCode = 58' in gradle and 'versionName = "1.58.0-dev"' in gradle,
-  "unique test package": 'applicationIdSuffix = ".installtestv158"' in gradle,
+  "isolated diagnostic test package": 'applicationIdSuffix = ".installtestv190"' in gradle,
 }
 for name, ok in checks.items():
   print(("PASS" if ok else "FAIL"), name)
