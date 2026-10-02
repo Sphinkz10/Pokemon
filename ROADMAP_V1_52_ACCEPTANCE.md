@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.87 — Teste Android da persistência de substituições
+- [x] CI V1.85 falhou com dois erros Kotlin de smart cast de CP; correção publicada em V1.86.
+- [x] Teste Room instrumentado de substituição guarda equipa com três papéis, substitui Safe Switch, verifica identidade, papéis únicos, outros dois exemplares e notas (`40999a7`, `dc23ed6`).
+- [ ] Confirmar CI Android [#37046519722](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519722).
+- [ ] Confirmar compilação com 15 testes [#37046519787](https://github.com/Sphinkz10/Pokemon/actions/runs/37046519787).
+- [ ] Teste visual e interação num telemóvel Android.
+
+**Implementação V1.87:** 2/5 (40%, CI pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.86 — Correção de compilação e limites de CP
 - [x] Diagnóstico CI V1.85: smart cast de `cp` entre módulos falhou em `SavedTeamMutationPolicy.kt` e `TeamsGoldenScreen.kt` ([run #37043585028](https://github.com/Sphinkz10/Pokemon/actions/runs/37043585028)).
 - [x] Comparações CP nullable corrigidas com `cp?.let { it <= cap } == true` (`f8ab949`, `ef354da`).
