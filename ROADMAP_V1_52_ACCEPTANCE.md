@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.75 — Recuperação de estado após recriação Android
+- [x] Navegação, equipa selecionada, liga, estilo e âncora em `rememberSaveable` (`e7c03e5`, `64f6c75`).
+- [x] Aguardar primeiro carregamento Room antes de redirecionar detalhe restaurado (`6006cc4`).
+- [x] Guard CI de estado restaurado (`a818b91`).
+- [ ] Compilação aprovada e rotação testada em dispositivo Android.
+
+**Implementação V1.75:** 3/4 (75%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.74 — Escritas serializadas e instalação segura
 - [x] Estado de operação bloqueia múltiplos toques durante renomeação, duplicação e eliminação (`9c8333c`, `7d0a2f5`).
 - [x] Guard CI de bloqueio (`039541f`).
