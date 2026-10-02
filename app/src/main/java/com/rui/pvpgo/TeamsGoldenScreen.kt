@@ -180,6 +180,7 @@ fun TeamsGoldenDetailScreen(
     var confirmDelete by rememberSaveable(team.id) { mutableStateOf(false) }
     var replacingRole by remember(team.id) { mutableStateOf<TeamRole?>(null) }
     var replacementQuery by remember(team.id) { mutableStateOf("") }
+    var replacementVisibleLimit by remember(team.id) { mutableIntStateOf(75) }
     val validName = draftName.trim().isNotEmpty() && draftName.trim().length <= 60
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     val ownedById = remember(owned) { owned.associateBy { it.id } }
@@ -227,7 +228,7 @@ fun TeamsGoldenDetailScreen(
                     ?: "Este exemplar foi removido ou não está disponível.",
                     color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
                 OutlinedButton(
-                    onClick = { replacingRole = role; replacementQuery = "" },
+                    onClick = { replacingRole = role; replacementQuery = ""; replacementVisibleLimit = 75 },
                     enabled = !operationInProgress,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 ) { Text("Substituir ${role.name.replace('_', ' ')}") }
@@ -264,12 +265,15 @@ fun TeamsGoldenDetailScreen(
             League.ULTRA -> 2500
             else -> null
         }
+        val normalizedReplacementQuery = replacementQuery.trim()
         val candidates = complete.filter { candidate ->
             candidate.id !in assignedElsewhere &&
                 (cap == null || (candidate.cp?.let { it <= cap } == true)) &&
-                (replacementQuery.isBlank() ||
-                    (names[candidate.speciesId] ?: candidate.speciesId).contains(replacementQuery.trim(), ignoreCase = true) ||
-                    (candidate.nickname ?: "").contains(replacementQuery.trim(), ignoreCase = true))
+                (normalizedReplacementQuery.isBlank() ||
+                    (names[candidate.speciesId] ?: candidate.speciesId).contains(normalizedReplacementQuery, ignoreCase = true) ||
+                    candidate.speciesId.contains(normalizedReplacementQuery, ignoreCase = true) ||
+                    candidate.id.contains(normalizedReplacementQuery, ignoreCase = true) ||
+                    (candidate.nickname ?: "").contains(normalizedReplacementQuery, ignoreCase = true))
         }
         AlertDialog(
             onDismissRequest = { if (!operationInProgress) replacingRole = null },
@@ -278,16 +282,16 @@ fun TeamsGoldenDetailScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = replacementQuery,
-                        onValueChange = { replacementQuery = it },
+                        onValueChange = { replacementQuery = it; replacementVisibleLimit = 75 },
                         label = { Text("Pesquisar na Coleção") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Text("${candidates.size} exemplares elegíveis · ${team.league.name}",
+                    Text("${minOf(candidates.size, replacementVisibleLimit)} de ${candidates.size} exemplares · ${team.league.name}",
                         style = MaterialTheme.typography.bodySmall)
                     if (candidates.isEmpty()) Text("Nenhum exemplar disponível com movimentos, nível e CP válidos.")
                     LazyColumn(Modifier.heightIn(max = 320.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(candidates.take(75), key = { it.id }) { candidate ->
+                        items(candidates.take(replacementVisibleLimit), key = { it.id }) { candidate ->
                             OutlinedButton(
                                 enabled = !operationInProgress,
                                 onClick = {
@@ -301,7 +305,12 @@ fun TeamsGoldenDetailScreen(
                             }
                         }
                     }
-                    if (candidates.size > 75) Text("Mostrados 75 resultados. Refina a pesquisa.")
+                    if (candidates.size > replacementVisibleLimit) {
+                        OutlinedButton(
+                            onClick = { replacementVisibleLimit += 75 },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        ) { Text("Mostrar mais 75 Pokémon") }
+                    }
                 }
             },
             confirmButton = {},
