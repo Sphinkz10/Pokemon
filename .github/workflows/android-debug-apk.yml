@@ -80,6 +80,10 @@ jobs:
           assert "var pickerOpen by rememberSaveable" in picker
           assert "var visibleLimit by rememberSaveable" in picker
           assert "query = newQuery; visibleLimit = 75" in picker
+          assert "Alterar nome da equipa" in picker
+          assert "onRename(draftName.trim())" in picker
+          root = Path("app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+          assert "repository.upsertSavedTeam(selected.copy(" in root
           search_policy = Path("app/src/main/java/com/rui/pvpgo/TeamPickerSearchPolicy.kt").read_text()
           assert "dex?.toString() == term" in search_policy
           assert "candidate.nickname?.contains(term" in search_policy
