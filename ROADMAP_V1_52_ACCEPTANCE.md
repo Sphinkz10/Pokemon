@@ -7,17 +7,26 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.66 — Testes executados de resultados de equipas
+- [x] Quatro testes Android JUnit: 3 IDs distintos, seleção verificada, herança de papéis, cobertura inválida (`11177ab`).
+- [x] CI exige relatório `TeamsGoldenResultPolicyTest` com quatro testes (`6a01ec6`).
+- [ ] CI confirmado para este commit; testar guardar/reabrir no dispositivo.
+
+**Implementação V1.66:** 2/3 (67%, execução pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.65 — Estado persistente do seletor
 - [x] `rememberSaveable` para pesquisa, abertura e limite progressivo (`eecc2e6`).
 - [x] Reiniciar limite a 75 quando a pesquisa muda e guard CI (`56081c1`).
-- [ ] CI Android aprovado; scroll exato e rotação testados em dispositivo.
+- [x] CI Android aprovado: [run #37025050710](https://github.com/Sphinkz10/Pokemon/actions/runs/37025050710).
+- [ ] Scroll exato e rotação testados em dispositivo.
 
-**Implementação V1.65:** 2/3 (67%, validação pendente). **Aceitação global:** 7/50 (14%).
+**Implementação/CI V1.65:** 3/4 (75%, dispositivo pendente). **Aceitação global:** 7/50 (14%).
 
 ### V1.64 — Seletor sem limite definitivo de 75
 - [x] Paginação progressiva de resultados locais (75 de cada vez) e contador completo (`d7e1a81`).
 - [x] Guard de wiring no CI (`ca57370`).
-- [ ] CI Android aprovado e testes de navegação com coleção grande.
+- [x] CI Android aprovado: [run #37024700137](https://github.com/Sphinkz10/Pokemon/actions/runs/37024700137).
+- [ ] Testes de navegação com coleção grande.
 - [ ] Verificação física Android e scroll/estado.
 
 **Implementação V1.64:** 2/4 (50%); **aceitação global:** 7/50 (14%).
