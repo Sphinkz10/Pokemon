@@ -44,7 +44,7 @@ internal object SavedTeamMutationPolicy {
             com.rui.pvpgo.engine.League.ULTRA -> 2500
             else -> null
         }
-        require(cap == null || (replacement.cp != null && replacement.cp <= cap)) {
+        require(cap == null || (replacement.cp?.let { it <= cap } == true)) {
             "Specimen exceeds league CP cap or has unknown CP"
         }
         require(original.members.none { it.role != role && it.ownedPokemonId == replacement.id }) {
