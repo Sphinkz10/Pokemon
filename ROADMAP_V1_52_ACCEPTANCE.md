@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.71 — Política de duplicação testável
+- [x] Transformação pura separada da UI, sem mutar a equipa original (`a5862ac`).
+- [x] Integração com persistência Room (`1a0476c`).
+- [x] Quatro testes Android JUnit de cópia, papéis, identidade e data (`a1196e6`).
+- [x] CI atualizado para executar testes e validar integração (`185e32e`).
+- [ ] Confirmar execução verde e teste físico.
+
+**Implementação V1.71:** 4/5 (80%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.70 — Eliminação confirmada de equipas
 - [x] DAO Room com `DELETE FROM saved_team WHERE id = :id` sem tocar em Pokémon (`42a6649`).
 - [x] Diálogo de confirmação e cancelamento (`430cbb0`).
