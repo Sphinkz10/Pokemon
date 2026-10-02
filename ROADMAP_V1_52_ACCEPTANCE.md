@@ -10,10 +10,10 @@
 ### V1.60 — Equipas: IDs bloqueados repetidos
 - [x] Código: validação explícita de mais de três Pokémon bloqueados devolve `REFUSED` (`18728f4`). Nota de correção: a alegação anterior de deduplicação de IDs não era um ganho funcional, pois `lockedOwnedPokemonIds` já é `Set<String>`; a chamada a `distinct()` foi retirada.
 - [x] Regra pura `TeamLockPolicy` (`01677a3`), usada pelo Advisor (`c4e9564`), com três testes JUnit Android (`9434b6b`) exigidos no workflow (`ca18cfa`). Fixture de quatro bloqueios mantido; **CI dos novos testes por confirmar**.
-- [ ] CI Android aprovado no commit desta alteração.
+- [x] CI Android aprovado: [run #36988020774](https://github.com/Sphinkz10/Pokemon/actions/runs/36988020774), commit `ca18cfa`; compilação, testes JUnit, assinatura e APK artefacto #11217329648.
 - [ ] Validação funcional de Equipas no Android.
 
-**Implementação V1.60:** 2/4 (50%: código + testes escritos, execução CI pendente); **aceitação V1.60:** 0/4. Os gates globais continuam **7/50 (14%)**. Não confundir código escrito com comportamento certificado.
+**Implementação/CI V1.60:** 3/4 (75%, falta validação Android); **aceitação em dispositivo V1.60:** 0/1 (0%). Os gates globais continuam **7/50 (14%)**. Não confundir código escrito com comportamento certificado.
 
 ## V1.59 — Correção de restauração de Exemplares (em validação)
 
