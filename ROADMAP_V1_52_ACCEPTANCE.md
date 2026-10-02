@@ -6,6 +6,15 @@
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
+
+### V1.60 — Equipas: IDs bloqueados repetidos
+- [x] Código: `CollectionTeamAdvisor` elimina IDs duplicados da lista de Pokémon bloqueados antes de construir trios (`4bb229a`).
+- [ ] Adicionar teste de regressão para bloqueios repetidos e executar JUnit.
+- [ ] CI Android aprovado no commit desta alteração.
+- [ ] Validação funcional de Equipas no Android.
+
+**Implementação V1.60:** 1/4 (25%); **aceitação V1.60:** 0/4. Os gates globais continuam **7/50 (14%)**. Não confundir código escrito com comportamento certificado.
+
 ## V1.59 — Correção de restauração de Exemplares (em validação)
 
 - [x] Implementação: impedir fallback de `EXEMPLARS` para `LIST` enquanto catálogo está vazio durante carregamento. Commit [`41ceb0d`](https://github.com/Sphinkz10/Pokemon/commit/41ceb0dd667e53cabad0e8fcef6e0109789fa283).
