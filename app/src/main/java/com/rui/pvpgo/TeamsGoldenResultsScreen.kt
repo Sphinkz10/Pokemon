@@ -61,9 +61,10 @@ private fun GoldenTeamLineup(ids: List<String>, owned: List<OwnedPokemon>, catal
     val byId = remember(owned) { owned.associateBy { it.id } }
     val names = remember(catalog) { catalog.associate { it.speciesId to it.name } }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        ids.forEachIndexed { index, id ->
-            val mon = byId[id]
-            val name = mon?.let { names[it.speciesId] ?: it.speciesId } ?: "Indisponível"
+        (0..2).forEach { index ->
+            val id = ids.getOrNull(index)
+            val mon = id?.let { byId[it] }
+            val name = mon?.let { names[it.speciesId] ?: it.speciesId } ?: if (id == null) "Por preencher" else "Indisponível"
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 PokemonArtwork(name, Modifier.size(52.dp))
                 Text(name, style = MaterialTheme.typography.bodySmall, color = PvpColors.TextPrimary, maxLines = 2)
