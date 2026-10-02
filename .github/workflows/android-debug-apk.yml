@@ -89,6 +89,12 @@ jobs:
           assert "onDuplicate = {" in root
           assert "isPrimary = false" in root
           assert "id = UUID.randomUUID().toString()" in root
+          assert "onDelete = {" in root
+          assert "repository.deleteSavedTeam(selected.id)" in root
+          database = Path("app/src/main/java/com/rui/pvpgo/CollectionDatabase.kt").read_text()
+          assert 'DELETE FROM saved_team WHERE id = :id' in database
+          assert "suspend fun deleteSavedTeam(id: String)" in database
+          assert "confirmDelete = true" in picker
           search_policy = Path("app/src/main/java/com/rui/pvpgo/TeamPickerSearchPolicy.kt").read_text()
           assert "dex?.toString() == term" in search_policy
           assert "candidate.nickname?.contains(term" in search_policy
