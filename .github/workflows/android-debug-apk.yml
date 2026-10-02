@@ -59,6 +59,8 @@ jobs:
         run: python3 tests/v1_56_league_360/verify_wiring.py
       - name: Validate V1.57 collection flow and edit integrity
         run: python3 tests/v1_57_collection_flow/verify_flow.py
+      - name: Validate V1.58 lifecycle-safe Collection navigation
+        run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
       - name: Build debug APK directly from repository
         run: gradle --no-daemon --stacktrace :engine:compileKotlin :app:assembleDebug
       - name: Run Android policy unit tests
@@ -72,6 +74,7 @@ jobs:
               "NationalDexPolicyTest": 7,
               "SpeciesLeaguePolicyTest": 5,
               "OwnedBuildValidationTest": 7,
+              "CollectionNavigationPolicyTest": 7,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
@@ -92,11 +95,11 @@ jobs:
           APK=app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs --min-sdk-version 26 "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -E '^(package:|sdkVersion:|targetSdkVersion:|application-label:)'
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "name='com.rui.pvpgo.installtestv157'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "name='com.rui.pvpgo.installtestv158'"
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: PokemonPvP-v1.57-installtest-debug-apk
+          name: PokemonPvP-v1.58-installtest-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
