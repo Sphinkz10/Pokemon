@@ -7,6 +7,13 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.65 — Estado persistente do seletor
+- [x] `rememberSaveable` para pesquisa, abertura e limite progressivo (`eecc2e6`).
+- [x] Reiniciar limite a 75 quando a pesquisa muda e guard CI (`56081c1`).
+- [ ] CI Android aprovado; scroll exato e rotação testados em dispositivo.
+
+**Implementação V1.65:** 2/3 (67%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.64 — Seletor sem limite definitivo de 75
 - [x] Paginação progressiva de resultados locais (75 de cada vez) e contador completo (`d7e1a81`).
 - [x] Guard de wiring no CI (`ca57370`).
