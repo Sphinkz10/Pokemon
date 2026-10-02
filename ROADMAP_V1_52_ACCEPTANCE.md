@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.83 — Preservação conjunta de equipas e coleção na migração
+- [x] Fixture da migração Room v1→v2 reforçada: inclui Pokémon pré-existente, com IV e favorito, e equipa guardada (`c31ad5e`).
+- [x] Asserções pós-migração confirmam IDs, espécie e favorito do Pokémon, equipa, notas e nova tabela de batalhas.
+- [ ] CI Android instrumentado [#37040132346](https://github.com/Sphinkz10/Pokemon/actions/runs/37040132346) pendente.
+- [ ] Migração real em dispositivo com base de dados de produção.
+
+**Implementação V1.83:** 2/4 (50%, testes pendentes). **Aceitação global:** 7/50 (14%).
+
 ### V1.82 — Teste instrumentado da migração Room v1→v2
 - [x] V1.81: teste de reabertura de SQLite em disco aprovado ([run #37039051714](https://github.com/Sphinkz10/Pokemon/actions/runs/37039051714)).
 - [x] APK V1.81 aprovado ([run #37039051468](https://github.com/Sphinkz10/Pokemon/actions/runs/37039051468)).
