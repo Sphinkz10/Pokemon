@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.70 — Eliminação confirmada de equipas
+- [x] DAO Room com `DELETE FROM saved_team WHERE id = :id` sem tocar em Pokémon (`42a6649`).
+- [x] Diálogo de confirmação e cancelamento (`430cbb0`).
+- [x] Tratamento de erro e regresso à lista só após sucesso (`c49db90`).
+- [x] Guard CI estrutural (`594381b`).
+- [ ] CI Android aprovado e validação física de eliminar/cancelar.
+
+**Implementação V1.70:** 4/5 (80% código, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.69 — Duplicação de equipas
 - [x] Ação visível no detalhe (`c7270de`).
 - [x] Cópia persistente com novo UUID, sem alterar original nem tornar a cópia principal (`f79b681`).
