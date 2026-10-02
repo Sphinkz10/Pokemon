@@ -182,7 +182,9 @@ fun CollectionModuleScreen(
         CollectionRoute.EXEMPLARS -> {
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
-                LaunchedEffect(selectedSpeciesId) { route = CollectionRoute.LIST }
+                LaunchedEffect(selectedSpeciesId, catalog.isNotEmpty()) {
+                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                }
             } else {
                 SpeciesExemplarsScreen(
                     species = species,
