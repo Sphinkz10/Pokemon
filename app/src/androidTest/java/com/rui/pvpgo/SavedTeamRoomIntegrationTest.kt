@@ -107,6 +107,32 @@ class SavedTeamRoomIntegrationTest {
         assertTrue(preserved.single().isFavorite)
     }
 
+    @Test fun replacingTeamMemberPersistsThreeUniqueRoles() = runBlocking {
+        val separator = "\\u001F"
+        val original = team("editable").copy(
+            members = listOf("first:LEAD", "second:SAFE_SWITCH", "third:CLOSER").joinToString(separator)
+        )
+        dao.upsertSavedTeam(original)
+        val replacement = original.copy(
+            members = listOf("first:LEAD", "fourth:SAFE_SWITCH", "third:CLOSER").joinToString(separator),
+            updatedAtEpochMs = 200L
+        )
+        dao.upsertSavedTeam(replacement)
+        val stored = dao.observeSavedTeams().first().single()
+        assertEquals("editable", stored.id)
+        assertEquals(200L, stored.updatedAtEpochMs)
+        val roles = stored.members.split(separator).associate { encoded ->
+            val (id, role) = encoded.split(':', limit = 2)
+            role to id
+        }
+        assertEquals(3, roles.size)
+        assertEquals("first", roles["LEAD"])
+        assertEquals("fourth", roles["SAFE_SWITCH"])
+        assertEquals("third", roles["CLOSER"])
+        assertEquals(3, roles.values.toSet().size)
+        assertEquals("Original notes", stored.notes)
+    }
+
     @Test fun teamsSurviveDatabaseReopen() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val filename = "team-reopen-test.db"
