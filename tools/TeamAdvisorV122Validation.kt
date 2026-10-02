@@ -105,6 +105,14 @@ fun main() {
     )
     checkThat(locked.recommendations.all { "C" in it.memberOwnedPokemonIds }, "Locked Pokémon must appear in every suggested trio")
 
+    val tooManyLocks = CollectionTeamAdvisor(catalog, MatrixEvaluator(matrix)).recommend(
+        collection, emptyList(), meta, ruleset, MatchupScenario(League.GREAT),
+        constraints = TeamAdvisorConstraints(lockedOwnedPokemonIds = setOf("A", "B", "C", "D"), maxCandidatePool = 5),
+        limit = 5
+    )
+    checkThat(tooManyLocks.status == TeamAdvisorStatus.REFUSED, "Four locked Pokémon must be refused")
+    checkThat(tooManyLocks.refusalReason?.contains("three slots") == true, "Expected clear three-slot explanation")
+
     val noXlCollection = collection + owned("XL", "a", level = 41.0)
     val noXl = CollectionTeamAdvisor(catalog, MatrixEvaluator(matrix)).recommend(
         noXlCollection, emptyList(), meta, ruleset, MatchupScenario(League.GREAT),
