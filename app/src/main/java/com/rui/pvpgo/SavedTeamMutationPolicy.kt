@@ -9,7 +9,7 @@ internal object SavedTeamMutationPolicy {
         require(now >= 0L) { "Timestamp must be non-negative" }
         return original.copy(
             id = newId,
-            name = "${original.name} (cópia)",
+            name = "${original.name.take(52).trimEnd()} (cópia)",
             isPrimary = false,
             createdAtEpochMs = now,
             updatedAtEpochMs = now
