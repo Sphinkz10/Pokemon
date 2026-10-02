@@ -67,7 +67,7 @@ jobs:
           from pathlib import Path
           advisor = Path("app/src/main/java/com/rui/pvpgo/CollectionTeamAdvisor.kt").read_text()
           fixture = Path("tools/TeamAdvisorV122Validation.kt").read_text()
-          assert "constraints.lockedOwnedPokemonIds.size > 3" in advisor
+          assert "!TeamLockPolicy.hasValidLockCount(constraints.lockedOwnedPokemonIds.size)" in advisor
           assert "TeamAdvisorStatus.REFUSED" in fixture and "tooManyLocks" in fixture
           print("TEAM_LOCKED_SLOT_GUARD_OK (structural only)")
           PY
@@ -85,6 +85,7 @@ jobs:
               "SpeciesLeaguePolicyTest": 5,
               "OwnedBuildValidationTest": 7,
               "CollectionNavigationPolicyTest": 7,
+              "TeamLockPolicyTest": 3,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
