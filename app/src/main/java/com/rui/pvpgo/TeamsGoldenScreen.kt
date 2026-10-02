@@ -170,7 +170,8 @@ fun TeamsGoldenDetailScreen(
     team: SavedTeam, owned: List<OwnedPokemon>, catalog: List<PokemonSpecies>,
     plans: List<PvpBuildPlan>, onBack: () -> Unit, onAdjust: () -> Unit,
     onRename: (String) -> Unit, renameMessage: String?,
-    onDuplicate: () -> Unit, onDelete: () -> Unit
+    onDuplicate: () -> Unit, onDelete: () -> Unit,
+    operationInProgress: Boolean
 ) {
     var renaming by rememberSaveable(team.id) { mutableStateOf(false) }
     var draftName by rememberSaveable(team.id) { mutableStateOf(team.name) }
@@ -199,7 +200,7 @@ fun TeamsGoldenDetailScreen(
                         label = { Text("Nome da equipa") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { draftName = team.name; renaming = false }) { Text("Cancelar") }
-                        Button(onClick = { onRename(draftName.trim()); renaming = false }, enabled = validName) { Text("Guardar nome") }
+                        Button(onClick = { onRename(draftName.trim()); renaming = false }, enabled = validName && !operationInProgress) { Text("Guardar nome") }
                     }
                 } else {
                     OutlinedButton(onClick = { draftName = team.name; renaming = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -224,15 +225,15 @@ fun TeamsGoldenDetailScreen(
             }
         }
         if (!team.notes.isNullOrBlank()) item { TeamsCard { Text("NOTAS", style = MaterialTheme.typography.labelMedium); Text(team.notes.orEmpty()) } }
-        item { OutlinedButton(onClick = onDuplicate, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Duplicar equipa") } }
-        item { OutlinedButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Eliminar equipa") } }
+        item { OutlinedButton(onClick = onDuplicate, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Duplicar equipa") } }
+        item { OutlinedButton(onClick = { confirmDelete = true }, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Eliminar equipa") } }
         item { OutlinedButton(onClick = onAdjust, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
     }
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
         title = { Text("Eliminar equipa?") },
         text = { Text("A equipa guardada será eliminada. Os Pokémon da tua coleção não serão apagados.") },
-        confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Eliminar equipa") } },
+        confirmButton = { TextButton(enabled = !operationInProgress, onClick = { confirmDelete = false; onDelete() }) { Text("Eliminar equipa") } },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancelar") } }
     )
 }
