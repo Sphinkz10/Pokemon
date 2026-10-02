@@ -87,8 +87,9 @@ jobs:
           assert "Falha ao guardar o nome. Tenta novamente." in root
           assert "renameMessage = renameMessage" in root
           assert "onDuplicate = {" in root
-          assert "isPrimary = false" in root
-          assert "id = UUID.randomUUID().toString()" in root
+          mutation_policy = Path("app/src/main/java/com/rui/pvpgo/SavedTeamMutationPolicy.kt").read_text()
+          assert "isPrimary = false" in mutation_policy
+          assert "SavedTeamMutationPolicy.duplicate(" in root
           assert "onDelete = {" in root
           assert "repository.deleteSavedTeam(selected.id)" in root
           database = Path("app/src/main/java/com/rui/pvpgo/CollectionDatabase.kt").read_text()
@@ -119,6 +120,7 @@ jobs:
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
+              "SavedTeamMutationPolicyTest": 4,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"
