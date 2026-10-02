@@ -6,6 +6,15 @@
 
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
+## V1.59 — Correção de restauração de Exemplares (em validação)
+
+- [x] Implementação: impedir fallback de `EXEMPLARS` para `LIST` enquanto catálogo está vazio durante carregamento. Commit [`41ceb0d`](https://github.com/Sphinkz10/Pokemon/commit/41ceb0dd667e53cabad0e8fcef6e0109789fa283).
+- [ ] Testes JUnit e verificações estruturais específicos desta regressão.
+- [ ] CI Android debug concluído com sucesso neste commit.
+- [ ] Aceitação no Android: recriar Activity/processo em Exemplares e verificar rota, espécie e dados.
+
+**Progresso V1.59:** implementação 1/4 (25%); aceitação 0/4 (0%). **Global:** permanece 7/50 (14%); V1.58 mantém 9/10 (90%) até validação no dispositivo. Não existe nova APK verificada neste checkpoint.
+
 ## Checkpoint V1.58 · Restaurar navegação após mudança de aba e recriação Android
 
 **Estado de implementação/CI:** **9/10 tarefas demonstradas (90%)**, com compilação assinada e testes automáticos aprovados. Continua pendente apenas o teste funcional no Android. Os **50 gates de aceitação globais mantêm 7/50 (14%)**, porque nenhuma nova fase foi aceite em dispositivo.
