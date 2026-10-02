@@ -93,6 +93,9 @@ jobs:
           assert "isPrimary = false" in mutation_policy
           assert "SavedTeamMutationPolicy.duplicate(" in root
           assert "onDelete = {" in root
+          assert "operationInProgress = operationInProgress" in root
+          assert "operationInProgress = false" in root
+          assert "enabled = !operationInProgress" in picker
           assert "repository.deleteSavedTeam(selected.id)" in root
           database = Path("app/src/main/java/com/rui/pvpgo/CollectionDatabase.kt").read_text()
           assert 'DELETE FROM saved_team WHERE id = :id' in database
