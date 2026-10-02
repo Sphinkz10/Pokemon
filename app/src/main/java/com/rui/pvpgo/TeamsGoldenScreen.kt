@@ -230,11 +230,11 @@ fun TeamsGoldenDetailScreen(
         item { OutlinedButton(onClick = onAdjust, enabled = !operationInProgress, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar alternativa com Team Lab") } }
     }
     if (confirmDelete) AlertDialog(
-        onDismissRequest = { confirmDelete = false },
+        onDismissRequest = { if (!operationInProgress) confirmDelete = false },
         title = { Text("Eliminar equipa?") },
         text = { Text("A equipa guardada será eliminada. Os Pokémon da tua coleção não serão apagados.") },
         confirmButton = { TextButton(enabled = !operationInProgress, onClick = { confirmDelete = false; onDelete() }) { Text("Eliminar equipa") } },
-        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancelar") } }
+        dismissButton = { TextButton(onClick = { confirmDelete = false }, enabled = !operationInProgress) { Text("Cancelar") } }
     )
 }
 
