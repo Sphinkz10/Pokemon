@@ -1887,6 +1887,14 @@ fun TeamLabRootScreen(
                                 renameMessage = "Falha ao duplicar equipa. Tenta novamente."
                             }
                         }
+                    },
+                    onDelete = {
+                        renameMessage = "A eliminar equipa…"
+                        scope.launch {
+                            runCatching { repository.deleteSavedTeam(selected.id) }
+                                .onSuccess { selectedTeamId = null; view = TeamsGoldenView.HOME }
+                                .onFailure { renameMessage = "Falha ao eliminar equipa. Tenta novamente." }
+                        }
                     }
                 )
             }
