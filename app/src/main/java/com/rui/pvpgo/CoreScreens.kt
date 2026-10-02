@@ -1928,6 +1928,23 @@ fun TeamLabRootScreen(
                             }
                         }
                     },
+                    onReplaceMember = { role, ownedId ->
+                        if (!operationInProgress) {
+                            operationInProgress = true
+                            renameMessage = "A substituir Pokémon…"
+                            scope.launch {
+                                runCatching {
+                                    val specimen = owned.first { it.id == ownedId }
+                                    repository.upsertSavedTeam(SavedTeamMutationPolicy.replaceMember(
+                                        selected, role, specimen, owned,
+                                        maxOf(System.currentTimeMillis(), selected.updatedAtEpochMs)
+                                    ))
+                                }.onSuccess { renameMessage = "Pokémon substituído e equipa guardada." }
+                                    .onFailure { renameMessage = "Não foi possível substituir. Confirma elegibilidade e tenta novamente." }
+                                operationInProgress = false
+                            }
+                        }
+                    },
                     operationInProgress = operationInProgress
                 )
             }
