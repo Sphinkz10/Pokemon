@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.80 — Integridade da Coleção ao eliminar equipas
+- [x] Primeiro workflow instrumentado Android Room aprovado: [run #37037728284](https://github.com/Sphinkz10/Pokemon/actions/runs/37037728284).
+- [x] CI APK com compilação de testes instrumentados aprovado: [run #37037711044](https://github.com/Sphinkz10/Pokemon/actions/runs/37037711044).
+- [x] Quarto teste Room verifica que eliminar equipa preserva Pokémon e favorito na coleção (`8e6551d`).
+- [ ] Confirmar execução do quarto teste no emulador (run #37038237116).
+- [ ] Validar os fluxos visuais no Android físico.
+
+**Implementação V1.80:** 3/5 (60%, novo teste ainda em execução). **Aceitação global:** 7/50 (14%).
+
 ### V1.79 — Integração Room no emulador Android
 - [x] Dependências e runner AndroidX instrumentado (`c054651`).
 - [x] Três testes SQLite/Room reais: duplicação+eliminação, renomeação, eliminação desconhecida (`512b0d6`).
