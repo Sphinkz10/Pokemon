@@ -30,6 +30,8 @@ import com.rui.pvpgo.ui.theme.PvpTheme
 import com.rui.pvpgo.ui.theme.PvpSkin
 import com.rui.pvpgo.ui.theme.PvpSkinPreferences
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -149,8 +151,9 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     var loading by remember { mutableStateOf(true) }
     var refreshToken by remember { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
-    var selectedReturnTab by remember { mutableStateOf(AppTab.HOME) }
-    var tab by remember { mutableStateOf(AppTab.HOME) }
+    val tabsState = rememberSaveableStateHolder()
+    var selectedReturnTab by rememberSaveable { mutableStateOf(AppTab.HOME) }
+    var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
     var moreStartRoute by remember { mutableStateOf(MoreRoute.HOME) }
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
@@ -217,6 +220,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                     }
                 ) { shellPadding ->
                     Box(Modifier.padding(shellPadding).fillMaxSize()) {
+                        tabsState.SaveableStateProvider(tab.name) {
                         when (tab) {
                             AppTab.HOME -> TodayScreen(
                                 calendar = eventCalendar,
@@ -255,6 +259,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                                     PvpSkinPreferences.save(context, chosen)
                                 }
                             )
+                        }
                         }
                     }
                 }
