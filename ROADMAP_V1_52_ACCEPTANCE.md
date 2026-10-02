@@ -7,6 +7,14 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.61 — Equipas: resultados com três posições seguras
+- [x] UI: `GoldenTeamLineup` apresenta sempre três posições, mesmo perante listas incompletas ou excessivas (`182bb90`).
+- [x] Guard estrutural no workflow Android (`e34f018`).
+- [ ] CI concluído com sucesso após a alteração.
+- [ ] Teste visual e funcional no Android.
+
+**Implementação V1.61:** 2/4 (50%); **aceitação V1.61:** 0/4. **Aceitação global:** 7/50 (14%).
+
 ### V1.60 — Equipas: IDs bloqueados repetidos
 - [x] Código: validação explícita de mais de três Pokémon bloqueados devolve `REFUSED` (`18728f4`). Nota de correção: a alegação anterior de deduplicação de IDs não era um ganho funcional, pois `lockedOwnedPokemonIds` já é `Set<String>`; a chamada a `distinct()` foi retirada.
 - [x] Regra pura `TeamLockPolicy` (`01677a3`), usada pelo Advisor (`c4e9564`), com três testes JUnit Android (`9434b6b`) exigidos no workflow (`ca18cfa`). Fixture de quatro bloqueios mantido; **CI dos novos testes por confirmar**.
