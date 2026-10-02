@@ -7,6 +7,16 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.86 — Correção de compilação e limites de CP
+- [x] Diagnóstico CI V1.85: smart cast de `cp` entre módulos falhou em `SavedTeamMutationPolicy.kt` e `TeamsGoldenScreen.kt` ([run #37043585028](https://github.com/Sphinkz10/Pokemon/actions/runs/37043585028)).
+- [x] Comparações CP nullable corrigidas com `cp?.let { it <= cap } == true` (`f8ab949`, `ef354da`).
+- [x] Regressões: CP desconhecido rejeitado em liga limitada, CP exatamente 1500 permitido (`f272277`).
+- [x] CI exige 15 testes da política de equipas (`d3c3019`).
+- [ ] Confirmar CI integrado [#37046366755](https://github.com/Sphinkz10/Pokemon/actions/runs/37046366755).
+- [ ] Teste manual em Android com pesquisa, substituição e persistência.
+
+**Implementação V1.86:** 4/6 (67%, compilação final pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.85 — Substituição de Pokémon numa equipa guardada
 - [x] V1.84 recompilado e testes unitários aprovados ([run #37042546769](https://github.com/Sphinkz10/Pokemon/actions/runs/37042546769)).
 - [x] Mutação pura de substituição preserva os restantes papéis e identidade, valida coleção, movimentos, nível, CP por liga e duplicados (`685017c`).
