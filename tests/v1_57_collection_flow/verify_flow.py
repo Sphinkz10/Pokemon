@@ -35,8 +35,8 @@ checks={
         "fun legacyEventMovesRemainIntactWithoutBeingOfferedAsNew()",
         "fun unavailableCatalogDoesNotInventMoveRestrictions()"
     ]),
-    "version 57": "versionCode = 57" in gradle,
-    "independent installer": 'applicationIdSuffix = ".installtestv157"' in gradle
+    "version 57 or newer": int(re.search(r"versionCode\s*=\s*(\d+)", gradle).group(1)) >= 57,
+    "independent installer": re.search(r'applicationIdSuffix\s*=\s*"\.installtestv\d+"', gradle) is not None
 }
 for name,ok in checks.items():
     print(("PASS" if ok else "FAIL"), name)
