@@ -218,12 +218,7 @@ fun TeamsGoldenBuilderScreen(
     val filtered = remember(eligible, names, speciesById, query) {
         eligible.filter { candidate ->
             val name = names[candidate.speciesId] ?: candidate.speciesId
-            val term = query.trim().removePrefix("#")
-            val species = speciesById[candidate.speciesId]
-            term.isEmpty() || name.contains(term, ignoreCase = true) ||
-                candidate.nickname?.contains(term, ignoreCase = true) == true ||
-                candidate.speciesId.contains(term, ignoreCase = true) ||
-                (term.isNotEmpty() && species?.dex?.toString() == term)
+            TeamPickerSearchPolicy.matches(candidate, name, speciesById[candidate.speciesId]?.dex, query)
         }.take(75)
     }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -247,7 +242,8 @@ fun TeamsGoldenBuilderScreen(
             }
         }
         if (pickerOpen) {
-            item { PvpSearchField(query, onValueChange = { query = it }, placeholder = "Procurar na tua coleção…") }
+            item { PvpSearchField(query, onValueChange = { query = it }, placeholder = "Nome, alcunha ou #Pokédex…") }
+            item { Text("${filtered.size}${if (eligible.size > 75 && filtered.size == 75) "+" else ""} de ${eligible.size} exemplares apresentados · máximo 75", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
             if (filtered.isEmpty()) item { TeamsCard { Text("Sem exemplares com nível e moves completos.") } }
             items(filtered, key = { it.id }) { pokemon ->
                 TeamsCard(onClick = { onAnchorChange(pokemon.id); pickerOpen = false }) {
