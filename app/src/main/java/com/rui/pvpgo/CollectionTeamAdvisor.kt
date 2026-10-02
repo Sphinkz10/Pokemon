@@ -133,7 +133,8 @@ class CollectionTeamAdvisor(
             Candidate(owned, sp)
         }
 
-        val locked = constraints.lockedOwnedPokemonIds.map { lockId ->
+        // A repeated locked ID is one Pokémon, not multiple team slots.
+        val locked = constraints.lockedOwnedPokemonIds.distinct().map { lockId ->
             eligible.firstOrNull { it.owned.id == lockId }
                 ?: return refused(meta, ruleset, certification.selectedRoute?.name, "Locked Pokémon $lockId is missing or ineligible.", exclusions)
         }
