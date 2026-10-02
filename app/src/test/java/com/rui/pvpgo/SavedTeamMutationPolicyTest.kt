@@ -68,6 +68,30 @@ class SavedTeamMutationPolicyTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    fun littleLeagueRejects501Cp() {
+        val candidate = specimen("four", cp = 501)
+        SavedTeamMutationPolicy.replaceMember(
+            original().copy(league = League.LITTLE), TeamRole.LEAD, candidate, listOf(candidate), 300L
+        )
+    }
+
+    @Test fun littleLeagueAccepts500Cp() {
+        val candidate = specimen("four", cp = 500)
+        val result = SavedTeamMutationPolicy.replaceMember(
+            original().copy(league = League.LITTLE), TeamRole.LEAD, candidate, listOf(candidate), 300L
+        )
+        assertEquals("four", result.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+    }
+
+    @Test fun masterLeagueDoesNotRejectHighCp() {
+        val candidate = specimen("four", cp = 4000)
+        val result = SavedTeamMutationPolicy.replaceMember(
+            original().copy(league = League.MASTER), TeamRole.LEAD, candidate, listOf(candidate), 300L
+        )
+        assertEquals("four", result.members.single { it.role == TeamRole.LEAD }.ownedPokemonId)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
     fun replaceRejectsIncompleteMoves() {
         val incomplete = specimen("four", ready = false)
         SavedTeamMutationPolicy.replaceMember(original(), TeamRole.LEAD, incomplete, listOf(incomplete), 300L)
