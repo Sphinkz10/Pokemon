@@ -7,6 +7,15 @@
 **Linha de base documentada:** 7/50 gates com prova de fonte/código, CI ou relato de instalação (**14% de gates de aceitação**). É deliberadamente conservador: outras funcionalidades estão no código mas continuam sem prova em telemóvel. Os gates só passam com evidência técnica e ficam sujeitos a regressões.
 
 
+### V1.78 — Duplicação com resultado visível
+- [x] Após sucesso do Room, regressar à lista de equipas para visualizar a cópia (`dfe6018`).
+- [x] Repor filtro para a liga da equipa duplicada (`bc40d90`).
+- [x] Guard de integração CI (`964984a`).
+- [x] V1.77 CI aprovado: run #37033525311.
+- [ ] Validar CI desta versão e confirmar lista/cópia no dispositivo Android.
+
+**Implementação V1.78:** 4/5 (80%, validação pendente). **Aceitação global:** 7/50 (14%).
+
 ### V1.77 — Bloqueio completo de edição durante persistência
 - [x] Impedir abrir/fechar edição e navegar para Team Lab enquanto uma mutação Room decorre (`978fe03`).
 - [x] Diálogo de eliminação não muda de estado durante gravação (`bd4a60c`).
