@@ -1868,7 +1868,26 @@ fun TeamLabRootScreen(
                             }
                         }
                     },
-                    renameMessage = renameMessage
+                    renameMessage = renameMessage,
+                    onDuplicate = {
+                        renameMessage = "A duplicar equipa…"
+                        scope.launch {
+                            val now = System.currentTimeMillis()
+                            runCatching {
+                                repository.upsertSavedTeam(selected.copy(
+                                    id = UUID.randomUUID().toString(),
+                                    name = "${selected.name} (cópia)",
+                                    isPrimary = false,
+                                    createdAtEpochMs = now,
+                                    updatedAtEpochMs = now
+                                ))
+                            }.onSuccess {
+                                renameMessage = "Equipa duplicada."
+                            }.onFailure {
+                                renameMessage = "Falha ao duplicar equipa. Tenta novamente."
+                            }
+                        }
+                    }
                 )
             }
         }
