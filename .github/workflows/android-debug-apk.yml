@@ -98,6 +98,8 @@ jobs:
           assert "SavedTeamMutationPolicy.replaceMember(" in root
           assert "onReplaceMember = {" in root
           assert "Substituir ${role.name.replace" in picker
+          assert "replacementVisibleLimit += 75" in picker
+          assert "candidate.id.contains(normalizedReplacementQuery" in picker
           assert "Trocar Lead ↔ Safe Switch" in picker
           assert "onDelete = {" in root
           assert "operationInProgress = operationInProgress" in root
