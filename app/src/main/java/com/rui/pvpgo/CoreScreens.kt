@@ -149,7 +149,7 @@ fun CollectionModuleScreen(
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
                 LaunchedEffect(selectedSpeciesId, catalog) {
-                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                    if (CollectionNavigationPolicy.shouldFallbackMissingSpecies(catalog.isNotEmpty())) route = CollectionRoute.LIST
                 }
             } else {
                 val owned = collection.filter { it.speciesId == species.speciesId }
@@ -183,7 +183,7 @@ fun CollectionModuleScreen(
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
                 LaunchedEffect(selectedSpeciesId, catalog.isNotEmpty()) {
-                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                    if (CollectionNavigationPolicy.shouldFallbackMissingSpecies(catalog.isNotEmpty())) route = CollectionRoute.LIST
                 }
             } else {
                 SpeciesExemplarsScreen(
@@ -249,7 +249,7 @@ fun CollectionModuleScreen(
             val species = catalog.firstOrNull { it.speciesId == selectedSpeciesId }
             if (species == null) {
                 LaunchedEffect(selectedSpeciesId, catalog) {
-                    if (catalog.isNotEmpty()) route = CollectionRoute.LIST
+                    if (CollectionNavigationPolicy.shouldFallbackMissingSpecies(catalog.isNotEmpty())) route = CollectionRoute.LIST
                 }
             } else {
                 IvTargetsScreen(
