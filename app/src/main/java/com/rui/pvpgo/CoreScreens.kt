@@ -1889,6 +1889,7 @@ fun TeamLabRootScreen(
                                     selected, UUID.randomUUID().toString(), now
                                 ))
                             }.onSuccess {
+                                league = selected.league
                                 selectedTeamId = null
                                 renameMessage = null
                                 view = TeamsGoldenView.HOME
