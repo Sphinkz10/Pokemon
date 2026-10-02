@@ -1814,6 +1814,7 @@ fun TeamLabRootScreen(
     var owned by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var plans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var teams by remember { mutableStateOf<List<SavedTeam>>(emptyList()) }
+    var teamsLoaded by remember { mutableStateOf(false) }
     var league by rememberSaveable { mutableStateOf(League.GREAT) }
     var style by rememberSaveable { mutableStateOf(TeamStyleBias.BALANCED) }
     var anchorId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -1824,7 +1825,7 @@ fun TeamLabRootScreen(
 
     LaunchedEffect(repository) { repository.collection.collectLatest { owned = it } }
     LaunchedEffect(repository) { repository.buildPlans.collectLatest { plans = it } }
-    LaunchedEffect(repository) { repository.savedTeams.collectLatest { teams = it } }
+    LaunchedEffect(repository) { repository.savedTeams.collectLatest { teams = it; teamsLoaded = true } }
 
     when (view) {
         TeamsGoldenView.HOME -> TeamsGoldenHomeScreen(
@@ -1844,7 +1845,11 @@ fun TeamLabRootScreen(
         TeamsGoldenView.DETAIL -> {
             val selected = teams.firstOrNull { it.id == selectedTeamId }
             if (selected == null) {
-                LaunchedEffect(selectedTeamId, teams) { view = TeamsGoldenView.HOME }
+                if (teamsLoaded) {
+                    LaunchedEffect(selectedTeamId, teamsLoaded) { view = TeamsGoldenView.HOME }
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                }
             } else {
                 TeamsGoldenDetailScreen(
                     team = selected, owned = owned, catalog = catalog, plans = plans,
