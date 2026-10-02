@@ -34,6 +34,14 @@ class SavedTeamMutationPolicyTest {
         assertEquals("original", original.id)
     }
 
+    @Test fun duplicateLongNameRespectsEditorLimit() {
+        val original = original().copy(name = "A".repeat(60))
+        val duplicate = SavedTeamMutationPolicy.duplicate(original, "copy", 300L)
+        assertEquals(60, duplicate.name.length)
+        assertTrue(duplicate.name.endsWith(" (cópia)"))
+        assertEquals(60, original.name.length)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun rejectsOriginalIdentity() {
         SavedTeamMutationPolicy.duplicate(original(), "original", 300L)
