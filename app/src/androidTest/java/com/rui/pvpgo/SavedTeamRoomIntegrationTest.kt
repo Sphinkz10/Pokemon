@@ -108,7 +108,7 @@ class SavedTeamRoomIntegrationTest {
     }
 
     @Test fun replacingTeamMemberPersistsThreeUniqueRoles() = runBlocking {
-        val separator = "\\u001F"
+        val separator = "\u001F"
         val original = team("editable").copy(
             members = listOf("first:LEAD", "second:SAFE_SWITCH", "third:CLOSER").joinToString(separator)
         )
