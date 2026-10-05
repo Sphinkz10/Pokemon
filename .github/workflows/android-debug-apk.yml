@@ -63,6 +63,8 @@ jobs:
         run: python3 tests/v1_57_collection_flow/verify_flow.py
       - name: Validate V1.58 lifecycle-safe Collection navigation
         run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
+      - name: Validate UX V2 typed navigation foundation
+        run: python3 tests/ux_v2_navigation/verify_navigation_foundation.py
       - name: Validate Team Advisor locked-slot regression wiring
         run: |
           python3 - <<'PY'

@@ -1228,12 +1228,23 @@ private fun OwnedPokemonDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RadarRootScreen(catalog: List<PokemonSpecies>) {
+fun RadarRootScreen(catalog: List<PokemonSpecies>, onBack: (() -> Unit)? = null) {
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
     val results = remember(query, catalog) { if (query.length < 2) emptyList() else PokemonSearch.find(catalog, query, 30) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Radar PvP") }) }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Radar PvP") },
+                navigationIcon = {
+                    if (onBack != null) {
+                        TextButton(onClick = onBack) { Text("←") }
+                    }
+                }
+            )
+        }
+    ) { padding ->
         if (selected == null) {
             Column(Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Spacer(Modifier.height(2.dp))

@@ -38,6 +38,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.findStartDestination
+import androidx.navigation.hasRoute
+import androidx.navigation.toRoute
+import com.rui.pvpgo.events.CommunityAgendaScreen
+import com.rui.pvpgo.events.CommunityEventScreen
+import com.rui.pvpgo.navigation.AppDestination
+import com.rui.pvpgo.navigation.AppSection
+import com.rui.pvpgo.navigation.topLevelDestinations
 import com.rui.pvpgo.engine.*
 import com.rui.pvpgo.events.CalendarSnapshot
 import com.rui.pvpgo.events.EventCalendarRepository
@@ -84,16 +96,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class AppTab(val label: String, val glyph: String) {
-    HOME("Hoje", "⌂"),
-    COLLECTION("Coleção", "▣"),
-    TEAMS("Equipas", "◉"),
-    BATTLES("Batalhas", "⚔"),
-    MORE("Mais", "⋯")
-}
-
 @Composable
-private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
+private fun AppBottomBar(current: AppSection, onSelect: (AppSection) -> Unit) {
     Surface(
         color = PvpColors.CanvasStart,
         border = BorderStroke(1.dp, PvpColors.BorderDefault.copy(alpha = 0.75f))
@@ -106,26 +110,26 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppTab.entries.forEach { tab ->
-                val selected = current == tab
+            topLevelDestinations.forEach { destination ->
+                val selected = current == destination.section
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(14.dp))
                         .background(if (selected) PvpColors.AccentDeep else Color.Transparent)
-                        .clickable { onSelect(tab) }
+                        .clickable { onSelect(destination.section) }
                         .padding(vertical = 7.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     Text(
-                        tab.glyph,
+                        destination.glyph,
                         color = if (selected) PvpColors.AccentSky else PvpColors.TextSecondary,
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        tab.label,
+                        destination.label,
                         color = if (selected) PvpColors.TextPrimary else PvpColors.TextSecondary,
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1
@@ -150,13 +154,42 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     var warning by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
     var refreshToken by remember { mutableIntStateOf(0) }
-    var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
-    val tabsState = rememberSaveableStateHolder()
-    var selectedReturnTab by rememberSaveable { mutableStateOf(AppTab.HOME) }
-    var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
-    var moreStartRoute by remember { mutableStateOf(MoreRoute.HOME) }
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
+
+    val navController = rememberNavController()
+    var currentSection by rememberSaveable { mutableStateOf(AppSection.HOME) }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+
+    fun navigateTopLevel(section: AppSection) {
+        currentSection = section
+        val options: androidx.navigation.NavOptionsBuilder.() -> Unit = {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+        when (section) {
+            AppSection.HOME -> navController.navigate(AppDestination.Today, options)
+            AppSection.COLLECTION -> navController.navigate(AppDestination.Collection, options)
+            AppSection.TEAMS -> navController.navigate(AppDestination.Teams, options)
+            AppSection.BATTLES -> navController.navigate(AppDestination.Battles, options)
+            AppSection.MORE -> navController.navigate(AppDestination.More, options)
+        }
+    }
+
+    LaunchedEffect(currentBackStackEntry) {
+        val destination = currentBackStackEntry?.destination ?: return@LaunchedEffect
+        currentSection = when {
+            destination.hasRoute<AppDestination.Today>() -> AppSection.HOME
+            destination.hasRoute<AppDestination.Collection>() -> AppSection.COLLECTION
+            destination.hasRoute<AppDestination.Teams>() -> AppSection.TEAMS
+            destination.hasRoute<AppDestination.Battles>() -> AppSection.BATTLES
+            destination.hasRoute<AppDestination.More>() -> AppSection.MORE
+            else -> currentSection
+        }
+    }
 
     LaunchedEffect(eventRefreshToken) {
         eventCalendar = EventCalendarRepository.load(context, forceRefresh = eventRefreshToken > 0)
@@ -179,9 +212,12 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
 
     LaunchedEffect(catalog, initialSpeciesId) {
         if (!initialSpeciesId.isNullOrBlank() && catalog.isNotEmpty()) {
-            catalog.firstOrNull { it.speciesId == initialSpeciesId }?.let {
-                selectedReturnTab = tab
-                selected = it
+            val target = catalog.firstOrNull { it.speciesId == initialSpeciesId }
+            if (target != null) {
+                currentSection = AppSection.HOME
+                navController.navigate(AppDestination.Pokemon(target.speciesId, AppSection.HOME)) {
+                    launchSingleTop = true
+                }
             }
             onDeepLinkConsumed()
         }
@@ -190,66 +226,61 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     PvpTheme(skin = skin) {
         PvpScreen {
             Surface(Modifier.fillMaxSize(), color = Color.Transparent) {
-            val current = selected
-            if (current != null) {
-                PokemonScreen(
-                    species = current,
-                    catalog = catalog,
-                    moves = moves,
-                    moveWarning = moveWarning,
-                    isFavorite = current.speciesId in favorites,
-                    onToggleFavorite = {
-                        favorites = UserStore.toggleFavorite(context, current.speciesId, favorites)
-                    },
-                    onSelectSpecies = { next ->
-                        recents = UserStore.pushRecent(context, next.speciesId, recents)
-                        selected = next
-                    },
-                    onBack = {
-                        selected = null
-                        tab = selectedReturnTab
-                    }
-                )
-            } else {
                 Scaffold(
                     bottomBar = {
-                        AppBottomBar(tab) { next ->
-                            if (next == AppTab.MORE) moreStartRoute = MoreRoute.HOME
-                            tab = next
-                        }
+                        AppBottomBar(currentSection) { section -> navigateTopLevel(section) }
                     }
                 ) { shellPadding ->
-                    Box(Modifier.padding(shellPadding).fillMaxSize()) {
-                        tabsState.SaveableStateProvider(tab.name) {
-                        when (tab) {
-                            AppTab.HOME -> TodayScreen(
+                    NavHost(
+                        navController = navController,
+                        startDestination = AppDestination.Today,
+                        modifier = Modifier
+                            .padding(shellPadding)
+                            .fillMaxSize()
+                    ) {
+                        composable<AppDestination.Today> {
+                            TodayScreen(
                                 calendar = eventCalendar,
                                 catalog = catalog,
                                 loading = loading,
                                 onSelectPokemon = { pokemon ->
                                     recents = UserStore.pushRecent(context, pokemon.speciesId, recents)
-                                    selectedReturnTab = AppTab.HOME
-                                    selected = pokemon
+                                    navController.navigate(
+                                        AppDestination.Pokemon(pokemon.speciesId, AppSection.HOME)
+                                    )
                                 },
                                 onExploreEvent = {
-                                    moreStartRoute = MoreRoute.EVENT
-                                    tab = AppTab.MORE
+                                    navController.navigate(AppDestination.Events(AppSection.HOME))
                                 },
                                 onOpenRadar = {
-                                    moreStartRoute = MoreRoute.RADAR
-                                    tab = AppTab.MORE
+                                    navController.navigate(AppDestination.Radar(AppSection.HOME))
                                 },
                                 onOpenAgenda = {
-                                    moreStartRoute = MoreRoute.AGENDA
-                                    tab = AppTab.MORE
+                                    navController.navigate(AppDestination.Agenda(AppSection.HOME))
                                 },
-                                onSearch = { tab = AppTab.COLLECTION }
+                                onSearch = {
+                                    navigateTopLevel(AppSection.COLLECTION)
+                                }
                             )
-                            AppTab.COLLECTION -> CollectionModuleScreen(catalog = catalog, moves = moves)
-                            AppTab.TEAMS -> TeamLabRootScreen(catalog = catalog, moves = moves)
-                            AppTab.BATTLES -> BattlesRootScreen(catalog = catalog, moves = moves)
-                            AppTab.MORE -> MoreRootScreen(
-                                catalog = catalog, moves = moves, startRoute = moreStartRoute,
+                        }
+
+                        composable<AppDestination.Collection> {
+                            CollectionModuleScreen(catalog = catalog, moves = moves)
+                        }
+
+                        composable<AppDestination.Teams> {
+                            TeamLabRootScreen(catalog = catalog, moves = moves)
+                        }
+
+                        composable<AppDestination.Battles> {
+                            BattlesRootScreen(catalog = catalog, moves = moves)
+                        }
+
+                        composable<AppDestination.More> {
+                            MoreRootScreen(
+                                catalog = catalog,
+                                moves = moves,
+                                startRoute = MoreRoute.HOME,
                                 selectedSkin = skin,
                                 calendar = eventCalendar,
                                 onRefreshCalendar = { eventRefreshToken++ },
@@ -260,13 +291,97 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                                 }
                             )
                         }
+
+                        composable<AppDestination.Pokemon> { entry ->
+                            val route = entry.toRoute<AppDestination.Pokemon>()
+                            val species = catalog.firstOrNull { it.speciesId == route.speciesId }
+                            when {
+                                species != null -> PokemonScreen(
+                                    species = species,
+                                    catalog = catalog,
+                                    moves = moves,
+                                    moveWarning = moveWarning,
+                                    isFavorite = species.speciesId in favorites,
+                                    onToggleFavorite = {
+                                        favorites = UserStore.toggleFavorite(
+                                            context,
+                                            species.speciesId,
+                                            favorites
+                                        )
+                                    },
+                                    onSelectSpecies = { next ->
+                                        recents = UserStore.pushRecent(context, next.speciesId, recents)
+                                        navController.navigate(
+                                            AppDestination.Pokemon(next.speciesId, route.origin)
+                                        )
+                                    },
+                                    onBack = { navController.popBackStack() }
+                                )
+                                loading -> Box(
+                                    Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                                else -> Column(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(24.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    Text(
+                                        "Pokémon indisponível",
+                                        style = MaterialTheme.typography.headlineMedium
+                                    )
+                                    Text(
+                                        "Não foi possível encontrar este Pokémon no catálogo atual. Podes voltar sem perder o contexto anterior.",
+                                        color = PvpColors.TextSecondary
+                                    )
+                                    Button(onClick = { navController.popBackStack() }) {
+                                        Text("Voltar")
+                                    }
+                                }
+                            }
+                        }
+
+                        composable<AppDestination.Events> { entry ->
+                            val route = entry.toRoute<AppDestination.Events>()
+                            CommunityEventScreen(
+                                calendar = eventCalendar,
+                                onRefresh = { eventRefreshToken++ },
+                                onBack = { navController.popBackStack() },
+                                onOpenRadar = {
+                                    navController.navigate(AppDestination.Radar(route.origin))
+                                }
+                            )
+                        }
+
+                        composable<AppDestination.Agenda> { entry ->
+                            val route = entry.toRoute<AppDestination.Agenda>()
+                            CommunityAgendaScreen(
+                                calendar = eventCalendar,
+                                onRefresh = { eventRefreshToken++ },
+                                onBack = { navController.popBackStack() },
+                                onOpenEvent = {
+                                    navController.navigate(AppDestination.Events(route.origin))
+                                },
+                                onOpenRadar = {
+                                    navController.navigate(AppDestination.Radar(route.origin))
+                                }
+                            )
+                        }
+
+                        composable<AppDestination.Radar> {
+                            RadarRootScreen(
+                                catalog = catalog,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                     }
                 }
             }
         }
     }
-}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

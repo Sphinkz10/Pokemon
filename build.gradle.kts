@@ -4,5 +4,6 @@ plugins {
     kotlin("jvm") version "2.1.0" apply false
     kotlin("kapt") version "2.1.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.0" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0" apply false
     id("androidx.room") version "2.8.5" apply false
 }
