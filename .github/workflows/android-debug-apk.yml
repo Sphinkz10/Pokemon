@@ -148,7 +148,7 @@ jobs:
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
               "SavedTeamMutationPolicyTest": 21,
-              "OwnedEligibilityGateTest": 11,
+              "OwnedEligibilityGateTest": 15,
               "RankRepositoryCacheTest": 4,
           }
           for name, minimum_tests in test_classes.items():
