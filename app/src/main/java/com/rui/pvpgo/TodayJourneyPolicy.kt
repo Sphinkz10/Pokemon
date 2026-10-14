@@ -29,6 +29,16 @@ enum class GoFilterScope {
     }
 }
 
+/** The vocabulary is selected to match the language of the game, not the Companion UI. */
+enum class GoSearchLanguage {
+    ENGLISH, PORTUGUESE_BR;
+
+    companion object {
+        fun fromStored(raw: String?): GoSearchLanguage =
+            entries.firstOrNull { it.name == raw } ?: ENGLISH
+    }
+}
+
 data class GoSearchSuggestion(
     val filter: String,
     val purpose: String,
@@ -100,30 +110,73 @@ object TodayJourneyPolicy {
      * A smaller result set is NOT inherently more valuable in PvP.
      * This never guesses the number of matches in Pokémon GO.
      */
-    fun scopedSuggestion(goal: TodayGoal, scope: GoFilterScope): GoSearchSuggestion {
+    fun scopedSuggestion(
+        goal: TodayGoal,
+        scope: GoFilterScope,
+        language: GoSearchLanguage = GoSearchLanguage.ENGLISH
+    ): GoSearchSuggestion {
         val baseline = suggestion(goal)
-        if (scope == GoFilterScope.STANDARD) return baseline
+        // Preserve all existing English queries and text for returning users.
+        if (scope == GoFilterScope.STANDARD && language == GoSearchLanguage.ENGLISH)
+            return baseline
+
         val query = when (goal) {
             TodayGoal.GREAT, TodayGoal.ULTRA, TodayGoal.IVS ->
-                if (scope == GoFilterScope.BROAD)
-                    "0-2attack&2-4defense&2-4hp"
-                else "0attack&4defense&4hp"
-            TodayGoal.MASTER ->
-                if (scope == GoFilterScope.BROAD) "3*,4*" else "4*"
-            TodayGoal.COLLECTION ->
-                if (scope == GoFilterScope.BROAD) "0-4*" else "4*"
-            TodayGoal.EVENTS ->
-                if (scope == GoFilterScope.BROAD) "age0-30" else "age0-1"
+                when (scope) {
+                    GoFilterScope.BROAD -> "0-2attack&2-4defense&2-4hp"
+                    GoFilterScope.STANDARD -> baseline.filter
+                    GoFilterScope.FOCUSED -> "0attack&4defense&4hp"
+                }
+            TodayGoal.MASTER -> when (scope) {
+                GoFilterScope.BROAD -> "3*,4*"
+                else -> "4*"
+            }
+            TodayGoal.COLLECTION -> when (scope) {
+                GoFilterScope.BROAD -> "0-4*"
+                GoFilterScope.STANDARD -> baseline.filter
+                GoFilterScope.FOCUSED -> "4*"
+            }
+            TodayGoal.EVENTS -> when (scope) {
+                GoFilterScope.BROAD -> "age0-30"
+                GoFilterScope.STANDARD -> baseline.filter
+                GoFilterScope.FOCUSED -> "age0-1"
+            }
         }
-        return baseline.copy(
-            filter = query,
-            purpose = if (scope == GoFilterScope.BROAD)
+        val purpose = when (scope) {
+            GoFilterScope.BROAD ->
                 "Filtro ampliado após poucos resultados. Podes voltar ao padrão."
-            else "Filtro mais restrito após demasiados resultados. Podes voltar ao padrão.",
-            limitation = baseline.limitation +
-                " Esta alteração só modifica a pesquisa; não confirma IVs, raridade ou elegibilidade."
+            GoFilterScope.STANDARD -> baseline.purpose
+            GoFilterScope.FOCUSED ->
+                "Filtro mais restrito após demasiados resultados. Podes voltar ao padrão."
+        }
+        val scopeWarning = if (scope == GoFilterScope.STANDARD) "" else
+            " Esta alteração só modifica a pesquisa; não confirma IVs, raridade ou elegibilidade."
+        val languageWarning = if (language == GoSearchLanguage.PORTUGUESE_BR)
+            " Termos baseados na ajuda oficial em português do Brasil; confirma-os no teu jogo."
+        else ""
+        return baseline.copy(
+            filter = localizeGoQuery(query, language),
+            purpose = purpose,
+            limitation = baseline.limitation + scopeWarning + languageWarning,
+            requiresEnglishGoTerms =
+                language == GoSearchLanguage.ENGLISH && baseline.requiresEnglishGoTerms
         )
     }
+
+    /**
+     * Only translate known keywords that appear in the six curated queries.
+     * Source: official Pokémon GO inventory search help (EN and pt-BR).
+     * Do not translate star ratings, punctuation, or entire user-entered queries.
+     */
+    private fun localizeGoQuery(query: String, language: GoSearchLanguage): String =
+        when (language) {
+            GoSearchLanguage.ENGLISH -> query
+            GoSearchLanguage.PORTUGUESE_BR -> query
+                .replace("attack", "ataque")
+                .replace("defense", "defesa")
+                .replace("hp", "ps")
+                .replace("age", "idade")
+        }
 
     /** Change one level at a time; preserve the middle, standard search. */
     fun broaden(scope: GoFilterScope): GoFilterScope = when (scope) {
