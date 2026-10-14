@@ -124,7 +124,7 @@ fun TeamsGoldenHomeScreen(
                 TeamsCard {
                     Text("A tua primeira equipa", style = MaterialTheme.typography.titleLarge)
                     Text("Ainda não tens equipas guardadas nesta liga. O Team Lab pode gerar sugestões a partir de Pokémon completos e de um Meta Pack válido.", color = PvpColors.TextSecondary)
-                    Text("${eligible.size} Pokémon com nível e moves preenchidos", style = MaterialTheme.typography.labelMedium, color = teamsBlue)
+                    Text("${eligible.size} Pokémon com nível e movimentos preenchidos · elegibilidade por confirmar", style = MaterialTheme.typography.labelMedium, color = teamsBlue)
                     Button(onClick = onCreate, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Criar equipa") }
                 }
             }
@@ -343,7 +343,7 @@ fun TeamsGoldenBuilderScreen(
                 Text(selected?.let { names[it.speciesId] ?: it.speciesId } ?: "Deixa a app escolher",
                     style = MaterialTheme.typography.titleMedium)
                 Text(selected?.let { "CP ${it.cp ?: "?"} · ${it.iv.attack}/${it.iv.defense}/${it.iv.stamina}" }
-                    ?: "Podes fixar um exemplar completo na análise; o motor continuará a validar a elegibilidade da liga.",
+                    ?: "Podes fixar um exemplar com nível e movimentos preenchidos. A elegibilidade da liga só será confirmada na análise.",
                     color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = { pickerOpen = !pickerOpen }, modifier = Modifier.heightIn(min = 44.dp)) {
                     Text(if (pickerOpen) "Fechar lista" else "Escolher Pokémon  ›")
@@ -355,10 +355,10 @@ fun TeamsGoldenBuilderScreen(
         }
         if (pickerOpen) {
             item { PvpSearchField(query, onValueChange = { newQuery -> query = newQuery; visibleLimit = 75 }, placeholder = "Nome, alcunha ou #Pokédex…") }
-            item { Text("${visibleCandidates.size} de ${filtered.size} resultados · ${eligible.size} exemplares elegíveis", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
+            item { Text("${visibleCandidates.size} de ${filtered.size} resultados · ${eligible.size} com nível e movimentos", style = MaterialTheme.typography.bodySmall, color = PvpColors.TextSecondary) }
             if (filtered.isEmpty()) item {
                 TeamsCard {
-                    Text(if (eligible.isEmpty()) "Não tens Pokémon elegíveis. Completa o nível e os movimentos na Coleção."
+                    Text(if (eligible.isEmpty()) "Ainda não tens Pokémon com nível e movimentos preenchidos. Completa os dados na Coleção."
                          else "Nenhum Pokémon corresponde à pesquisa. Experimenta o nome, alcunha ou número da Pokédex.")
                     if (query.isNotBlank()) TextButton(onClick = { query = ""; visibleLimit = 75 }) { Text("Limpar pesquisa") }
                 }

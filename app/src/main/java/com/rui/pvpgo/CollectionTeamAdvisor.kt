@@ -21,7 +21,8 @@ import com.rui.pvpgo.domain.VersionedMetaGroup
 import com.rui.pvpgo.engine.BattleAdviceCertificationGate
 import com.rui.pvpgo.engine.PokemonMath
 import com.rui.pvpgo.engine.PokemonSpecies
-import com.rui.pvpgo.engine.RulesetEngine
+import com.rui.pvpgo.engine.OwnedEligibilityGate
+import com.rui.pvpgo.engine.OwnedEligibilityStatus
 import com.rui.pvpgo.engine.SpecialMechanicsRegistry
 
 /** F52/F53 — collection-only trio search with explicit, versioned meta coverage. */
@@ -124,10 +125,33 @@ class CollectionTeamAdvisor(
                     return@mapNotNull null
                 }
             }
-            val cp = PokemonMath.cp(sp, owned.iv, level)
-            val eligibility = RulesetEngine.evaluate(ruleset, sp, level, cp)
-            if (!eligibility.eligible) {
-                exclusions += exclusion(owned, TeamCandidateExclusionReason.RULESET_INELIGIBLE, eligibility.reasons.joinToString())
+            // Level + IV + verified catalog stats determine this candidate CP.
+            // The strict gate distinguishes hard exclusions from missing data and
+            // handles Primal separately from Mega. Never use a species-only query
+            // as evidence that this owned build is battle-ready.
+            val derivedCp = PokemonMath.cp(sp, owned.iv, level)
+            // A saved CP that disagrees with IV + level + catalog stats signals
+            // stale or mistyped data. Do not silently recommend that exemplar.
+            if (owned.cp != null && owned.cp != derivedCp) {
+                exclusions += exclusion(
+                    owned, TeamCandidateExclusionReason.INCOMPLETE_BUILD,
+                    "CP guardado e CP calculado não coincidem; confirma os dados."
+                )
+                return@mapNotNull null
+            }
+            val eligibility = OwnedEligibilityGate.evaluate(
+                ruleset = ruleset, species = sp, cp = derivedCp, level = level
+            )
+            if (!eligibility.confirmed) {
+                val reason = (eligibility.rulesetReasons.map { it.name } +
+                    eligibility.issues.map { it.name }).joinToString()
+                exclusions += exclusion(
+                    owned,
+                    if (eligibility.status == OwnedEligibilityStatus.NEEDS_DATA)
+                        TeamCandidateExclusionReason.INCOMPLETE_BUILD
+                    else TeamCandidateExclusionReason.RULESET_INELIGIBLE,
+                    reason.ifBlank { "Eligibility not confirmed." }
+                )
                 return@mapNotNull null
             }
             Candidate(owned, sp)
