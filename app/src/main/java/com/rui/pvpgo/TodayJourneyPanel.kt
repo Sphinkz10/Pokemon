@@ -117,6 +117,10 @@ fun TodayJourneyPanel(
                     Button(
                         onClick = {
                             clipboard.setText(AnnotatedString(suggestion.filter))
+                            android.widget.Toast.makeText(
+                                context, "Filtro copiado para a área de transferência",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
                             updateStage(TodayJourneyPolicy.afterCopy(stage))
                         },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
