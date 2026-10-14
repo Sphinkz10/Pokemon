@@ -125,6 +125,19 @@ object TodayJourneyPolicy {
         )
     }
 
+    /** Change one level at a time; preserve the middle, standard search. */
+    fun broaden(scope: GoFilterScope): GoFilterScope = when (scope) {
+        GoFilterScope.FOCUSED -> GoFilterScope.STANDARD
+        GoFilterScope.STANDARD -> GoFilterScope.BROAD
+        GoFilterScope.BROAD -> GoFilterScope.BROAD
+    }
+
+    fun refine(goal: TodayGoal, scope: GoFilterScope): GoFilterScope = when {
+        goal == TodayGoal.MASTER && scope == GoFilterScope.STANDARD -> GoFilterScope.STANDARD
+        scope == GoFilterScope.BROAD -> GoFilterScope.STANDARD
+        else -> GoFilterScope.FOCUSED
+    }
+
     fun canBroaden(scope: GoFilterScope): Boolean = scope != GoFilterScope.BROAD
 
     fun canRefine(goal: TodayGoal, scope: GoFilterScope): Boolean =
