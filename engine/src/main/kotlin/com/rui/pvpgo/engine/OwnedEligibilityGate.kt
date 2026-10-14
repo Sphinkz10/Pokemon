@@ -21,6 +21,8 @@ enum class OwnedEligibilityIssue {
     INVALID_CP,
     EVOLUTION_UNKNOWN,
     EVOLUTION_NOT_POSSIBLE,
+    BASE_STAGE_UNKNOWN,
+    NOT_BASE_STAGE,
     PRIMAL_NOT_ALLOWED
 }
 
@@ -40,7 +42,9 @@ object OwnedEligibilityGate {
         level: Double?,
         requiresEvolutionPotential: Boolean = false,
         canEvolve: Boolean? = null,
-        allowPrimal: Boolean = false
+        allowPrimal: Boolean = false,
+        /** Certified by a complete evolution-family catalog; null is unknown. */
+        baseStageConfirmed: Boolean? = null
     ): OwnedEligibilityDecision {
         val hardReasons = RulesetEngine.evaluate(ruleset, species, level, cp).reasons
         val issues = mutableSetOf<OwnedEligibilityIssue>()
@@ -66,10 +70,21 @@ object OwnedEligibilityGate {
                 null -> issues += OwnedEligibilityIssue.EVOLUTION_UNKNOWN
             }
         }
+        if (ruleset.requiresBaseStage) {
+            // A documented parent is decisive. Missing parent metadata is not
+            // proof of being a base stage in a partial or stale catalog.
+            when {
+                species.parentSpeciesId != null -> issues += OwnedEligibilityIssue.NOT_BASE_STAGE
+                baseStageConfirmed == true -> Unit
+                baseStageConfirmed == false -> issues += OwnedEligibilityIssue.NOT_BASE_STAGE
+                else -> issues += OwnedEligibilityIssue.BASE_STAGE_UNKNOWN
+            }
+        }
         val definitelyIneligible = hardReasons.isNotEmpty() ||
             OwnedEligibilityIssue.INVALID_CP in issues ||
             OwnedEligibilityIssue.PRIMAL_NOT_ALLOWED in issues ||
-            OwnedEligibilityIssue.EVOLUTION_NOT_POSSIBLE in issues
+            OwnedEligibilityIssue.EVOLUTION_NOT_POSSIBLE in issues ||
+            OwnedEligibilityIssue.NOT_BASE_STAGE in issues
         val status = when {
             definitelyIneligible -> OwnedEligibilityStatus.INELIGIBLE
             issues.isNotEmpty() -> OwnedEligibilityStatus.NEEDS_DATA

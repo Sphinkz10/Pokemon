@@ -65,7 +65,9 @@ data class PvPRuleset(
     val sourceVersion: String,
     val generatedAtEpochMs: Long,
     /** Cup-specific evolution requirement; 500 CP alone never implies this rule. */
-    val requiresEvolutionPotential: Boolean = false
+    val requiresEvolutionPotential: Boolean = false,
+    /** True only for formats requiring an unevolved, base-stage species. */
+    val requiresBaseStage: Boolean = false
 ) {
     init {
         require(id.isNotBlank())
