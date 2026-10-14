@@ -37,7 +37,9 @@ internal object CandidateReviewPolicy {
     }
 
     fun hasExplicitIvs(attack: Int?, defense: Int?, stamina: Int?): Boolean =
-        attack in 0..15 && defense in 0..15 && stamina in 0..15
+        attack != null && attack in 0..15 &&
+            defense != null && defense in 0..15 &&
+            stamina != null && stamina in 0..15
 
     /** Room must emit the newly saved record before opening its Detail route. */
     fun canOpenConfirmed(confirmedId: String?, ownedIds: Set<String>): Boolean =
