@@ -59,7 +59,11 @@ checks = {
     "guided journey is visible after choosing objective": (
         "TodayJourneyPanel(" in today
         and "goal = selectedGoal" in today
-        and "onOpenCollection = onSearch" in today
+        and "onOpenCollection = onOpenCandidateInbox" in today
+        and "onOpenCandidateInbox = {" in main
+        and "inboxRequestCounter = guidedInboxRequest" in main
+        and "route = CollectionRoute.INBOX" in
+        (root / "app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text(encoding="utf-8")
     ),
     "GO copy journey keeps progress per goal and no silent import": (
         'getSharedPreferences("companion_today_journey_v1"' in
