@@ -39,6 +39,21 @@ checks = {
         "ESPÉCIES DE REFERÊNCIA" not in today
         and "CarbinkPriorityCard(" not in today.split("private fun TodayActionCard")[0]
     ),
+    "goal picker shows four distinct objectives and keeps accessible chips": (
+        "TodayGoalPicker(selectedGoal)" in today
+        and "FilterChip(" in today
+        and "TodayGoal.GREAT" in today
+        and "TodayGoal.ULTRA" in today
+        and "TodayGoal.COLLECTION" in today
+        and "TodayGoal.EVENTS" in today
+        and "heightIn(min = 48.dp)" in today
+    ),
+    "goal selection is persisted locally and recomputes Room actions": (
+        'getSharedPreferences("companion_today_goal_v1"' in today
+        and 'getString("goal", TodayGoal.COLLECTION.name)' in today
+        and 'putString("goal", nextGoal.name).apply()' in today
+        and "remember(repository, calendar, selectedGoal)" in today
+    ),
     "new action policy warns rather than asserting battle readiness": (
         "elegibilidade PvP ainda terá de ser confirmada" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayActionPolicy.kt").read_text(encoding="utf-8")
