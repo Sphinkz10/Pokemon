@@ -130,6 +130,15 @@ class CollectionTeamAdvisor(
             // handles Primal separately from Mega. Never use a species-only query
             // as evidence that this owned build is battle-ready.
             val derivedCp = PokemonMath.cp(sp, owned.iv, level)
+            // A saved CP that disagrees with IV + level + catalog stats signals
+            // stale or mistyped data. Do not silently recommend that exemplar.
+            if (owned.cp != null && owned.cp != derivedCp) {
+                exclusions += exclusion(
+                    owned, TeamCandidateExclusionReason.INCOMPLETE_BUILD,
+                    "CP guardado e CP calculado não coincidem; confirma os dados."
+                )
+                return@mapNotNull null
+            }
             val eligibility = OwnedEligibilityGate.evaluate(
                 ruleset = ruleset, species = sp, cp = derivedCp, level = level
             )
