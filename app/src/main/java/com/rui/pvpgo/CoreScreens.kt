@@ -10,6 +10,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -585,9 +587,9 @@ private fun ManualImportScreen(
     val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
-    var atk by remember { mutableIntStateOf(0) }
-    var def by remember { mutableIntStateOf(15) }
-    var hp by remember { mutableIntStateOf(15) }
+    var atk by remember { mutableStateOf<Int?>(null) }
+    var def by remember { mutableStateOf<Int?>(null) }
+    var hp by remember { mutableStateOf<Int?>(null) }
     var cpText by remember { mutableStateOf("") }
     var levelText by remember { mutableStateOf("") }
     var nickname by remember { mutableStateOf("") }
@@ -637,9 +639,23 @@ private fun ManualImportScreen(
                         }
                     }
                 }
-                item { CompactIvSelector("Ataque", atk) { atk = it } }
-                item { CompactIvSelector("Defesa", def) { def = it } }
-                item { CompactIvSelector("HP", hp) { hp = it } }
+                item {
+                    Text(
+                        "Confirma os três IVs (0 a 15) na avaliação do Pokémon GO. " +
+                            "Nenhum valor é assumido automaticamente.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CompactIvInput("Ataque", atk, { atk = it }, Modifier.weight(1f))
+                        CompactIvInput("Defesa", def, { def = it }, Modifier.weight(1f))
+                        CompactIvInput("HP", hp, { hp = it }, Modifier.weight(1f))
+                    }
+                }
                 if (guided) {
                     item { OutlinedTextField(nickname, { nickname = it }, label = { Text("Nickname · opcional") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
                     item {
@@ -660,6 +676,9 @@ private fun ManualImportScreen(
                             val species = selected ?: return@Button
                             val cp = cpText.toIntOrNull()
                             val level = levelText.replace(',', '.').toDoubleOrNull()
+                            val attack = atk ?: return@Button
+                            val defense = def ?: return@Button
+                            val stamina = hp ?: return@Button
                             val mode = if (guided) CollectionImportMode.GUIDED else CollectionImportMode.QUICK_MANUAL
                             val sessionId = "manual-${System.currentTimeMillis()}"
                             val draft = runCatching {
@@ -667,9 +686,9 @@ private fun ManualImportScreen(
                                     sessionId = sessionId,
                                     mode = mode,
                                     speciesId = species.speciesId,
-                                    ivAttack = atk,
-                                    ivDefense = def,
-                                    ivStamina = hp,
+                                    ivAttack = attack,
+                                    ivDefense = defense,
+                                    ivStamina = stamina,
                                     cp = cp,
                                     level = level,
                                     nickname = nickname.trim().takeIf(String::isNotBlank),
@@ -694,8 +713,8 @@ private fun ManualImportScreen(
                                 busy = false
                             }
                         },
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
+                        enabled = !busy && CandidateReviewPolicy.hasExplicitIvs(atk, def, hp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     ) { Text(if (busy) "A preparar…" else "Rever antes de guardar") }
                 }
                 error?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
@@ -705,14 +724,20 @@ private fun ManualImportScreen(
 }
 
 @Composable
-private fun CompactIvSelector(label: String, value: Int, onValue: (Int) -> Unit) {
-    Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontWeight = FontWeight.SemiBold)
-            Text(value.toString(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        }
-        Slider(value.toFloat(), { onValue(it.toInt().coerceIn(0, 15)) }, valueRange = 0f..15f, steps = 14)
-    }
+private fun CompactIvInput(
+    label: String,
+    value: Int?,
+    onValue: (Int?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value?.toString().orEmpty(),
+        onValueChange = { onValue(CandidateReviewPolicy.updateIvInput(value, it)) },
+        label = { Text(label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = modifier
+    )
 }
 
 @Composable
