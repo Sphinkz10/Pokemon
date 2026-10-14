@@ -18,10 +18,11 @@ import java.util.LinkedHashMap
 object RankRepository {
     private const val MAX_TABLES = 24
 
+    // Key by the full immutable species snapshot. A catalog refresh may keep
+    // speciesId/dex/name while changing base stats, form or other ranking
+    // inputs. Reusing that stale table can produce incorrect IV advice.
     private data class Key(
-        val speciesId: String,
-        val dex: Int,
-        val name: String,
+        val species: PokemonSpecies,
         val league: League,
         val settings: RankSettings
     )
@@ -40,7 +41,7 @@ object RankRepository {
         league: League,
         settings: RankSettings
     ): Table {
-        val key = Key(species.speciesId, species.dex, species.name, league, settings)
+        val key = Key(species, league, settings)
         synchronized(cache) { cache[key] }?.let { return it }
 
         val rows = PvPRanker.rank(species, league, settings)
