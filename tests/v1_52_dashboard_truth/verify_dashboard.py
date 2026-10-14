@@ -85,6 +85,18 @@ checks = {
         and "A Inbox local e os resultados da pesquisa no Pokémon GO são distintos" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
     ),
+    "manual broadening/refinement is visible with reversible standard option": (
+        "TodayJourneyPolicy.scopedSuggestion(goal, scope)" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "Poucos ou zero" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "Demasiados" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "Voltar ao filtro padrão" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and 'putString(scopeKey, next.name).apply()' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+    ),
     "new action policy warns rather than asserting battle readiness": (
         "elegibilidade PvP ainda terá de ser confirmada" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayActionPolicy.kt").read_text(encoding="utf-8")
