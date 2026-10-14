@@ -15,7 +15,8 @@ internal object CollectionNavigationPolicy {
         current: CollectionRoute,
         detailOrigin: CollectionRoute,
         compareOrigin: CollectionRoute,
-        targetsOrigin: CollectionRoute
+        targetsOrigin: CollectionRoute,
+        importOrigin: CollectionRoute = CollectionRoute.IMPORT_HOME
     ): CollectionRoute = when (current) {
         CollectionRoute.LIST -> CollectionRoute.LIST
         CollectionRoute.SPECIES -> CollectionRoute.LIST
@@ -25,7 +26,7 @@ internal object CollectionNavigationPolicy {
         CollectionRoute.IV_TARGETS -> targetsOrigin
         CollectionRoute.IMPORT_HOME -> CollectionRoute.LIST
         CollectionRoute.MANUAL_QUICK,
-        CollectionRoute.MANUAL_GUIDED,
+        CollectionRoute.MANUAL_GUIDED -> importOrigin
         CollectionRoute.PASTE -> CollectionRoute.IMPORT_HOME
         CollectionRoute.INBOX -> CollectionRoute.LIST
     }
