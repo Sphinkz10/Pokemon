@@ -16,6 +16,8 @@
 | C01 | New install, local Room not loaded | Open Inbox from Hoje | Loading shown; no fabricated “0 candidatos” before first Room emission |
 | C02 | Truly empty Room Inbox | Open Inbox | Explain GO search is not automatic import; quick and guided actions visible |
 | C03 | Empty Inbox | Tap “Registar espécie e IVs” | Direct quick entry; species and all three IVs editable |
+| C03A | Fresh manual form | Inspect Attack/Defense/HP inputs | All three initially blank; save disabled until explicit values 0–15 are entered |
+| C03B | Any manual entry | Clear one IV or type 16 | Save disabled when missing; values outside 0–15 are rejected without inventing replacements |
 | C04 | Quick entry entered from Inbox | Android hardware/system Back | Returns to Inbox, not Import menu |
 | C05 | Empty Inbox | Tap guided entry | Detailed manual form opens; Android Back returns to Inbox |
 | C06 | Complete known species + 0/15/15 IV | Submit quick entry | Creates a **pending** candidate, not a permanent record |
@@ -35,7 +37,7 @@
 | C20 | No Pokémon GO installed | Use manual entry | Companion remains usable offline; no login or account read |
 
 ## Automated gates
-- `CandidateReviewPolicyTest`: 8 JVM tests for safe labels, no fabricated ranking and exact-ID Room navigation gating.
+- `CandidateReviewPolicyTest`: 12 JVM tests for explicit IV input, safe labels, no fabricated ranking and exact-ID Room navigation gating.
 - `CollectionNavigationPolicyTest`: includes manual capture return-to-Inbox regression.
 - `tests/v3_candidate_review/verify_handoff.py`: structural guard over navigation, background rank calculation, transaction, loading and warnings.
 - Android Gradle unit test + APK CI required before merging.
