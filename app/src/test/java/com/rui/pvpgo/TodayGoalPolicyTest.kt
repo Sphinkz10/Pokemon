@@ -108,4 +108,31 @@ class TodayGoalPolicyTest {
     fun rejectsImpossibleLocalDataEvenWhenGoalIsEvents() {
         actions(TodayGoal.EVENTS, owned = 1, incomplete = 2)
     }
+    @Test fun masterLeagueIsAvailableAndDoesNotInferBattleReadiness() {
+        val result = actions(TodayGoal.MASTER, owned = 5)
+        assertEquals(TodayDestination.TEAMS, result.first().destination)
+        assertTrue(result.first().title.contains("Master Liga"))
+        assertTrue(result.first().explanation.contains("requer validação"))
+    }
+
+    @Test fun masterGoalWithNoCollectionStartsAtCollection() {
+        val first = actions(TodayGoal.MASTER).first()
+        assertEquals(TodayDestination.COLLECTION, first.destination)
+        assertTrue(first.title.contains("Master Liga"))
+    }
+
+    @Test fun ivGoalWithNoOwnedPokemonStartsCollectionWithoutInventingRank() {
+        val first = actions(TodayGoal.IVS).first()
+        assertEquals(TodayDestination.COLLECTION, first.destination)
+        assertTrue(first.title.contains("IVs"))
+        assertTrue(first.explanation.contains("depende da liga"))
+    }
+
+    @Test fun ivGoalWithCollectionNeverClaimsAConfirmedRanking() {
+        val first = actions(TodayGoal.IVS, owned = 12, incomplete = 3).first()
+        assertEquals(TodayDestination.COLLECTION, first.destination)
+        assertTrue(first.title.contains("IVs"))
+        assertTrue(first.explanation.contains("confirma a liga"))
+    }
+
 }
