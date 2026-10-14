@@ -10,6 +10,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -84,6 +86,9 @@ fun CollectionModuleScreen(
     val repository = remember(context) { CollectionRepository.get(context) }
     val collectionScreenState = rememberSaveableStateHolder()
     var route by rememberSaveable { mutableStateOf(CollectionRoute.LIST) }
+    // A candidate becomes navigable only after Room emits the confirmed record.
+    var awaitingConfirmedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var manualReturnRoute by rememberSaveable { mutableStateOf(CollectionRoute.IMPORT_HOME) }
     var consumedInboxRequest by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(inboxRequestCounter) {
         if (inboxRequestCounter > consumedInboxRequest) {
@@ -93,6 +98,7 @@ fun CollectionModuleScreen(
     }
     var collection by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var pending by remember { mutableStateOf<List<CandidateInboxItem>>(emptyList()) }
+    var pendingLoaded by remember { mutableStateOf(false) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var selectedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSpeciesId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -116,10 +122,23 @@ fun CollectionModuleScreen(
         }
     }
     LaunchedEffect(repository) {
-        repository.pendingInbox.collectLatest { pending = it }
+        repository.pendingInbox.collectLatest {
+            pending = it
+            pendingLoaded = true
+        }
     }
     LaunchedEffect(repository) {
         repository.buildPlans.collectLatest { buildPlans = it }
+    }
+
+    LaunchedEffect(awaitingConfirmedOwnedId, collection) {
+        if (CandidateReviewPolicy.canOpenConfirmed(
+                awaitingConfirmedOwnedId, collection.mapTo(mutableSetOf()) { it.id }
+            )
+        ) {
+            route = CollectionRoute.DETAIL
+            awaitingConfirmedOwnedId = null
+        }
     }
 
     // DETAIL has a dedicated unsaved-edit BackHandler; it takes precedence.
@@ -128,7 +147,8 @@ fun CollectionModuleScreen(
             current = route,
             detailOrigin = detailReturnRoute,
             compareOrigin = compareReturnRoute,
-            targetsOrigin = targetsReturnRoute
+            targetsOrigin = targetsReturnRoute,
+            importOrigin = manualReturnRoute
         )
     }
 
@@ -274,8 +294,14 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             onBack = { route = CollectionRoute.LIST },
-            onQuick = { route = CollectionRoute.MANUAL_QUICK },
-            onGuided = { route = CollectionRoute.MANUAL_GUIDED },
+            onQuick = {
+                manualReturnRoute = CollectionRoute.IMPORT_HOME
+                route = CollectionRoute.MANUAL_QUICK
+            },
+            onGuided = {
+                manualReturnRoute = CollectionRoute.IMPORT_HOME
+                route = CollectionRoute.MANUAL_GUIDED
+            },
             onPaste = { route = CollectionRoute.PASTE },
             onInbox = { route = CollectionRoute.INBOX }
         )
@@ -284,7 +310,7 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             guided = false,
-            onBack = { route = CollectionRoute.IMPORT_HOME },
+            onBack = { route = manualReturnRoute },
             onSubmitted = { route = CollectionRoute.INBOX }
         )
         CollectionRoute.MANUAL_GUIDED -> ManualImportScreen(
@@ -292,7 +318,7 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             guided = true,
-            onBack = { route = CollectionRoute.IMPORT_HOME },
+            onBack = { route = manualReturnRoute },
             onSubmitted = { route = CollectionRoute.INBOX }
         )
         CollectionRoute.PASTE -> PasteImportScreen(
@@ -306,8 +332,23 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             pending = pending,
+            pendingLoaded = pendingLoaded,
             onBack = { route = CollectionRoute.LIST },
-            onAddAnother = { route = CollectionRoute.IMPORT_HOME }
+            onAddAnother = { route = CollectionRoute.IMPORT_HOME },
+            onQuickAdd = {
+                manualReturnRoute = CollectionRoute.INBOX
+                route = CollectionRoute.MANUAL_QUICK
+            },
+            onGuidedAdd = {
+                manualReturnRoute = CollectionRoute.INBOX
+                route = CollectionRoute.MANUAL_GUIDED
+            },
+            onConfirmed = { candidate ->
+                selectedOwnedId = candidate.id
+                selectedSpeciesId = candidate.speciesId
+                detailReturnRoute = if (pending.size > 1) CollectionRoute.INBOX else CollectionRoute.LIST
+                awaitingConfirmedOwnedId = candidate.id
+            }
         )
     }
 }
@@ -546,9 +587,9 @@ private fun ManualImportScreen(
     val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
-    var atk by remember { mutableIntStateOf(0) }
-    var def by remember { mutableIntStateOf(15) }
-    var hp by remember { mutableIntStateOf(15) }
+    var atk by remember { mutableStateOf<Int?>(null) }
+    var def by remember { mutableStateOf<Int?>(null) }
+    var hp by remember { mutableStateOf<Int?>(null) }
     var cpText by remember { mutableStateOf("") }
     var levelText by remember { mutableStateOf("") }
     var nickname by remember { mutableStateOf("") }
@@ -598,9 +639,23 @@ private fun ManualImportScreen(
                         }
                     }
                 }
-                item { CompactIvSelector("Ataque", atk) { atk = it } }
-                item { CompactIvSelector("Defesa", def) { def = it } }
-                item { CompactIvSelector("HP", hp) { hp = it } }
+                item {
+                    Text(
+                        "Confirma os três IVs (0 a 15) na avaliação do Pokémon GO. " +
+                            "Nenhum valor é assumido automaticamente.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CompactIvInput("Ataque", atk, { atk = it }, Modifier.weight(1f))
+                        CompactIvInput("Defesa", def, { def = it }, Modifier.weight(1f))
+                        CompactIvInput("HP", hp, { hp = it }, Modifier.weight(1f))
+                    }
+                }
                 if (guided) {
                     item { OutlinedTextField(nickname, { nickname = it }, label = { Text("Nickname · opcional") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
                     item {
@@ -621,6 +676,9 @@ private fun ManualImportScreen(
                             val species = selected ?: return@Button
                             val cp = cpText.toIntOrNull()
                             val level = levelText.replace(',', '.').toDoubleOrNull()
+                            val attack = atk ?: return@Button
+                            val defense = def ?: return@Button
+                            val stamina = hp ?: return@Button
                             val mode = if (guided) CollectionImportMode.GUIDED else CollectionImportMode.QUICK_MANUAL
                             val sessionId = "manual-${System.currentTimeMillis()}"
                             val draft = runCatching {
@@ -628,9 +686,9 @@ private fun ManualImportScreen(
                                     sessionId = sessionId,
                                     mode = mode,
                                     speciesId = species.speciesId,
-                                    ivAttack = atk,
-                                    ivDefense = def,
-                                    ivStamina = hp,
+                                    ivAttack = attack,
+                                    ivDefense = defense,
+                                    ivStamina = stamina,
                                     cp = cp,
                                     level = level,
                                     nickname = nickname.trim().takeIf(String::isNotBlank),
@@ -655,8 +713,8 @@ private fun ManualImportScreen(
                                 busy = false
                             }
                         },
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth()
+                        enabled = !busy && CandidateReviewPolicy.hasExplicitIvs(atk, def, hp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     ) { Text(if (busy) "A preparar…" else "Rever antes de guardar") }
                 }
                 error?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
@@ -666,14 +724,20 @@ private fun ManualImportScreen(
 }
 
 @Composable
-private fun CompactIvSelector(label: String, value: Int, onValue: (Int) -> Unit) {
-    Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontWeight = FontWeight.SemiBold)
-            Text(value.toString(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        }
-        Slider(value.toFloat(), { onValue(it.toInt().coerceIn(0, 15)) }, valueRange = 0f..15f, steps = 14)
-    }
+private fun CompactIvInput(
+    label: String,
+    value: Int?,
+    onValue: (Int?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value?.toString().orEmpty(),
+        onValueChange = { onValue(CandidateReviewPolicy.updateIvInput(value, it)) },
+        label = { Text(label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -744,19 +808,41 @@ private fun InboxScreen(
     repository: CollectionRepository,
     collection: List<OwnedPokemon>,
     pending: List<CandidateInboxItem>,
+    pendingLoaded: Boolean,
     onBack: () -> Unit,
-    onAddAnother: () -> Unit
+    onAddAnother: () -> Unit,
+    onQuickAdd: () -> Unit,
+    onGuidedAdd: () -> Unit,
+    onConfirmed: (OwnedPokemon) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val byId = remember(catalog) { catalog.associateBy { it.speciesId } }
     var actionError by remember { mutableStateOf<String?>(null) }
     var busyId by remember { mutableStateOf<String?>(null) }
+    var expandedCandidateId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Review Inbox · ${pending.size}") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
-        if (pending.isEmpty()) {
+    Scaffold(topBar = { TopAppBar(title = { Text(if (pendingLoaded) "Review Inbox · ${pending.size}" else "Review Inbox") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
+        if (!pendingLoaded) {
+            Column(
+                Modifier.padding(padding).padding(16.dp).fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CircularProgressIndicator()
+                Text("A carregar candidatos pendentes na Companion…")
+            }
+        } else if (pending.isEmpty()) {
             Column(Modifier.padding(padding).padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Não há candidatos pendentes.", style = MaterialTheme.typography.titleMedium)
-                Button(onClick = onAddAnother) { Text("Adicionar Pokémon") }
+                Text(CandidateReviewPolicy.EMPTY_GUIDANCE, style = MaterialTheme.typography.bodyMedium)
+                Button(
+                    onClick = onQuickAdd,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) { Text("Registar espécie e IVs") }
+                OutlinedButton(
+                    onClick = onGuidedAdd,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                ) { Text("Registo guiado com mais dados") }
+                TextButton(onClick = onAddAnother) { Text("Ver outras formas de importar") }
             }
         } else {
             LazyColumn(
@@ -792,19 +878,36 @@ private fun InboxScreen(
                                 }
                                 Text("A fusão automática continua bloqueada. Confirma apenas se queres guardar este candidato como indivíduo separado.", color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.labelSmall)
                             }
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(
+                                onClick = {
+                                    expandedCandidateId =
+                                        if (expandedCandidateId == item.id) null else item.id
+                                },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            ) {
+                                Text(
+                                    if (expandedCandidateId == item.id)
+                                        "Fechar pré-visualização de IVs"
+                                    else "Ver ranking de IVs por liga"
+                                )
+                            }
+                            if (expandedCandidateId == item.id) {
+                                CandidateRankPreview(species = species, iv = c.iv)
+                            }
+                            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(
                                     onClick = {
                                         scope.launch {
                                             busyId = item.id; actionError = null
                                             runCatching { repository.confirmNew(item.id) }
+                                                .onSuccess { onConfirmed(c) }
                                                 .onFailure { actionError = it.message }
                                             busyId = null
                                         }
                                     },
                                     enabled = busyId == null,
-                                    modifier = Modifier.weight(1f)
-                                ) { Text(if (report.matches.isEmpty()) "Confirmar novo" else "Guardar separado") }
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                ) { Text(CandidateReviewPolicy.saveAction(report.matches.isNotEmpty())) }
                                 OutlinedButton(
                                     onClick = {
                                         scope.launch {
@@ -815,7 +918,7 @@ private fun InboxScreen(
                                         }
                                     },
                                     enabled = busyId == null,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 ) { Text("Descartar") }
                             }
                         }
@@ -826,6 +929,54 @@ private fun InboxScreen(
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CandidateRankPreview(species: PokemonSpecies?, iv: IvSpread) {
+    var league by rememberSaveable(species?.speciesId) { mutableStateOf(League.GREAT) }
+    var rank by remember(species, iv, league) {
+        mutableStateOf<com.rui.pvpgo.engine.PvPRankEntry?>(null)
+    }
+    var computed by remember(species, iv, league) { mutableStateOf(false) }
+    LaunchedEffect(species, iv, league) {
+        rank = withContext(Dispatchers.Default) {
+            runCatching { species?.let { RankRepository.find(it, league, iv, RankSettings()) } }
+                .getOrNull()
+        }
+        computed = true
+    }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Pré-visualização · sem guardar", fontWeight = FontWeight.SemiBold)
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SpeciesLeaguePolicy.selectable.forEach { option ->
+                    FilterChip(
+                        selected = league == option,
+                        onClick = { league = option },
+                        label = { Text(SpeciesLeaguePolicy.shortLabel(option)) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    )
+                }
+            }
+            Text(
+                CandidateReviewPolicy.rankStatus(species != null, computed, rank?.rank),
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                CandidateReviewPolicy.RANK_LIMITATION,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

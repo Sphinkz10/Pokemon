@@ -43,6 +43,30 @@ class CollectionNavigationPolicyTest {
         assertEquals(CollectionRoute.LIST, go(CollectionRoute.INBOX))
     }
 
+    @Test fun manualCaptureEnteredFromInboxReturnsToInbox() {
+        val importedFromInbox = CollectionRoute.INBOX
+        assertEquals(
+            importedFromInbox,
+            CollectionNavigationPolicy.backTarget(
+                CollectionRoute.MANUAL_QUICK,
+                CollectionRoute.SPECIES,
+                CollectionRoute.EXEMPLARS,
+                CollectionRoute.SPECIES,
+                importOrigin = importedFromInbox
+            )
+        )
+        assertEquals(
+            importedFromInbox,
+            CollectionNavigationPolicy.backTarget(
+                CollectionRoute.MANUAL_GUIDED,
+                CollectionRoute.SPECIES,
+                CollectionRoute.EXEMPLARS,
+                CollectionRoute.SPECIES,
+                importOrigin = importedFromInbox
+            )
+        )
+    }
+
     @Test fun speciesAndExemplarsGoBackOneLevel() {
         assertEquals(CollectionRoute.LIST, go(CollectionRoute.SPECIES))
         assertEquals(CollectionRoute.SPECIES, go(CollectionRoute.EXEMPLARS))
