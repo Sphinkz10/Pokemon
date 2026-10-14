@@ -56,6 +56,21 @@ checks = {
         and 'putString("goal", nextGoal.name).apply()' in today
         and "remember(repository, calendar, selectedGoal)" in today
     ),
+    "guided journey is visible after choosing objective": (
+        "TodayJourneyPanel(" in today
+        and "goal = selectedGoal" in today
+        and "onOpenCollection = onSearch" in today
+    ),
+    "GO copy journey keeps progress per goal and no silent import": (
+        'getSharedPreferences("companion_today_journey_v1"' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and '"stage_" + goal.name' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "clipboard.setText(AnnotatedString(suggestion.filter))" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "Já revi os candidatos" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+    ),
     "new action policy warns rather than asserting battle readiness": (
         "elegibilidade PvP ainda terá de ser confirmada" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayActionPolicy.kt").read_text(encoding="utf-8")
