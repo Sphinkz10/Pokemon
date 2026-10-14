@@ -77,7 +77,7 @@ object TodayJourneyPolicy {
         pendingCount == 1 ->
             "1 candidato pendente na Companion. Confirma o exemplar na Inbox."
         else ->
-            "$"+"{pendingCount} candidatos pendentes na Companion. Revê-os na Inbox."
+            "${pendingCount} candidatos pendentes na Companion. Revê-os na Inbox."
     }
 
     fun hasPendingInboxReview(pendingCount: Int?): Boolean = pendingCount != null && pendingCount > 0
