@@ -75,6 +75,16 @@ checks = {
         and "Já revi os candidatos" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
     ),
+    "journey Inbox status is driven by observed Room emissions": (
+        "repository.pendingInbox.map { it.size }" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "collectAsState(initial = -1)" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "inboxStatus(pendingCount.takeIf { it >= 0 })" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "A Inbox local e os resultados da pesquisa no Pokémon GO são distintos" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+    ),
     "new action policy warns rather than asserting battle readiness": (
         "elegibilidade PvP ainda terá de ser confirmada" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayActionPolicy.kt").read_text(encoding="utf-8")
