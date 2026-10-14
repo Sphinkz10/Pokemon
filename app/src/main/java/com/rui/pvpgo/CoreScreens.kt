@@ -855,7 +855,7 @@ private fun InboxScreen(
                             if (expandedCandidateId == item.id) {
                                 CandidateRankPreview(species = species, iv = c.iv)
                             }
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(
                                     onClick = {
                                         scope.launch {
@@ -867,7 +867,7 @@ private fun InboxScreen(
                                         }
                                     },
                                     enabled = busyId == null,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 ) { Text(CandidateReviewPolicy.saveAction(report.matches.isNotEmpty())) }
                                 OutlinedButton(
                                     onClick = {
@@ -879,7 +879,7 @@ private fun InboxScreen(
                                         }
                                     },
                                     enabled = busyId == null,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 ) { Text("Descartar") }
                             }
                         }
