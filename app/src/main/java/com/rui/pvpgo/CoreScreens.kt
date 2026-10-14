@@ -96,6 +96,7 @@ fun CollectionModuleScreen(
     }
     var collection by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var pending by remember { mutableStateOf<List<CandidateInboxItem>>(emptyList()) }
+    var pendingLoaded by remember { mutableStateOf(false) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var selectedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSpeciesId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -119,7 +120,10 @@ fun CollectionModuleScreen(
         }
     }
     LaunchedEffect(repository) {
-        repository.pendingInbox.collectLatest { pending = it }
+        repository.pendingInbox.collectLatest {
+            pending = it
+            pendingLoaded = true
+        }
     }
     LaunchedEffect(repository) {
         repository.buildPlans.collectLatest { buildPlans = it }
@@ -326,6 +330,7 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             pending = pending,
+            pendingLoaded = pendingLoaded,
             onBack = { route = CollectionRoute.LIST },
             onAddAnother = { route = CollectionRoute.IMPORT_HOME },
             onQuickAdd = {
@@ -778,6 +783,7 @@ private fun InboxScreen(
     repository: CollectionRepository,
     collection: List<OwnedPokemon>,
     pending: List<CandidateInboxItem>,
+    pendingLoaded: Boolean,
     onBack: () -> Unit,
     onAddAnother: () -> Unit,
     onQuickAdd: () -> Unit,
@@ -790,8 +796,16 @@ private fun InboxScreen(
     var busyId by remember { mutableStateOf<String?>(null) }
     var expandedCandidateId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Review Inbox · ${pending.size}") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
-        if (pending.isEmpty()) {
+    Scaffold(topBar = { TopAppBar(title = { Text(if (pendingLoaded) "Review Inbox · ${pending.size}" else "Review Inbox") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
+        if (!pendingLoaded) {
+            Column(
+                Modifier.padding(padding).padding(16.dp).fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CircularProgressIndicator()
+                Text("A carregar candidatos pendentes na Companion…")
+            }
+        } else if (pending.isEmpty()) {
             Column(Modifier.padding(padding).padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Não há candidatos pendentes.", style = MaterialTheme.typography.titleMedium)
                 Text(CandidateReviewPolicy.EMPTY_GUIDANCE, style = MaterialTheme.typography.bodyMedium)
