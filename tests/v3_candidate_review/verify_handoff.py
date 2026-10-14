@@ -29,7 +29,7 @@ checks = {
     "preview supports all four leagues":
         "SpeciesLeaguePolicy.selectable.forEach" in core.split("private fun CandidateRankPreview(")[1].split("private fun OwnedPokemonDetailScreen(")[0],
     "rank is never presented as species meta or transfer permission":
-        "não mede a força no meta" in policy and "não confirma a elegibilidade" in policy
+        "Não mede a força no meta" in policy and "não confirma a elegibilidade" in policy
         and "transferência" in policy,
     "new confirmation is an explicit user action":
         "repository.confirmNew(item.id)" in core and "onConfirmed(c)" in core,
