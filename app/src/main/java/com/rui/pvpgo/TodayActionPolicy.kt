@@ -10,6 +10,8 @@ package com.rui.pvpgo
 enum class TodayGoal(val label: String, val shortLabel: String) {
     GREAT("Grande Liga", "Grande"),
     ULTRA("Ultra Liga", "Ultra"),
+    MASTER("Master Liga", "Master"),
+    IVS("Análise de IVs", "IVs"),
     COLLECTION("Coleção", "Coleção"),
     EVENTS("Eventos", "Eventos");
 
@@ -130,7 +132,17 @@ object TodayActionPolicy {
         }
         if (goal == TodayGoal.EVENTS) result += radar
 
-        if (goal != TodayGoal.EVENTS) {
+        if (goal == TodayGoal.IVS) {
+            result += if (ownedCount == 0) TodayAction(
+                "Começar a analisar IVs",
+                "Regista um exemplar na Coleção. A classificação depende da liga e das regras.",
+                TodayDestination.COLLECTION
+            ) else TodayAction(
+                "Rever IVs na Coleção",
+                "Escolhe um exemplar e confirma a liga antes de interpretar o ranking.",
+                TodayDestination.COLLECTION
+            )
+        } else if (goal != TodayGoal.EVENTS) {
             result += when {
                 ownedCount == 0 -> TodayAction(
                     "Começar a " + goal.label,
