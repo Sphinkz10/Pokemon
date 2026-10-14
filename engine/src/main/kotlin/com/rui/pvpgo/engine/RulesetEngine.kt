@@ -67,6 +67,8 @@ object RulesetEngine {
         append("allowShadow=").append(ruleset.allowShadow).append('\n')
         append("allowMega=").append(ruleset.allowMega).append('\n')
         append("allowUnreleased=").append(ruleset.allowUnreleased).append('\n')
+        // Preserve hashes of existing snapshots that predate the optional rule.
+        if (ruleset.requiresEvolutionPotential) append("requiresEvolutionPotential=true\n")
         append("source=").append(ruleset.sourceName).append('@').append(ruleset.sourceVersion).append('\n')
         append("generatedAt=").append(ruleset.generatedAtEpochMs).append('\n')
         append("explicitInclude=").append(ruleset.explicitlyIncludedSpeciesIds.sorted().joinToString(",")).append('\n')
