@@ -145,12 +145,12 @@ fun TodayJourneyPanel(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { updateScope(GoFilterScope.BROAD) },
+                            onClick = { updateScope(TodayJourneyPolicy.broaden(scope)) },
                             enabled = TodayJourneyPolicy.canBroaden(scope),
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp)
                         ) { Text("Poucos ou zero") }
                         OutlinedButton(
-                            onClick = { updateScope(GoFilterScope.FOCUSED) },
+                            onClick = { updateScope(TodayJourneyPolicy.refine(goal, scope)) },
                             enabled = TodayJourneyPolicy.canRefine(goal, scope),
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp)
                         ) { Text("Demasiados") }
