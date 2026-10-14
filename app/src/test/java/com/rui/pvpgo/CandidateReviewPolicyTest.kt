@@ -33,7 +33,7 @@ class CandidateReviewPolicyTest {
             "Rank IV #12 nesta espécie e liga",
             CandidateReviewPolicy.rankStatus(speciesAvailable = true, computed = true, rank = 12)
         )
-        assertTrue(CandidateReviewPolicy.RANK_LIMITATION.contains("não mede a força no meta"))
+        assertTrue(CandidateReviewPolicy.RANK_LIMITATION.contains("Não mede a força no meta"))
         assertTrue(CandidateReviewPolicy.RANK_LIMITATION.contains("não confirma a elegibilidade"))
         assertTrue(CandidateReviewPolicy.RANK_LIMITATION.contains("transferência"))
     }
