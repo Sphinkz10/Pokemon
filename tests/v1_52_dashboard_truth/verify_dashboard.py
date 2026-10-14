@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""V1.52 CI gate: avoid representing illustrative event/IV data as real."""
+"""Dashboard integrity gate: no fabricated events, catalog counts or local player priorities."""
 from pathlib import Path
 import re
 
@@ -22,7 +22,27 @@ checks = {
     "old invented countdown removed": "3h 42m" not in today,
     "fixed Spotlight Hour removed": "Spotlight Hour" not in today,
     "fixed Raid Hour removed": "Raid Hour" not in today,
-    "personal targets labelled as references": "ESPÉCIES DE REFERÊNCIA" in today,
+    "home priorities come from all three Room streams": (
+        "combine(repository.collection, repository.pendingInbox, repository.savedTeams)" in today
+        and "TodayActionPolicy.decide(" in today
+    ),
+    "home waits for loaded Room data rather than inventing an empty collection": (
+        "actionsFlow.collectAsState(initial = emptyList())" in today
+        and "A preparar as tuas ações" in today
+    ),
+    "home action cards navigate to existing Collection, Teams and Radar": (
+        "TodayDestination.COLLECTION -> onSearch()" in today
+        and "TodayDestination.TEAMS -> onOpenTeams()" in today
+        and "TodayDestination.RADAR -> onOpenRadar()" in today
+    ),
+    "home no longer displays fixed species as personal priorities": (
+        "ESPÉCIES DE REFERÊNCIA" not in today
+        and "CarbinkPriorityCard(" not in today.split("private fun TodayActionCard")[0]
+    ),
+    "new action policy warns rather than asserting battle readiness": (
+        "elegibilidade PvP ainda terá de ser confirmada" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayActionPolicy.kt").read_text(encoding="utf-8")
+    ),
 }
 for description, passed in checks.items():
     print(("PASS" if passed else "FAIL") + " " + description)
