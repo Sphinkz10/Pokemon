@@ -28,6 +28,17 @@ internal object CandidateReviewPolicy {
         if (hasPossibleDuplicate) "Guardar separado e analisar"
         else "Confirmar e analisar"
 
+    /** A blank IV is unknown, not an implicit 0/15/15 preset. */
+    fun updateIvInput(previous: Int?, raw: String): Int? {
+        if (raw.isBlank()) return null
+        if (raw.length > 2 || !raw.all(Char::isDigit)) return previous
+        val parsed = raw.toIntOrNull()
+        return if (parsed != null && parsed in 0..15) parsed else previous
+    }
+
+    fun hasExplicitIvs(attack: Int?, defense: Int?, stamina: Int?): Boolean =
+        attack in 0..15 && defense in 0..15 && stamina in 0..15
+
     /** Room must emit the newly saved record before opening its Detail route. */
     fun canOpenConfirmed(confirmedId: String?, ownedIds: Set<String>): Boolean =
         !confirmedId.isNullOrBlank() && confirmedId in ownedIds
