@@ -42,7 +42,9 @@ object OwnedEligibilityGate {
         level: Double?,
         requiresEvolutionPotential: Boolean = false,
         canEvolve: Boolean? = null,
-        allowPrimal: Boolean = false
+        allowPrimal: Boolean = false,
+        /** Certified by a complete evolution-family catalog; null is unknown. */
+        baseStageConfirmed: Boolean? = null
     ): OwnedEligibilityDecision {
         val hardReasons = RulesetEngine.evaluate(ruleset, species, level, cp).reasons
         val issues = mutableSetOf<OwnedEligibilityIssue>()
