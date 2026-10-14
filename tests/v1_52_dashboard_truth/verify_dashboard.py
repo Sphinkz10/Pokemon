@@ -86,7 +86,7 @@ checks = {
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
     ),
     "manual broadening/refinement is visible with reversible standard option": (
-        "TodayJourneyPolicy.scopedSuggestion(goal, scope)" in
+        "TodayJourneyPolicy.scopedSuggestion(goal, scope, language)" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
         and "Poucos ou zero" in
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
@@ -96,6 +96,20 @@ checks = {
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
         and 'putString(scopeKey, next.name).apply()' in
         (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+    ),
+    "GO query language can be selected and persisted independently of objective": (
+        'val languageKey = "go_query_language"' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and 'putString(languageKey, next.name).apply()' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "GoSearchLanguage.PORTUGUESE_BR" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and "TodayJourneyPolicy.scopedSuggestion(goal, scope, language)" in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPanel.kt").read_text(encoding="utf-8")
+        and 'language == GoSearchLanguage.ENGLISH' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPolicy.kt").read_text(encoding="utf-8")
+        and '.replace("age", "idade")' in
+        (root / "app/src/main/java/com/rui/pvpgo/TodayJourneyPolicy.kt").read_text(encoding="utf-8")
     ),
     "new action policy warns rather than asserting battle readiness": (
         "elegibilidade PvP ainda terá de ser confirmada" in
