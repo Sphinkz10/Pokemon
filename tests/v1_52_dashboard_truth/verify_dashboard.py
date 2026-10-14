@@ -44,6 +44,8 @@ checks = {
         and "FilterChip(" in today
         and "TodayGoal.GREAT" in today
         and "TodayGoal.ULTRA" in today
+        and "TodayGoal.MASTER" in today
+        and "TodayGoal.IVS" in today
         and "TodayGoal.COLLECTION" in today
         and "TodayGoal.EVENTS" in today
         and "heightIn(min = 48.dp)" in today
