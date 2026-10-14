@@ -146,7 +146,7 @@ jobs:
               "SpeciesLeaguePolicyTest": 5,
               "OwnedBuildValidationTest": 7,
               "CollectionNavigationPolicyTest": 9,
-              "CandidateReviewPolicyTest": 8,
+              "CandidateReviewPolicyTest": 12,
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
