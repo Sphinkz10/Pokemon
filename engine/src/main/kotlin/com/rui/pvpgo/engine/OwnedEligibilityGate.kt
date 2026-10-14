@@ -55,8 +55,12 @@ object OwnedEligibilityGate {
             species.form.startsWith("primal", ignoreCase = true)
         if (primal && !allowPrimal) issues += OwnedEligibilityIssue.PRIMAL_NOT_ALLOWED
 
-        if (requiresEvolutionPotential) {
-            when (canEvolve) {
+        if (ruleset.requiresEvolutionPotential || requiresEvolutionPotential) {
+            // A positive evolution link is useful evidence; a missing link
+            // is NOT evidence that evolution is impossible in an incomplete pack.
+            val resolvedEvolutionPotential = canEvolve ?: species.evolutionSpeciesIds
+                .takeIf { it.isNotEmpty() }?.let { true }
+            when (resolvedEvolutionPotential) {
                 true -> Unit
                 false -> issues += OwnedEligibilityIssue.EVOLUTION_NOT_POSSIBLE
                 null -> issues += OwnedEligibilityIssue.EVOLUTION_UNKNOWN

@@ -141,6 +141,8 @@ class CollectionTeamAdvisor(
             }
             val eligibility = OwnedEligibilityGate.evaluate(
                 ruleset = ruleset, species = sp, cp = derivedCp, level = level
+                // The gate reads the ruleset's explicit evolution condition.
+                // Missing evolution links stay NEEDS_DATA, never automatically false.
             )
             if (!eligibility.confirmed) {
                 val reason = (eligibility.rulesetReasons.map { it.name } +
