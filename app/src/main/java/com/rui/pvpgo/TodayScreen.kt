@@ -24,6 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.combine
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -65,22 +69,84 @@ fun TodayScreen(
     onSelectPokemon: (PokemonSpecies) -> Unit,
     onExploreEvent: () -> Unit,
     onOpenRadar: () -> Unit,
+    onOpenTeams: () -> Unit,
     onOpenAgenda: () -> Unit,
     onSearch: () -> Unit
 ) {
-    val byName = remember(catalog) {
-        catalog.groupBy { it.name.lowercase(Locale.ROOT) }
+    val context = LocalContext.current
+    val repository = remember(context) { CollectionRepository.get(context.applicationContext) }
+    // Combine three Room streams so the dashboard never mistakes an unloaded
+    // collection for an empty one. No access to a Pokémon GO account is needed.
+    val actionsFlow = remember(repository, calendar) {
+        combine(repository.collection, repository.pendingInbox, repository.savedTeams) {
+            owned, pending, teams ->
+            TodayActionPolicy.decide(
+                ownedCount = owned.size,
+                pendingCount = pending.size,
+                missingCpOrLevelCount = owned.count { it.cp == null || it.level == null },
+                savedTeamCount = teams.size,
+                calendarAvailable = calendar?.isAvailable == true,
+                calendarStale = calendar?.stale != false
+            )
+        }
     }
-    fun species(name: String): PokemonSpecies? =
-        byName[name.lowercase(Locale.ROOT)]?.firstOrNull()
-            ?: catalog.firstOrNull { it.name.startsWith(name, ignoreCase = true) }
+    val actions by actionsFlow.collectAsState(initial = emptyList())
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item { TodayHeader(onSearch = onSearch) }
+        item {
+            TodaySectionHeader(
+                title = "OS TEUS PRÓXIMOS PASSOS",
+                action = "Coleção ↗",
+                onAction = onSearch
+            )
+        }
+        if (actions.isEmpty()) {
+            item {
+                Surface(
+                    color = TodayCard,
+                    shape = RoundedCornerShape(18.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
+                ) {
+                    Text(
+                        "A preparar as tuas ações a partir dos dados guardados…",
+                        modifier = Modifier.fillMaxWidth().padding(18.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PvpColors.TextSecondary
+                    )
+                }
+            }
+        } else {
+            items(actions.size) { index ->
+                val action = actions[index]
+                TodayActionCard(index = index, action = action) {
+                    when (action.destination) {
+                        TodayDestination.COLLECTION -> onSearch()
+                        TodayDestination.TEAMS -> onOpenTeams()
+                        TodayDestination.RADAR -> onOpenRadar()
+                    }
+                }
+            }
+        }
+        item {
+            Text(
+                "Ações baseadas na coleção local, não em previsões de vitórias. " +
+                    "Verifica IVs e regras antes de investir.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        item {
+            TodaySectionHeader(
+                title = "EVENTOS",
+                action = "Ver Radar ↗",
+                onAction = onOpenRadar
+            )
+        }
         item {
             EventHeroCard(
                 calendar = calendar,
@@ -97,52 +163,58 @@ fun TodayScreen(
         }
         item {
             TodaySectionHeader(
-                title = "ESPÉCIES DE REFERÊNCIA",
-                action = "Ver radar ↗",
-                onAction = onOpenRadar
-            )
-        }
-        item {
-            CarbinkPriorityCard(
-                enabled = species("Carbink") != null,
-                onClick = { species("Carbink")?.let(onSelectPokemon) }
-            )
-        }
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                MiniPriorityCard(
-                    modifier = Modifier.weight(1f),
-                    species = "Vulpix",
-                    reason = "Analisar IV · PvP",
-                    action = "VER PERFIL ↗",
-                    actionColor = TodayAmber,
-                    art = ArtKind.VULPIX,
-                    enabled = species("Vulpix") != null,
-                    onClick = { species("Vulpix")?.let(onSelectPokemon) }
-                )
-                MiniPriorityCard(
-                    modifier = Modifier.weight(1f),
-                    species = "Paras",
-                    reason = "Consultar espécie",
-                    action = "VER PERFIL ↗",
-                    actionColor = TodayGreen,
-                    art = ArtKind.PARAS,
-                    enabled = species("Paras") != null,
-                    onClick = { species("Paras")?.let(onSelectPokemon) }
-                )
-            }
-        }
-        item {
-            TodaySectionHeader(
                 title = "AGENDA",
                 action = "Agenda ↗",
                 onAction = onOpenAgenda
             )
         }
         item { TodayTimelineCard(calendar) }
+    }
+}
+
+@Composable
+private fun TodayActionCard(index: Int, action: TodayAction, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 86.dp),
+        color = if (index == 0) PvpColors.SurfaceRaised else TodayCard,
+        shape = RoundedCornerShape(20.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp, if (index == 0) PvpColors.BrandBlue else PvpColors.BorderDefault
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = PvpColors.AccentDeep
+            ) {
+                Text(
+                    (index + 1).toString().padStart(2, '0'),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    color = TodayBlue,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    action.title,
+                    color = PvpColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    action.explanation,
+                    color = PvpColors.TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Text("›", color = TodayBlue, fontSize = 24.sp)
+        }
     }
 }
 

@@ -239,6 +239,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                                     moreStartRoute = MoreRoute.RADAR
                                     tab = AppTab.MORE
                                 },
+                                onOpenTeams = { tab = AppTab.TEAMS },
                                 onOpenAgenda = {
                                     moreStartRoute = MoreRoute.AGENDA
                                     tab = AppTab.MORE
