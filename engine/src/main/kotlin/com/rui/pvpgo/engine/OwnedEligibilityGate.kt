@@ -21,6 +21,8 @@ enum class OwnedEligibilityIssue {
     INVALID_CP,
     EVOLUTION_UNKNOWN,
     EVOLUTION_NOT_POSSIBLE,
+    BASE_STAGE_UNKNOWN,
+    NOT_BASE_STAGE,
     PRIMAL_NOT_ALLOWED
 }
 
