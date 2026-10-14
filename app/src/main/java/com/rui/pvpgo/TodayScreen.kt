@@ -117,6 +117,19 @@ fun TodayScreen(
             }
         }
         item {
+            TodayJourneyPanel(
+                goal = selectedGoal,
+                onOpenCollection = onSearch,
+                onContinueGoal = {
+                    when (selectedGoal) {
+                        TodayGoal.GREAT, TodayGoal.ULTRA, TodayGoal.MASTER -> onOpenTeams()
+                        TodayGoal.EVENTS -> onOpenRadar()
+                        else -> onSearch()
+                    }
+                }
+            )
+        }
+        item {
             TodaySectionHeader(
                 title = "OS TEUS PRÓXIMOS PASSOS",
                 action = "Coleção ↗",
