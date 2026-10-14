@@ -16,6 +16,19 @@ enum class TodayJourneyStage(val index: Int) {
     }
 }
 
+/**
+ * Player-reported result density, never inferred from Pokémon GO.
+ * Keep the saved scope per goal, independent of review stage.
+ */
+enum class GoFilterScope {
+    BROAD, STANDARD, FOCUSED;
+
+    companion object {
+        fun fromStored(raw: String?): GoFilterScope =
+            entries.firstOrNull { it.name == raw } ?: STANDARD
+    }
+}
+
 data class GoSearchSuggestion(
     val filter: String,
     val purpose: String,
@@ -81,6 +94,55 @@ object TodayJourneyPolicy {
     }
 
     fun hasPendingInboxReview(pendingCount: Int?): Boolean = pendingCount != null && pendingCount > 0
+
+    /**
+     * Intentionally conservative, progressively broader/narrower search.
+     * A smaller result set is NOT inherently more valuable in PvP.
+     * This never guesses the number of matches in Pokémon GO.
+     */
+    fun scopedSuggestion(goal: TodayGoal, scope: GoFilterScope): GoSearchSuggestion {
+        val baseline = suggestion(goal)
+        if (scope == GoFilterScope.STANDARD) return baseline
+        val query = when (goal) {
+            TodayGoal.GREAT, TodayGoal.ULTRA, TodayGoal.IVS ->
+                if (scope == GoFilterScope.BROAD)
+                    "0-2attack&2-4defense&2-4hp"
+                else "0attack&4defense&4hp"
+            TodayGoal.MASTER ->
+                if (scope == GoFilterScope.BROAD) "3*,4*" else "4*"
+            TodayGoal.COLLECTION ->
+                if (scope == GoFilterScope.BROAD) "0-4*" else "4*"
+            TodayGoal.EVENTS ->
+                if (scope == GoFilterScope.BROAD) "age0-30" else "age0-1"
+        }
+        return baseline.copy(
+            filter = query,
+            purpose = if (scope == GoFilterScope.BROAD)
+                "Filtro ampliado após poucos resultados. Podes voltar ao padrão."
+            else "Filtro mais restrito após demasiados resultados. Podes voltar ao padrão.",
+            limitation = baseline.limitation +
+                " Esta alteração só modifica a pesquisa; não confirma IVs, raridade ou elegibilidade."
+        )
+    }
+
+    /** Change one level at a time; preserve the middle, standard search. */
+    fun broaden(scope: GoFilterScope): GoFilterScope = when (scope) {
+        GoFilterScope.FOCUSED -> GoFilterScope.STANDARD
+        GoFilterScope.STANDARD -> GoFilterScope.BROAD
+        GoFilterScope.BROAD -> GoFilterScope.BROAD
+    }
+
+    fun refine(goal: TodayGoal, scope: GoFilterScope): GoFilterScope = when {
+        goal == TodayGoal.MASTER && scope == GoFilterScope.STANDARD -> GoFilterScope.STANDARD
+        scope == GoFilterScope.BROAD -> GoFilterScope.STANDARD
+        else -> GoFilterScope.FOCUSED
+    }
+
+    fun canBroaden(scope: GoFilterScope): Boolean = scope != GoFilterScope.BROAD
+
+    fun canRefine(goal: TodayGoal, scope: GoFilterScope): Boolean =
+        scope != GoFilterScope.FOCUSED &&
+            !(goal == TodayGoal.MASTER && scope == GoFilterScope.STANDARD)
 
     /** Only an explicit user action advances the journey. */
     fun afterCopy(stage: TodayJourneyStage): TodayJourneyStage =

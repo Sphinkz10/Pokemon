@@ -48,7 +48,13 @@ fun TodayJourneyPanel(
             ?: TodayJourneyStage.COPY_FILTER.name)
     }
     val stage = TodayJourneyStage.fromStored(stageName)
-    val suggestion = remember(goal) { TodayJourneyPolicy.suggestion(goal) }
+    val scopeKey = "scope_" + goal.name
+    var scopeName by rememberSaveable(goal.name) {
+        mutableStateOf(prefs.getString(scopeKey, GoFilterScope.STANDARD.name)
+            ?: GoFilterScope.STANDARD.name)
+    }
+    val scope = GoFilterScope.fromStored(scopeName)
+    val suggestion = remember(goal, scope) { TodayJourneyPolicy.scopedSuggestion(goal, scope) }
     val clipboard = LocalClipboardManager.current
     val repository = remember(context) { CollectionRepository.get(context) }
     val inboxCountFlow = remember(repository) { repository.pendingInbox.map { it.size } }
@@ -59,6 +65,10 @@ fun TodayJourneyPanel(
     fun updateStage(next: TodayJourneyStage) {
         stageName = next.name
         prefs.edit().putString(key, next.name).apply()
+    }
+    fun updateScope(next: GoFilterScope) {
+        scopeName = next.name
+        prefs.edit().putString(scopeKey, next.name).apply()
     }
 
     Surface(
@@ -121,6 +131,43 @@ fun TodayJourneyPanel(
                         color = PvpColors.AccentAmber,
                         style = MaterialTheme.typography.bodySmall
                     )
+                    Text(
+                        when (scope) {
+                            GoFilterScope.STANDARD -> "Pesquisa padrão · podes adaptar os critérios"
+                            GoFilterScope.BROAD -> "Pesquisa mais ampla · poderá mostrar muitos resultados"
+                            GoFilterScope.FOCUSED -> "Pesquisa restrita · poderá excluir bons exemplares"
+                        },
+                        color = PvpColors.TextSecondary,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { updateScope(TodayJourneyPolicy.broaden(scope)) },
+                            enabled = TodayJourneyPolicy.canBroaden(scope),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                        ) { Text("Poucos ou zero") }
+                        OutlinedButton(
+                            onClick = { updateScope(TodayJourneyPolicy.refine(goal, scope)) },
+                            enabled = TodayJourneyPolicy.canRefine(goal, scope),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                        ) { Text("Demasiados") }
+                    }
+                    if (scope != GoFilterScope.STANDARD) {
+                        OutlinedButton(
+                            onClick = { updateScope(GoFilterScope.STANDARD) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        ) { Text("Voltar ao filtro padrão") }
+                    } else if (goal == TodayGoal.MASTER) {
+                        Text(
+                            "Master já começa por 4★; não existe refinamento genérico mais seguro. " +
+                                "Podes ampliar para 3★ ou avaliar espécies individualmente.",
+                            color = PvpColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                     Button(
                         onClick = {
                             clipboard.setText(AnnotatedString(suggestion.filter))
