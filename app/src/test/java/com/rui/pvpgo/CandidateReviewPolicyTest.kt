@@ -56,6 +56,28 @@ class CandidateReviewPolicyTest {
         assertTrue(CandidateReviewPolicy.canOpenConfirmed("owned-3", ids))
     }
 
+    @Test fun unknownIvFieldsStartBlankAndCannotBeSubmitted() {
+        assertFalse(CandidateReviewPolicy.hasExplicitIvs(null, null, null))
+        assertFalse(CandidateReviewPolicy.hasExplicitIvs(0, null, 15))
+    }
+
+    @Test fun zeroIsAValidIvOnlyAfterExplicitEntry() {
+        assertEquals(0, CandidateReviewPolicy.updateIvInput(null, "0"))
+        assertTrue(CandidateReviewPolicy.hasExplicitIvs(0, 0, 0))
+        assertTrue(CandidateReviewPolicy.hasExplicitIvs(15, 15, 15))
+    }
+
+    @Test fun clearingAnIvRemovesSubmitPermission() {
+        assertEquals(null, CandidateReviewPolicy.updateIvInput(15, ""))
+        assertFalse(CandidateReviewPolicy.hasExplicitIvs(12, null, 14))
+    }
+
+    @Test fun invalidOutOfRangeAndNonNumericIvsDoNotReplaceValidEntry() {
+        assertEquals(12, CandidateReviewPolicy.updateIvInput(12, "16"))
+        assertEquals(12, CandidateReviewPolicy.updateIvInput(12, "-1"))
+        assertEquals(12, CandidateReviewPolicy.updateIvInput(12, "??"))
+    }
+
     @Test fun emptyCollectionCanNeverTriggerDetailNavigation() {
         assertFalse(CandidateReviewPolicy.canOpenConfirmed("owned-1", emptySet()))
     }
