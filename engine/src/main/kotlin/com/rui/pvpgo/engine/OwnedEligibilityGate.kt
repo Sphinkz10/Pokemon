@@ -70,6 +70,16 @@ object OwnedEligibilityGate {
                 null -> issues += OwnedEligibilityIssue.EVOLUTION_UNKNOWN
             }
         }
+        if (ruleset.requiresBaseStage) {
+            // A documented parent is decisive. Missing parent metadata is not
+            // proof of being a base stage in a partial or stale catalog.
+            when {
+                species.parentSpeciesId != null -> issues += OwnedEligibilityIssue.NOT_BASE_STAGE
+                baseStageConfirmed == true -> Unit
+                baseStageConfirmed == false -> issues += OwnedEligibilityIssue.NOT_BASE_STAGE
+                else -> issues += OwnedEligibilityIssue.BASE_STAGE_UNKNOWN
+            }
+        }
         val definitelyIneligible = hardReasons.isNotEmpty() ||
             OwnedEligibilityIssue.INVALID_CP in issues ||
             OwnedEligibilityIssue.PRIMAL_NOT_ALLOWED in issues ||
