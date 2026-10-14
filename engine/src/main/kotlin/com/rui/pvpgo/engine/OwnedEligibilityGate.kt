@@ -83,7 +83,8 @@ object OwnedEligibilityGate {
         val definitelyIneligible = hardReasons.isNotEmpty() ||
             OwnedEligibilityIssue.INVALID_CP in issues ||
             OwnedEligibilityIssue.PRIMAL_NOT_ALLOWED in issues ||
-            OwnedEligibilityIssue.EVOLUTION_NOT_POSSIBLE in issues
+            OwnedEligibilityIssue.EVOLUTION_NOT_POSSIBLE in issues ||
+            OwnedEligibilityIssue.NOT_BASE_STAGE in issues
         val status = when {
             definitelyIneligible -> OwnedEligibilityStatus.INELIGIBLE
             issues.isNotEmpty() -> OwnedEligibilityStatus.NEEDS_DATA
