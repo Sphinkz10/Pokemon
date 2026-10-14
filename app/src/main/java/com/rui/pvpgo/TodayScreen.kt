@@ -74,6 +74,7 @@ fun TodayScreen(
     onExploreEvent: () -> Unit,
     onOpenRadar: () -> Unit,
     onOpenTeams: () -> Unit,
+    onOpenCandidateInbox: () -> Unit,
     onOpenAgenda: () -> Unit,
     onSearch: () -> Unit
 ) {
@@ -119,7 +120,7 @@ fun TodayScreen(
         item {
             TodayJourneyPanel(
                 goal = selectedGoal,
-                onOpenCollection = onSearch,
+                onOpenCollection = onOpenCandidateInbox,
                 onContinueGoal = {
                     when (selectedGoal) {
                         TodayGoal.GREAT, TodayGoal.ULTRA, TodayGoal.MASTER -> onOpenTeams()
