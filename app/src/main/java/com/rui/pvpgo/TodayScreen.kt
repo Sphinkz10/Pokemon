@@ -20,12 +20,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.combine
 import androidx.compose.runtime.Composable
@@ -75,9 +79,16 @@ fun TodayScreen(
 ) {
     val context = LocalContext.current
     val repository = remember(context) { CollectionRepository.get(context.applicationContext) }
+    val goalPreferences = remember(context) {
+        context.applicationContext.getSharedPreferences("companion_today_goal_v1", android.content.Context.MODE_PRIVATE)
+    }
+    var savedGoal by rememberSaveable {
+        mutableStateOf(goalPreferences.getString("goal", TodayGoal.COLLECTION.name) ?: TodayGoal.COLLECTION.name)
+    }
+    val selectedGoal = TodayGoal.fromStored(savedGoal)
     // Combine three Room streams so the dashboard never mistakes an unloaded
     // collection for an empty one. No access to a Pokémon GO account is needed.
-    val actionsFlow = remember(repository, calendar) {
+    val actionsFlow = remember(repository, calendar, selectedGoal) {
         combine(repository.collection, repository.pendingInbox, repository.savedTeams) {
             owned, pending, teams ->
             TodayActionPolicy.decide(
@@ -86,7 +97,8 @@ fun TodayScreen(
                 missingCpOrLevelCount = owned.count { it.cp == null || it.level == null },
                 savedTeamCount = teams.size,
                 calendarAvailable = calendar?.isAvailable == true,
-                calendarStale = calendar?.stale != false
+                calendarStale = calendar?.stale != false,
+                goal = selectedGoal
             )
         }
     }
@@ -98,6 +110,12 @@ fun TodayScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item { TodayHeader(onSearch = onSearch) }
+        item {
+            TodayGoalPicker(selectedGoal) { nextGoal ->
+                savedGoal = nextGoal.name
+                goalPreferences.edit().putString("goal", nextGoal.name).apply()
+            }
+        }
         item {
             TodaySectionHeader(
                 title = "OS TEUS PRÓXIMOS PASSOS",
@@ -169,6 +187,59 @@ fun TodayScreen(
             )
         }
         item { TodayTimelineCard(calendar) }
+    }
+}
+
+
+@Composable
+private fun TodayGoalPicker(selected: TodayGoal, onSelect: (TodayGoal) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = TodayCard,
+        border = androidx.compose.foundation.BorderStroke(1.dp, PvpColors.BorderDefault)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(9.dp)
+        ) {
+            Text(
+                "ESCOLHE O TEU OBJETIVO",
+                color = TodayBlue,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelMedium
+            )
+            Text(
+                "O que queres preparar primeiro?",
+                color = PvpColors.TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            val options = listOf(
+                listOf(TodayGoal.GREAT, TodayGoal.ULTRA),
+                listOf(TodayGoal.COLLECTION, TodayGoal.EVENTS)
+            )
+            options.forEach { choices ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    choices.forEach { goal ->
+                        FilterChip(
+                            selected = selected == goal,
+                            onClick = { onSelect(goal) },
+                            label = { Text(goal.shortLabel, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                        )
+                    }
+                }
+            }
+            Text(
+                "Objetivo ativo: " + selected.label + " · guardado neste dispositivo.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 
