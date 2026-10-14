@@ -63,7 +63,9 @@ data class PvPRuleset(
     val explicitlyExcludedSpeciesIds: Set<String> = emptySet(),
     val sourceName: String,
     val sourceVersion: String,
-    val generatedAtEpochMs: Long
+    val generatedAtEpochMs: Long,
+    /** Cup-specific evolution requirement; 500 CP alone never implies this rule. */
+    val requiresEvolutionPotential: Boolean = false
 ) {
     init {
         require(id.isNotBlank())
