@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rui.pvpgo.ui.theme.PvpColors
+import kotlinx.coroutines.flow.map
 
 /** Saved locally, separately for each objective. No account or background tracking. */
 @Composable
@@ -48,6 +50,11 @@ fun TodayJourneyPanel(
     val stage = TodayJourneyStage.fromStored(stageName)
     val suggestion = remember(goal) { TodayJourneyPolicy.suggestion(goal) }
     val clipboard = LocalClipboardManager.current
+    val repository = remember(context) { CollectionRepository.get(context) }
+    val inboxCountFlow = remember(repository) { repository.pendingInbox.map { it.size } }
+    // -1 is only a loading sentinel: zero must come from the first Room emission.
+    val pendingCount by inboxCountFlow.collectAsState(initial = -1)
+    val inboxSummary = TodayJourneyPolicy.inboxStatus(pendingCount.takeIf { it >= 0 })
 
     fun updateStage(next: TodayJourneyStage) {
         stageName = next.name
@@ -136,10 +143,27 @@ fun TodayJourneyPanel(
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    Text(
+                        inboxSummary,
+                        color = PvpColors.TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        "A Inbox local e os resultados da pesquisa no Pokémon GO são distintos. " +
+                            "Assinalar a fase não confirma nem importa candidatos.",
+                        color = PvpColors.AccentAmber,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     Button(
                         onClick = onOpenCollection,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                    ) { Text("Abrir a Coleção") }
+                    ) {
+                        Text(
+                            if (TodayJourneyPolicy.hasPendingInboxReview(pendingCount.takeIf { it >= 0 }))
+                                "Abrir Inbox (" + pendingCount + " pendente(s))"
+                            else "Abrir Inbox da Companion"
+                        )
+                    }
                     OutlinedButton(
                         onClick = { updateStage(TodayJourneyPolicy.afterUserReview(stage)) },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
@@ -156,6 +180,17 @@ fun TodayJourneyPanel(
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    if (TodayJourneyPolicy.hasPendingInboxReview(pendingCount.takeIf { it >= 0 })) {
+                        Text(
+                            inboxSummary + " A revisão da fase não alterou esses registos.",
+                            color = PvpColors.AccentAmber,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        OutlinedButton(
+                            onClick = onOpenCollection,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        ) { Text("Rever pendentes na Inbox") }
+                    }
                     Button(
                         onClick = onContinueGoal,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)

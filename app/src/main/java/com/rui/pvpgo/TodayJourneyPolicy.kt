@@ -64,6 +64,24 @@ object TodayJourneyPolicy {
         )
     }
 
+    /**
+     * Live, local Room Inbox summary. Null means the first Room emission has
+     * not arrived; never display zero until this happens.
+     * These pending entries may NOT be the Pokémon displayed in Pokémon GO.
+     */
+    fun inboxStatus(pendingCount: Int?): String = when {
+        pendingCount == null -> "A verificar candidatos pendentes na Companion…"
+        pendingCount < 0 -> throw IllegalArgumentException("Invalid Inbox count")
+        pendingCount == 0 ->
+            "0 candidatos pendentes na Companion. Pode haver Pokémon por rever no jogo."
+        pendingCount == 1 ->
+            "1 candidato pendente na Companion. Confirma o exemplar na Inbox."
+        else ->
+            "${pendingCount} candidatos pendentes na Companion. Revê-os na Inbox."
+    }
+
+    fun hasPendingInboxReview(pendingCount: Int?): Boolean = pendingCount != null && pendingCount > 0
+
     /** Only an explicit user action advances the journey. */
     fun afterCopy(stage: TodayJourneyStage): TodayJourneyStage =
         if (stage == TodayJourneyStage.COPY_FILTER) TodayJourneyStage.REVIEW_CANDIDATES else stage

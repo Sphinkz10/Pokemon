@@ -96,4 +96,35 @@ class TodayJourneyPolicyTest {
     @Test fun allProgressLabelsAreMonotonicAndSmall() {
         assertEquals(listOf(1, 2, 3), TodayJourneyStage.entries.map { it.index })
     }
+    @Test fun inboxBeforeFirstRoomEmissionMustNotPretendEmpty() {
+        val summary = TodayJourneyPolicy.inboxStatus(null)
+        assertTrue(summary.contains("A verificar"))
+        assertFalse(summary.startsWith("0 candidatos"))
+    }
+
+    @Test fun emptyLocalInboxDoesNotClaimPokemonGoIsEmpty() {
+        val summary = TodayJourneyPolicy.inboxStatus(0)
+        assertTrue(summary.startsWith("0 candidatos pendentes"))
+        assertTrue(summary.contains("Pode haver Pokémon"))
+        assertFalse(TodayJourneyPolicy.hasPendingInboxReview(0))
+    }
+
+    @Test fun singularPendingCandidateUsesCorrectCountAndExplicitReview() {
+        val summary = TodayJourneyPolicy.inboxStatus(1)
+        assertTrue(summary.contains("1 candidato pendente"))
+        assertTrue(summary.contains("Confirma"))
+        assertTrue(TodayJourneyPolicy.hasPendingInboxReview(1))
+    }
+
+    @Test fun multiplePendingCandidatesKeepExactRoomCount() {
+        val summary = TodayJourneyPolicy.inboxStatus(24)
+        assertTrue(summary.contains("24 candidatos pendentes"))
+        assertTrue(TodayJourneyPolicy.hasPendingInboxReview(24))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun negativeCountsAreNotPresentedAsReal() {
+        TodayJourneyPolicy.inboxStatus(-1)
+    }
+
 }
