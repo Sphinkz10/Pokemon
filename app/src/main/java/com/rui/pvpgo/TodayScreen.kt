@@ -217,6 +217,7 @@ private fun TodayGoalPicker(selected: TodayGoal, onSelect: (TodayGoal) -> Unit) 
             )
             val options = listOf(
                 listOf(TodayGoal.GREAT, TodayGoal.ULTRA),
+                listOf(TodayGoal.MASTER, TodayGoal.IVS),
                 listOf(TodayGoal.COLLECTION, TodayGoal.EVENTS)
             )
             options.forEach { choices ->
