@@ -74,6 +74,7 @@ fun TodayScreen(
     onExploreEvent: () -> Unit,
     onOpenRadar: () -> Unit,
     onOpenTeams: () -> Unit,
+    onOpenCandidateInbox: () -> Unit,
     onOpenAgenda: () -> Unit,
     onSearch: () -> Unit
 ) {
@@ -115,6 +116,19 @@ fun TodayScreen(
                 savedGoal = nextGoal.name
                 goalPreferences.edit().putString("goal", nextGoal.name).apply()
             }
+        }
+        item {
+            TodayJourneyPanel(
+                goal = selectedGoal,
+                onOpenCollection = onOpenCandidateInbox,
+                onContinueGoal = {
+                    when (selectedGoal) {
+                        TodayGoal.GREAT, TodayGoal.ULTRA, TodayGoal.MASTER -> onOpenTeams()
+                        TodayGoal.EVENTS -> onOpenRadar()
+                        else -> onSearch()
+                    }
+                }
+            )
         }
         item {
             TodaySectionHeader(

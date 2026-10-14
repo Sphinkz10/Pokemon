@@ -152,6 +152,7 @@ jobs:
               "RankRepositoryCacheTest": 4,
               "TodayActionPolicyTest": 9,
               "TodayGoalPolicyTest": 17,
+              "TodayJourneyPolicyTest": 13,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"

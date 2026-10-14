@@ -77,12 +77,20 @@ import java.util.UUID
 @Composable
 fun CollectionModuleScreen(
     catalog: List<PokemonSpecies>,
-    moves: List<PvpMove>
+    moves: List<PvpMove>,
+    inboxRequestCounter: Int = 0
 ) {
     val context = LocalContext.current
     val repository = remember(context) { CollectionRepository.get(context) }
     val collectionScreenState = rememberSaveableStateHolder()
     var route by rememberSaveable { mutableStateOf(CollectionRoute.LIST) }
+    var consumedInboxRequest by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(inboxRequestCounter) {
+        if (inboxRequestCounter > consumedInboxRequest) {
+            consumedInboxRequest = inboxRequestCounter
+            route = CollectionRoute.INBOX
+        }
+    }
     var collection by remember { mutableStateOf<List<OwnedPokemon>>(emptyList()) }
     var pending by remember { mutableStateOf<List<CandidateInboxItem>>(emptyList()) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
