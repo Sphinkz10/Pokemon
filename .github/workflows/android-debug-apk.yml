@@ -154,6 +154,7 @@ jobs:
               "TodayGoalPolicyTest": 17,
               "TodayJourneyPolicyTest": 18,
               "TodayGoFilterScopeTest": 12,
+              "TodayGoSearchLanguageTest": 6,
           }
           for name, minimum_tests in test_classes.items():
               path = f"app/build/test-results/testDebugUnitTest/TEST-com.rui.pvpgo.{name}.xml"

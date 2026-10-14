@@ -54,7 +54,16 @@ fun TodayJourneyPanel(
             ?: GoFilterScope.STANDARD.name)
     }
     val scope = GoFilterScope.fromStored(scopeName)
-    val suggestion = remember(goal, scope) { TodayJourneyPolicy.scopedSuggestion(goal, scope) }
+    // One language preference for the GO search field, shared across objectives.
+    val languageKey = "go_query_language"
+    var languageName by rememberSaveable {
+        mutableStateOf(prefs.getString(languageKey, GoSearchLanguage.ENGLISH.name)
+            ?: GoSearchLanguage.ENGLISH.name)
+    }
+    val language = GoSearchLanguage.fromStored(languageName)
+    val suggestion = remember(goal, scope, language) {
+        TodayJourneyPolicy.scopedSuggestion(goal, scope, language)
+    }
     val clipboard = LocalClipboardManager.current
     val repository = remember(context) { CollectionRepository.get(context) }
     val inboxCountFlow = remember(repository) { repository.pendingInbox.map { it.size } }
@@ -69,6 +78,10 @@ fun TodayJourneyPanel(
     fun updateScope(next: GoFilterScope) {
         scopeName = next.name
         prefs.edit().putString(scopeKey, next.name).apply()
+    }
+    fun updateLanguage(next: GoSearchLanguage) {
+        languageName = next.name
+        prefs.edit().putString(languageKey, next.name).apply()
     }
 
     Surface(
@@ -100,6 +113,41 @@ fun TodayJourneyPanel(
             when (stage) {
                 TodayJourneyStage.COPY_FILTER -> {
                     Text(
+                        "Idioma da pesquisa no Pokémon GO",
+                        color = PvpColors.TextSecondary,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { updateLanguage(GoSearchLanguage.ENGLISH) },
+                            border = BorderStroke(
+                                if (language == GoSearchLanguage.ENGLISH) 2.dp else 1.dp,
+                                if (language == GoSearchLanguage.ENGLISH)
+                                    PvpColors.AccentSky else PvpColors.BorderDefault
+                            ),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                        ) {
+                            Text(if (language == GoSearchLanguage.ENGLISH) "✓ English" else "English")
+                        }
+                        OutlinedButton(
+                            onClick = { updateLanguage(GoSearchLanguage.PORTUGUESE_BR) },
+                            border = BorderStroke(
+                                if (language == GoSearchLanguage.PORTUGUESE_BR) 2.dp else 1.dp,
+                                if (language == GoSearchLanguage.PORTUGUESE_BR)
+                                    PvpColors.AccentSky else PvpColors.BorderDefault
+                            ),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                        ) {
+                            Text(
+                                if (language == GoSearchLanguage.PORTUGUESE_BR)
+                                    "✓ Português (BR)" else "Português (BR)"
+                            )
+                        }
+                    }
+                    Text(
                         suggestion.purpose,
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodyMedium
@@ -120,9 +168,14 @@ fun TodayJourneyPanel(
                         }
                     }
                     Text(
-                        if (suggestion.requiresEnglishGoTerms)
-                            "Filtro com termos em inglês. Se o teu Pokémon GO estiver noutro idioma, confirma a sintaxe antes de usar."
-                        else "Filtro por avaliação; os operadores numéricos não dependem de nomes de espécies.",
+                        when (language) {
+                            GoSearchLanguage.ENGLISH ->
+                                if (suggestion.requiresEnglishGoTerms)
+                                    "Pesquisa em inglês. Seleciona Português (BR) se o teu jogo usar termos em português brasileiro."
+                                else "Filtro por avaliação: os símbolos de estrelas são iguais nos dois idiomas."
+                            GoSearchLanguage.PORTUGUESE_BR ->
+                                "Termos da ajuda oficial do Pokémon GO em português do Brasil. Testa no teu jogo antes de confiares nos resultados."
+                        },
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
