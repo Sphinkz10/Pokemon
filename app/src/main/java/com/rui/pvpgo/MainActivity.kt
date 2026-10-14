@@ -154,6 +154,7 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     val tabsState = rememberSaveableStateHolder()
     var selectedReturnTab by rememberSaveable { mutableStateOf(AppTab.HOME) }
     var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
+    var guidedInboxRequest by rememberSaveable { mutableIntStateOf(0) }
     var moreStartRoute by remember { mutableStateOf(MoreRoute.HOME) }
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
@@ -240,13 +241,20 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                                     tab = AppTab.MORE
                                 },
                                 onOpenTeams = { tab = AppTab.TEAMS },
+                                onOpenCandidateInbox = {
+                                    guidedInboxRequest++
+                                    tab = AppTab.COLLECTION
+                                },
                                 onOpenAgenda = {
                                     moreStartRoute = MoreRoute.AGENDA
                                     tab = AppTab.MORE
                                 },
                                 onSearch = { tab = AppTab.COLLECTION }
                             )
-                            AppTab.COLLECTION -> CollectionModuleScreen(catalog = catalog, moves = moves)
+                            AppTab.COLLECTION -> CollectionModuleScreen(
+                                catalog = catalog, moves = moves,
+                                inboxRequestCounter = guidedInboxRequest
+                            )
                             AppTab.TEAMS -> TeamLabRootScreen(catalog = catalog, moves = moves)
                             AppTab.BATTLES -> BattlesRootScreen(catalog = catalog, moves = moves)
                             AppTab.MORE -> MoreRootScreen(
