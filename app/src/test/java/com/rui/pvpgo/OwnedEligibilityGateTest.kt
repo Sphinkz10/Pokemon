@@ -150,4 +150,51 @@ class OwnedEligibilityGateTest {
             com.rui.pvpgo.engine.RulesetEngine.contentHash(custom))
     }
 
+    @Test fun baseStageRequirementNeedsVerifiedLineage() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(
+            requiresBaseStage = true
+        )
+        val state = check(league = League.LITTLE, ruleset = cup)
+        assertEquals(OwnedEligibilityStatus.NEEDS_DATA, state.status)
+        assertTrue(OwnedEligibilityIssue.BASE_STAGE_UNKNOWN in state.issues)
+    }
+
+    @Test fun knownEvolvedSpeciesIsRejectedEvenWhenFlagSaysBase() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(
+            requiresBaseStage = true
+        )
+        val evolved = base.copy(parentSpeciesId = "bulbasaur", speciesId = "ivysaur")
+        val state = OwnedEligibilityGate.evaluate(
+            ruleset = cup, species = evolved, cp = 420,
+            level = 20.0, baseStageConfirmed = true
+        )
+        assertEquals(OwnedEligibilityStatus.INELIGIBLE, state.status)
+        assertTrue(OwnedEligibilityIssue.NOT_BASE_STAGE in state.issues)
+    }
+
+    @Test fun verifiedBaseStageCanBeConfirmedWhenNoOtherRuleFails() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(requiresBaseStage = true)
+        assertEquals(OwnedEligibilityStatus.CONFIRMED, OwnedEligibilityGate.evaluate(
+            ruleset = cup, species = base, cp = 420, level = 20.0,
+            baseStageConfirmed = true
+        ).status)
+    }
+
+    @Test fun explicitNonBaseStageIsRejected() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(requiresBaseStage = true)
+        assertEquals(OwnedEligibilityStatus.INELIGIBLE, OwnedEligibilityGate.evaluate(
+            ruleset = cup, species = base, cp = 420, level = 20.0,
+            baseStageConfirmed = false
+        ).status)
+    }
+
+    @Test fun baseStageRequirementChangesCanonicalVersionHash() {
+        val oldCup = StandardRulesets.forLeague(League.LITTLE)
+        val newCup = oldCup.copy(requiresBaseStage = true)
+        val engine = com.rui.pvpgo.engine.RulesetEngine
+        assertFalse(engine.canonical(oldCup).contains("requiresBaseStage=true"))
+        assertTrue(engine.canonical(newCup).contains("requiresBaseStage=true"))
+        assertFalse(engine.contentHash(oldCup) == engine.contentHash(newCup))
+    }
+
 }
