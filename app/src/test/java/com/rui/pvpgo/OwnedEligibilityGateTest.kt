@@ -106,4 +106,48 @@ class OwnedEligibilityGateTest {
         assertEquals(OwnedEligibilityStatus.INELIGIBLE,
             check(cp = null, level = null, ruleset = cup).status)
     }
+    @Test fun standardLittleCapDoesNotImplyEvolutionRule() {
+        val cup = StandardRulesets.forLeague(League.LITTLE)
+        assertFalse(cup.requiresEvolutionPotential)
+        assertEquals(OwnedEligibilityStatus.CONFIRMED, check(
+            league = League.LITTLE, ruleset = cup
+        ).status)
+    }
+
+    @Test fun versionedLittleCupCannotApproveUnknownEvolution() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(
+            id = "little-evolution-cup",
+            version = "2026-10",
+            requiresEvolutionPotential = true
+        )
+        val state = check(league = League.LITTLE, ruleset = cup)
+        assertEquals(OwnedEligibilityStatus.NEEDS_DATA, state.status)
+        assertTrue(OwnedEligibilityIssue.EVOLUTION_UNKNOWN in state.issues)
+    }
+
+    @Test fun versionedLittleCupAcceptsCatalogEvolutionEvidence() {
+        val cup = StandardRulesets.forLeague(League.LITTLE).copy(
+            requiresEvolutionPotential = true
+        )
+        val evolving = base.copy(evolutionSpeciesIds = listOf("ivysaur"))
+        assertEquals(OwnedEligibilityStatus.CONFIRMED, check(
+            pokemon = evolving, league = League.LITTLE, ruleset = cup
+        ).status)
+        // An absent evolution link alone is not proof of ineligibility.
+        assertEquals(OwnedEligibilityStatus.NEEDS_DATA, check(
+            league = League.LITTLE, ruleset = cup
+        ).status)
+    }
+
+    @Test fun evolutionRequirementChangesVersionedRulesetHash() {
+        val baseCup = StandardRulesets.forLeague(League.LITTLE)
+        val custom = baseCup.copy(requiresEvolutionPotential = true)
+        assertEquals(false, com.rui.pvpgo.engine.RulesetEngine.canonical(baseCup)
+            .contains("requiresEvolutionPotential=true"))
+        assertTrue(com.rui.pvpgo.engine.RulesetEngine.canonical(custom)
+            .contains("requiresEvolutionPotential=true"))
+        assertFalse(com.rui.pvpgo.engine.RulesetEngine.contentHash(baseCup) ==
+            com.rui.pvpgo.engine.RulesetEngine.contentHash(custom))
+    }
+
 }
