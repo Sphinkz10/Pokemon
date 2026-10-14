@@ -35,6 +35,12 @@ checks = {
     "rank is never presented as species meta or transfer permission":
         "Não mede a força no meta" in policy and "não confirma a elegibilidade" in policy
         and "transferência" in policy,
+    "manual IV capture starts unknown and requires explicit valid values":
+        "var atk by remember { mutableStateOf<Int?>(null) }" in core
+        and "var def by remember { mutableStateOf<Int?>(null) }" in core
+        and "var hp by remember { mutableStateOf<Int?>(null) }" in core
+        and "CandidateReviewPolicy.hasExplicitIvs(atk, def, hp)" in core
+        and "CandidateReviewPolicy.updateIvInput(value, it)" in core,
     "new confirmation is an explicit user action":
         "repository.confirmNew(item.id)" in core and "onConfirmed(c)" in core,
     "Room confirmation is transactional and persists the owned id":
@@ -48,7 +54,7 @@ checks = {
     "confirm and discard buttons have full-width touch targets":
         "CandidateReviewPolicy.saveAction" in core and "heightIn(min = 48.dp)" in core,
     "new JVM test suite covers ranked, unranked and missing records":
-        junit.count("@Test fun ") >= 8 and "confirmedCandidateWaitsForRoomToEmitExactOwnedId" in junit,
+        junit.count("@Test fun ") >= 12 and "confirmedCandidateWaitsForRoomToEmitExactOwnedId" in junit,
 }
 for title, passed in checks.items():
     print(("PASS" if passed else "FAIL") + " " + title)
