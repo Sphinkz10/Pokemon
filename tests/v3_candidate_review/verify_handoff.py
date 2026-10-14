@@ -17,6 +17,10 @@ checks = {
         "onGuidedAdd = {" in core and "route = CollectionRoute.MANUAL_GUIDED" in core,
     "manual capture returns to its entry route on Android Back":
         "importOrigin = manualReturnRoute" in core and "-> importOrigin" in nav,
+    "Inbox waits for first Room emission before announcing zero candidates":
+        "var pendingLoaded by remember" in core and
+        "pendingLoaded = true" in core and
+        "if (!pendingLoaded)" in core,
     "empty Inbox explains Pokémon GO results are not imported":
         "CandidateReviewPolicy.EMPTY_GUIDANCE" in core and "não envia capturas" in policy,
     "Inbox offers on-demand rank preview per candidate":
