@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rui.pvpgo.events.CalendarSnapshot
@@ -80,10 +81,13 @@ import java.util.UUID
 fun CollectionModuleScreen(
     catalog: List<PokemonSpecies>,
     moves: List<PvpMove>,
-    inboxRequestCounter: Int = 0
+    inboxRequestCounter: Int = 0,
+    repositoryOverride: CollectionRepository? = null
 ) {
     val context = LocalContext.current
-    val repository = remember(context) { CollectionRepository.get(context) }
+    val repository = remember(context, repositoryOverride) {
+        repositoryOverride ?: CollectionRepository.get(context)
+    }
     val collectionScreenState = rememberSaveableStateHolder()
     var route by rememberSaveable { mutableStateOf(CollectionRoute.LIST) }
     // A candidate becomes navigable only after Room emits the confirmed record.
@@ -1182,12 +1186,18 @@ private fun OwnedPokemonDetailScreen(
                         Text("${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina}", style = MaterialTheme.typography.labelSmall)
                     }
                 },
-                navigationIcon = { TextButton(onClick = exitDetail) { Text("←") } }
+                navigationIcon = {
+                    TextButton(
+                        onClick = exitDetail,
+                        modifier = Modifier.testTag("pokemon-360-back")
+                    ) { Text("←") }
+                }
             )
         }
     ) { padding ->
         LazyColumn(
-            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
+            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize()
+                .testTag("pokemon-360-scroll"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp)
         ) {
@@ -1306,14 +1316,14 @@ private fun OwnedPokemonDetailScreen(
                         { cpText = it.filter(Char::isDigit) },
                         label = { Text("CP") },
                         singleLine = true,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).testTag("pokemon-360-cp")
                     )
                     OutlinedTextField(
                         levelText,
                         { levelText = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
                         label = { Text("Nível") },
                         singleLine = true,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).testTag("pokemon-360-level")
                     )
                 }
             }

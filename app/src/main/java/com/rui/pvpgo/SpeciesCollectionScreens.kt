@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,7 +80,7 @@ private fun percentText(n: Double): String = String.format(Locale.US, "%.1f", n)
 private fun CollectionDetailHeader(title: String, subtitle: String, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Surface(
-            modifier = Modifier.size(48.dp).clickable(onClick = onBack),
+            modifier = Modifier.size(48.dp).testTag("species-back").clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
             color = PvpColors.CanvasMiddle,
             border = BorderStroke(1.dp, speciesBorder)
@@ -169,7 +170,7 @@ private fun ExemplarRow(
     checked: Boolean = false
 ) {
     Surface(
-        Modifier.fillMaxWidth().heightIn(min = 75.dp).clickable(onClick = onClick),
+        Modifier.fillMaxWidth().heightIn(min = 75.dp).testTag("species-owned-${item.id}").clickable(onClick = onClick),
         color = if (checked) PvpColors.AccentDeep else speciesCard,
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(1.dp, if (checked) speciesBlue else speciesBorder)

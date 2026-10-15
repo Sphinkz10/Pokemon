@@ -334,6 +334,10 @@ class CollectionRepository private constructor(private val db: PvpUserDatabase) 
     suspend fun deleteBattleRecord(id: String) = dao.deleteBattleRecord(id)
 
     companion object {
+        /** Android-only integration tests may inject an isolated in-memory Room database. */
+        internal fun forTesting(database: PvpUserDatabase): CollectionRepository =
+            CollectionRepository(database)
+
         @Volatile private var INSTANCE: CollectionRepository? = null
         fun get(context: Context): CollectionRepository = INSTANCE ?: synchronized(this) {
             INSTANCE ?: CollectionRepository(PvpUserDatabase.get(context)).also { INSTANCE = it }
