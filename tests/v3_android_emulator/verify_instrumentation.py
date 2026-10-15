@@ -37,30 +37,43 @@ def source_contract():
 def verify_results():
     folder=root/"app/build/outputs/androidTest-results/connected"
     files=list(folder.rglob("*.xml"))
-    if not files: raise AssertionError(f"No real emulator XML reports under {folder}")
+    if not files:
+        raise AssertionError(f"No real emulator XML reports under {folder}")
     seen={name:{"tests":0,"failed":0} for name in required}
-    found_tests=0
+    unique_cases=set()
+    unknown=[]
     for file in files:
-        try: parsed=ET.parse(file).getroot()
-        except ET.ParseError: continue
-        # AGP instruments files as <testsuite name='com.rui.pvpgo.X'>.
-        suites= [parsed] if parsed.tag=="testsuite" else parsed.findall(".//testsuite")
-        for suite in suites:
-            name=suite.get("name","").split(".")[-1]
-            if name not in required: continue
-            cases=suite.findall("testcase")
-            # Deduplicate duplicate test files with best-effort filename guard.
-            seen[name]["tests"]+=len(cases)
-            seen[name]["failed"]+=sum(
-                1 for case in cases if case.find("failure") is not None
-                or case.find("error") is not None or case.find("skipped") is not None
-            )
-            found_tests+=len(cases)
+        try:
+            parsed=ET.parse(file).getroot()
+        except ET.ParseError as error:
+            raise AssertionError(f"Unreadable real Android XML report: {file}: {error}")
+        # Android Gradle Plugin may combine multiple classes under ONE
+        # <testsuite name='first suite'>. Always use each individual
+        # <testcase classname='com.rui.pvpgo.ActualSuite'> instead.
+        for case in parsed.iter("testcase"):
+            classname=case.get("classname","")
+            name=classname.split(".")[-1]
+            if name not in required:
+                unknown.append(classname)
+                continue
+            case_id=(classname,case.get("name",""))
+            if case_id in unique_cases:
+                raise AssertionError(f"Duplicate Android test case in reports: {case_id}")
+            unique_cases.add(case_id)
+            seen[name]["tests"]+=1
+            if (case.find("failure") is not None or
+                case.find("error") is not None or
+                case.find("skipped") is not None):
+                seen[name]["failed"]+=1
     for name,minimum in required.items():
         value=seen[name]
         print(f"EMULATOR_TEST {name}: {value['tests']}/{minimum} cases; {value['failed']} failures/skips")
-        assert value["tests"] >= minimum and value["failed"] == 0, f"Android test suite missing/failed: {name}"
-    print(f"ANDROID_INSTRUMENTATION_RESULT {found_tests} real-device cases across {len(required)} suites")
+        assert value["tests"] >= minimum and value["failed"] == 0, (
+            f"Android test suite missing/failed: {name}"
+        )
+    assert not unknown, f"Unknown instrumented test classes require review: {unknown}"
+    assert len(unique_cases)>=sum(required.values()), "Insufficient executed Android cases"
+    print(f"ANDROID_INSTRUMENTATION_RESULT {len(unique_cases)} real emulator cases across {len(required)} suites")
 
 if __name__=="__main__":
     if len(sys.argv)!=2 or sys.argv[1] not in ("--check-source","--verify-results"):
