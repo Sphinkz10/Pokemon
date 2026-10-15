@@ -29,6 +29,27 @@ internal data class CandidateEvolutionIvOverview(
 internal object CandidateEvolutionAdvisor {
     const val MAX_TARGETS_PER_PREVIEW = 8
 
+    const val LIMITATIONS =
+        "São possibilidades ligadas no catálogo. Evolução efetivamente disponível, " +
+            "itens, Candy, CP, elegibilidade, custos e força no meta por confirmar. " +
+            "Não usar para decidir transferências."
+
+    fun explain(row: CandidateEvolutionIvRow): String = when {
+        row.candidateRank == null ->
+            "Rank IV indisponível nesta evolução e liga; sem conclusão."
+        row.comparableOwnedCount == 0 ->
+            "Rank IV #${row.candidateRank}. Não tens um exemplar registado que chegue a esta evolução."
+        row.bestOwnedRank == null ->
+            "Rank IV #${row.candidateRank}. Existem ${row.comparableOwnedCount} exemplares relacionados, mas falta o rank para comparar."
+        row.candidateRank < row.bestOwnedRank ->
+            "Rank IV #${row.candidateRank}, melhor do que o melhor registado (#${row.bestOwnedRank}) nesta evolução."
+        row.candidateRank == row.bestOwnedRank ->
+            "Rank IV #${row.candidateRank}, igual ao melhor registado nesta evolução."
+        else ->
+            "Rank IV #${row.candidateRank}. Já tens um rank IV melhor (#${row.bestOwnedRank}) para esta evolução; não implica transferência."
+    }
+
+
     /**
      * Explicit outgoing catalog links only, excluding unreleased or Mega forms
      * from this quick preview. The catalog does not validate candies, items,
