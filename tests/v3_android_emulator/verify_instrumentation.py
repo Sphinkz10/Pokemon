@@ -18,6 +18,7 @@ required={
     "PersistentCollectionReopenAndroidTest":8,
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
+    "CollectionGuidedIvAndroidTest":3,
 }
 
 def source_contract():
@@ -82,6 +83,23 @@ def source_contract():
             token in (android_test/"ResourceResponsiveConstraintsAndroidTest.kt").read_text()
             for token in ["widthDp = 320, fontScale = 2f", "widthDp = 390, fontScale = 1.5f",
                           "widthDp = 600, fontScale = 1f", "performScrollTo().performClick()"]
+        ),
+        "guided IV stages exercise real Compose controls": all(
+            token in (android_test/"CollectionGuidedIvAndroidTest.kt").read_text()
+            for token in [
+                "createComposeRule()", "collection-guide-review",
+                "collection-guide-compare", "collection-guide-plan",
+                "collection-guide-open-iv-iv-ready", "performClick()"
+            ]
+        ),
+        "guided collection stage is restored and routes to existing IV targets": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in [
+                "var guidedStep by rememberSaveable",
+                "CollectionGuidePolicy.matches(", "CollectionJourneyGuide(",
+                "onOpenIvTargets(owned.speciesId)",
+                "testTag(\"collection-guide-open-iv-${owned.id}\")"
+            ]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
