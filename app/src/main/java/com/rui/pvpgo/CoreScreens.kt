@@ -295,7 +295,15 @@ fun CollectionModuleScreen(
                     collection = collection,
                     league = speciesLeague,
                     onLeagueChange = { speciesLeague = it },
-                    onBack = { route = targetsReturnRoute }
+                    onBack = { route = targetsReturnRoute },
+                    onOpenOwned = { ownedId ->
+                        val matching = collection.any { it.id == ownedId && it.speciesId == species.speciesId }
+                        if (matching) {
+                            selectedOwnedId = ownedId
+                            detailReturnRoute = CollectionRoute.IV_TARGETS
+                            route = CollectionRoute.DETAIL
+                        }
+                    }
                 )
             }
         }
