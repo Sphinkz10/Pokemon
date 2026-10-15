@@ -15,6 +15,8 @@ required={
     "InvestmentComposeUiAndroidTest":12,
     "CollectionNavigationJourneyAndroidTest":5,
     "MainActivityLifecycleA11yAndroidTest":4,
+    "PersistentCollectionReopenAndroidTest":8,
+    "ResourceResponsiveConstraintsAndroidTest":3,
 }
 
 def source_contract():
@@ -67,6 +69,18 @@ def source_contract():
             token in (android_test/"InvestmentComposeUiAndroidTest.kt").read_text()
             for token in ["StateRestorationTester(rule)", "emulateSavedInstanceStateRestore()",
                           "fontScale = 2f"]
+        ),
+        "named on-disk Room fixture must survive actual close and reopen": all(
+            token in (android_test/"PersistentCollectionReopenAndroidTest.kt").read_text()
+            for token in ["Room.databaseBuilder(", "context.deleteDatabase(filename)",
+                          ".addMigrations(PvpUserDatabase.MIGRATION_1_2)",
+                          "fun wholeOwnedSpecimenSurvivesActualFileCloseAndReopen",
+                          "fun largeCollectionCanBeReopenedWithStableIdsAndNoDataLoss"]
+        ),
+        "responsive form exercises narrow and wide actual Compose constraints": all(
+            token in (android_test/"ResourceResponsiveConstraintsAndroidTest.kt").read_text()
+            for token in ["widthDp = 320, fontScale = 2f", "widthDp = 390, fontScale = 1.5f",
+                          "widthDp = 600, fontScale = 1f", "performScrollTo().performClick()"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
