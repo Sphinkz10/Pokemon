@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -516,7 +517,7 @@ private fun CollectionOwnedRow(
         else -> CollectionStatus("OK", PvpColors.TextSecondary)
     }
     Surface(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().testTag("owned-row-${owned.id}").clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = CollectionCard,
         border = BorderStroke(1.dp, CollectionBorder)
