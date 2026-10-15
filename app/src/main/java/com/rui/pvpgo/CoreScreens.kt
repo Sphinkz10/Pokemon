@@ -1288,6 +1288,14 @@ private fun OwnedPokemonDetailScreen(
                 )
             }
             item {
+                InvestmentTargetPanel(
+                    owned = owned,
+                    species = species,
+                    league = league,
+                    hasPendingBuildChanges = hasUnsavedBuild
+                )
+            }
+            item {
                 Text("Build real", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text("Regista apenas dados que confirmaste no Pokémon GO. Campos em falta continuam UNKNOWN.", style = MaterialTheme.typography.bodySmall)
             }
