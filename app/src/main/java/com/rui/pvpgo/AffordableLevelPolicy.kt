@@ -41,7 +41,7 @@ internal data class AffordableLevelResult(
         status == AffordableLevelStatus.AVAILABLE &&
             affordableLevel != null && affordableCp != null && affordableSteps != null &&
             affordablePlan?.status == InvestmentPlanStatus.READY_NOW &&
-            affordablePlan.exactCostKnown
+            affordablePlan?.exactCostKnown == true
 }
 
 /**
