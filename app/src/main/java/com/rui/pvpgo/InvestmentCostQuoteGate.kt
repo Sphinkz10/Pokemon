@@ -12,7 +12,7 @@ import com.rui.pvpgo.engine.PokemonSpecies
 import com.rui.pvpgo.engine.PvpMove
 
 internal enum class CostQuoteGateStatus {
-    BLOCKED_TARGET, MISSING_COST_PACK, INVALID_COST_PACK, MISSING_INVENTORY,
+    BLOCKED_TARGET, MISSING_COST_PACK, INVALID_COST_PACK, MISSING_INVENTORY, UNVERIFIED_COST_MODIFIER,
     INCOMPLETE_COST, PLAN_INVALID, VERIFIED_COST
 }
 
@@ -62,6 +62,14 @@ internal object InvestmentCostQuoteGate {
         if (ledger == null) return CostQuoteGateResult(
             CostQuoteGateStatus.MISSING_INVENTORY,
             "O inventário de recursos é desconhecido; nunca o tratamos como zero."
+        )
+        // Current InvestmentPlanner consumes generic step prices, without a
+        // proven Lucky discount or Shadow/Purified cost modifiers. A signed
+        // hash alone cannot certify prices for these individual states.
+        if (owned.isLucky || owned.isShadow || owned.isPurified) return CostQuoteGateResult(
+            CostQuoteGateStatus.UNVERIFIED_COST_MODIFIER,
+            "Este exemplar é Lucky, Shadow ou Purified. Os modificadores de custos " +
+                "não estão certificados neste planeador; não mostramos um total exato."
         )
         val plan = runCatching {
             InvestmentPlanner.plan(owned, target, catalog, movesById, pack, ledger)
