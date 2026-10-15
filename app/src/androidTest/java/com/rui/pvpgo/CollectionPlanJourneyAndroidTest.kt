@@ -397,4 +397,48 @@ class CollectionPlanJourneyAndroidTest {
         }
     }
 
+    @Test fun archivedOnlyPlanRemainsReviewableButAllowsFreshGreatPlan() {
+        val archived = savedPlan().copy(
+            status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        standalone(plans = listOf(archived))
+        openStep()
+        rule.onNodeWithTag("collection-guide-count")
+            .assertTextContains("1 exemplar", substring = true)
+        // Historical plan stays reviewable while the new plan CTA is not blocked.
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-start-plan-owned"))
+        openCandidate()
+        rule.runOnIdle {
+            assertEquals(saved.id to League.GREAT, launched)
+        }
+    }
+
+    @Test fun archivedUltraOnlyAllowsNewUltraPlanWithoutBorrowingGreatState() {
+        val archived = savedPlan().copy(
+            league = League.ULTRA,
+            status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        standalone(plans = listOf(archived))
+        openStep()
+        chooseLeague(League.ULTRA)
+        openCandidate()
+        rule.runOnIdle {
+            assertEquals(saved.id to League.ULTRA, launched)
+        }
+    }
+
+    @Test fun activePlanStillSuppressesDuplicateCreationWhenOldPlanArchived() {
+        val old = savedPlan().copy(
+            id = "archived-history", status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        val live = savedPlan().copy(id = "live-plan")
+        standalone(plans = listOf(old, live))
+        openStep()
+        rule.onNodeWithTag("collection-plan-start-plan-owned").assertDoesNotExist()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-next-plan-owned"))
+        rule.onNodeWithTag("collection-plan-next-plan-owned").assertExists()
+    }
+
 }
