@@ -31,6 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,7 +82,11 @@ fun IvTargetsScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize().testTag("iv-targets-scroll"),
+        modifier = Modifier.fillMaxSize().testTag("iv-targets-scroll")
+            .semantics {
+                stateDescription = if (loading) "Rankings IV a calcular"
+                else "Rankings IV prontos"
+            },
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
