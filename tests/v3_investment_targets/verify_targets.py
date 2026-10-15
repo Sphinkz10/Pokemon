@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Source wiring contract: simulator is descriptive, cost gate requires real sources."""
 from pathlib import Path
+import re
 
 root=Path(__file__).resolve().parents[2]
 base=root/"app/src/main/java/com/rui/pvpgo"
@@ -26,7 +27,7 @@ checks={
 "resource prices are never fabricated by simulator": "Stardust/Candy" in sim and "InvestmentPlanner.plan(" not in sim,
 "real cost engine is behind validated pack": "InvestmentCostPackValidator.validate(pack)" in gate and "InvestmentPlanner.plan(" in gate,
 "null pack blocks exact price": "if (pack == null)" in gate,
-"null inventory never becomes zero": "if (ledger == null)" in gate and "ResourceLedger()" not in gate,
+"null inventory never becomes zero": "if (ledger == null)" in gate and not re.search(r"(?m)^\\s*(?:val|var)\\s+\\w+\\s*=\\s*ResourceLedger\\(\\)", gate),
 "incomplete cost cannot be shown as exact": "if (!plan.exactCostKnown)" in gate and "CostQuoteGateStatus.INCOMPLETE_COST" in gate,
 "the current app passes null pack and ledger": "pack = null" in panel and "ledger = null" in panel,
 "GUI only shows cost status for valid target": "if (simulation.canRequestCosting)" in panel,
