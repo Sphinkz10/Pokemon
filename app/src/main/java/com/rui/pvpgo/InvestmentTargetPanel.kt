@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,6 +61,9 @@ internal fun InvestmentTargetPanel(
             !species.isMega && !owned.isLucky && !owned.isShadow && !owned.isPurified
     }
     val referenceAvailable = remember { CommunityNormalPowerUpPack.authenticatedReference() }
+    val suggestedCapTarget = remember(owned, species, league) {
+        LeagueCapTargetPolicy.suggest(owned, species, league)
+    }
     val simulation = remember(owned, species, league, targetText) {
         InvestmentTargetSimulator.simulate(owned, species, league, targetText)
     }
@@ -130,6 +134,33 @@ internal fun InvestmentTargetPanel(
                 placeholder = { Text("Ex.: 35,5") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !hasPendingBuildChanges && suggestedCapTarget.canApply,
+                onClick = {
+                    suggestedCapTarget.targetLevel?.let {
+                        targetText = LeagueCapTargetPolicy.displayLevel(it)
+                    }
+                }
+            ) {
+                Text(
+                    if (league == League.MASTER) "Usar nível 50 (sem limite de CP)"
+                    else "Usar nível máximo para esta liga"
+                )
+            }
+            Text(
+                if (hasPendingBuildChanges)
+                    "Guarda as alterações ao Build real antes de sugerir um nível."
+                else suggestedCapTarget.explanation,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (suggestedCapTarget.canApply) MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.error
+            )
+            Text(
+                LeagueCapTargetPolicy.DISCLAIMER,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (hasPendingBuildChanges) {
                 Text(
