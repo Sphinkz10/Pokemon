@@ -180,7 +180,7 @@ fun CollectionOverviewScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("collection-overview-scroll"),
         state = if (tab == CollectionViewTab.POKEDEX) nationalScroll else collectionScroll,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
