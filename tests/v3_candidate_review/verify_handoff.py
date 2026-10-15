@@ -25,11 +25,13 @@ checks = {
         "CandidateReviewPolicy.EMPTY_GUIDANCE" in core and "não envia capturas" in policy,
     "Inbox offers on-demand rank preview per candidate":
         "if (expandedCandidateId == item.id)" in core and
-        "CandidateRankPreview(species = species, iv = c.iv)" in core,
+        "CandidateRankPreview(" in core and
+        "candidate = c" in core and
+        "collectionLoaded = collectionLoaded" in core,
     "IV rank calculation is on background dispatcher":
         "withContext(Dispatchers.Default)" in core.split("private fun CandidateRankPreview(")[1].split("private fun OwnedPokemonDetailScreen(")[0],
     "IV preview uses engine rank and the original IV":
-        "RankRepository.find(it, league, iv, RankSettings())" in core,
+        "species, league, candidate.iv, RankSettings()" in core,
     "preview supports all four leagues":
         "SpeciesLeaguePolicy.selectable.forEach" in core.split("private fun CandidateRankPreview(")[1].split("private fun OwnedPokemonDetailScreen(")[0],
     "rank is never presented as species meta or transfer permission":
