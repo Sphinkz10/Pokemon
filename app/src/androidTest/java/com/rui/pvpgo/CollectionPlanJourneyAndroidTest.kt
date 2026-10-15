@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -90,8 +91,7 @@ class CollectionPlanJourneyAndroidTest {
         openStep()
         rule.onNodeWithTag("collection-guide-count")
             .assertTextContains("0 exemplares", substring = true)
-        rule.onNodeWithTag("collection-plan-entry")
-            .assertTextContains("COMEÇAR UM PLANO", substring = true)
+        rule.onNodeWithText("COMEÇAR UM PLANO PvP").assertExists()
         openCandidate()
         rule.runOnIdle {
             assertEquals("plan-owned" to League.GREAT, launched)
