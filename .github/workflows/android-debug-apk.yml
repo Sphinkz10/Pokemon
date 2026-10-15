@@ -69,6 +69,8 @@ jobs:
         run: python3 tests/v3_evolution_preview/verify_evolution_preview.py
       - name: Validate V3 investment readiness inputs
         run: python3 tests/v3_investment_readiness/verify_readiness.py
+      - name: Validate V3 target-level and cost gates
+        run: python3 tests/v3_investment_targets/verify_targets.py
       - name: Validate V1.58 lifecycle-safe Collection navigation
         run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
       - name: Validate Team Advisor locked-slot regression wiring
@@ -157,6 +159,8 @@ jobs:
               "CandidateEvolutionAdvisorTest": 12,
               "CandidateEvolutionExplanationTest": 8,
               "InvestmentReadinessPolicyTest": 16,
+              "InvestmentTargetSimulatorTest": 16,
+              "InvestmentCostQuoteGateTest": 15,
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
