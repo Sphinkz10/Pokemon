@@ -67,7 +67,7 @@ private val CollectionCard: Color get() = PvpColors.TodayCard
 private val CollectionBorder: Color get() = PvpColors.BorderDefault
 
 @Composable
-fun CollectionOverviewScreen(
+internal fun CollectionOverviewScreen(
     catalog: List<PokemonSpecies>,
     collection: List<OwnedPokemon>,
     buildPlans: List<PvpBuildPlan>,
