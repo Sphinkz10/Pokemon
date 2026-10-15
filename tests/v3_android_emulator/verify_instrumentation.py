@@ -12,8 +12,9 @@ required={
     "UserResourceStoreAndroidTest":4,
     "InvestmentJourneyAndroidTest":7,
     "MainActivityLaunchAndroidTest":1,
-    "InvestmentComposeUiAndroidTest":10,
+    "InvestmentComposeUiAndroidTest":12,
     "CollectionNavigationJourneyAndroidTest":5,
+    "MainActivityLifecycleA11yAndroidTest":4,
 }
 
 def source_contract():
@@ -45,6 +46,28 @@ def source_contract():
         "isolation is an explicit real Room repository": "CollectionRepository.forTesting(database)" in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text() and "Room.inMemoryDatabaseBuilder" in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text(),
         "app defaults to production catalog": "catalogOverride ?: emptyList()" in (root/"app/src/main/java/com/rui/pvpgo/MainActivity.kt").read_text(),
         "app defaults to production repository": "repositoryOverride ?: CollectionRepository.get(context)" in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text(),
+        "lifecycle instrumentation runs on real activity": all(
+            token in (android_test/"MainActivityLifecycleA11yAndroidTest.kt").read_text()
+            for token in [
+                "createAndroidComposeRule<MainActivity>()",
+                ".scenario.recreate()", "moveToState(Lifecycle.State.CREATED)",
+                "SCREEN_ORIENTATION_LANDSCAPE", "assertContentDescriptionEquals"
+            ]
+        ),
+        "navigation exposes accessible selected tab state": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/MainActivity.kt").read_text()
+            for token in [".selectable(", "selected = selected", "role = Role.Tab",
+                          "contentDescription = tab.label"]
+        ),
+        "unsaved resources use explicit Android Bundle saver": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/UserResourcePanel.kt").read_text()
+            for token in ["resourceDraftSaver:", "Saver(", "rememberSaveable(familyId, saved, saver = resourceDraftSaver)"]
+        ),
+        "resource UI tests restore state and exercise 200 percent fonts": all(
+            token in (android_test/"InvestmentComposeUiAndroidTest.kt").read_text()
+            for token in ["StateRestorationTester(rule)", "emulateSavedInstanceStateRestore()",
+                          "fontScale = 2f"]
+        ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()
