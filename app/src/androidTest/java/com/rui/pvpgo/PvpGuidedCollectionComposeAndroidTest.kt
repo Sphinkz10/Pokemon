@@ -147,4 +147,47 @@ class PvpGuidedCollectionComposeAndroidTest {
         }
     }
 
+    @Test fun impossibleLeagueCapSelectionOffersSafeResetAndReturnsAllOwnedPokemon() {
+        render()
+        compareStep()
+        tap("pvp-compare-league-master")
+        tap("pvp-compare-stage-over_limit")
+        count("0 exemplares")
+        scrollTo("collection-guide-empty-explanation")
+        rule.onNodeWithTag("collection-guide-empty-explanation")
+            .assertTextContains("não é uma avaliação", substring = true)
+        tap("collection-guide-reset-empty")
+        count("3 exemplares")
+        scrollTo("owned-row-guide-low")
+        rule.onNodeWithTag("owned-row-guide-low").assertExists()
+        // Comparison's subordinate filter is also cleared for the next visit.
+        compareStep()
+        count("3 exemplares")
+        rule.runOnIdle { assertEquals(3, saved.size) }
+    }
+
+    @Test fun noSavedPlansHasPracticalExitInsteadOfAnUnreachableEmptyStage() {
+        render()
+        tap("collection-guide-plan")
+        count("0 exemplares")
+        tap("collection-guide-reset-empty")
+        count("3 exemplares")
+        scrollTo("owned-row-guide-missing")
+        rule.onNodeWithTag("owned-row-guide-missing").performClick()
+        rule.runOnIdle {
+            assertEquals("guide-missing", opened)
+            assertEquals(3, saved.size)
+        }
+    }
+
+    @Test fun nonEmptyGuidedSelectionNeverDisplaysIrrelevantResetButton() {
+        render()
+        compareStep()
+        tap("pvp-compare-stage-review")
+        count("1 exemplar")
+        scrollTo("collection-guide-count")
+        rule.onNodeWithTag("collection-guide-reset-empty").assertDoesNotExist()
+        rule.runOnIdle { assertEquals(3, saved.size) }
+    }
+
 }
