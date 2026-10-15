@@ -81,6 +81,8 @@ fun CollectionOverviewScreen(
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
     var filter by rememberSaveable { mutableStateOf(CollectionQuickFilter.ALL) }
     var guidedStep by rememberSaveable { mutableStateOf(CollectionGuideStep.ALL) }
+    var pvpCompareLeague by rememberSaveable { mutableStateOf(League.GREAT) }
+    var pvpCompareStage by rememberSaveable { mutableStateOf(PvpGuideStage.ALL) }
     var sortByPriority by rememberSaveable { mutableStateOf(true) }
     var generation by rememberSaveable { mutableStateOf("Todas") }
     var selectedDex by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -107,7 +109,7 @@ fun CollectionOverviewScreen(
     }
 
     val normalizedQuery = query.trim().lowercase(Locale.ROOT)
-    val collectionItems = remember(collection, normalizedQuery, filter, guidedStep, speciesById, pvpBoxByOwned, planByOwned) {
+    val collectionItems = remember(collection, normalizedQuery, filter, guidedStep, pvpCompareLeague, pvpCompareStage, speciesById, pvpBoxByOwned, planByOwned) {
         collection.filter { owned ->
             val species = speciesById[owned.speciesId]
             val matchesQuery = normalizedQuery.isBlank() ||
@@ -123,7 +125,9 @@ fun CollectionOverviewScreen(
                 CollectionQuickFilter.SHINY -> owned.isShiny
                 CollectionQuickFilter.TARGETS -> planByOwned.containsKey(owned.id)
             }
-            matchesQuery && matchesFilter && CollectionGuidePolicy.matches(
+            val matchesCompareStage = guidedStep != CollectionGuideStep.COMPARE ||
+                PvpGuidePolicy.matches(owned, species, pvpCompareLeague, pvpCompareStage)
+            matchesQuery && matchesFilter && matchesCompareStage && CollectionGuidePolicy.matches(
                 guidedStep, owned,
                 speciesExistsInCatalog = species != null,
                 hasSavedPlan = planByOwned.containsKey(owned.id)
@@ -215,7 +219,11 @@ fun CollectionOverviewScreen(
                 CollectionJourneyGuide(
                     selected = guidedStep,
                     visibleCount = collectionItems.size,
-                    onSelect = { guidedStep = it; filter = CollectionQuickFilter.ALL }
+                    onSelect = { guidedStep = it; filter = CollectionQuickFilter.ALL },
+                    compareLeague = pvpCompareLeague,
+                    compareStage = pvpCompareStage,
+                    onCompareLeague = { pvpCompareLeague = it },
+                    onCompareStage = { pvpCompareStage = it }
                 )
             }
             item { CollectionFilterRow(filter, onSelect = { filter = it }) }
@@ -288,6 +296,17 @@ fun CollectionOverviewScreen(
                                 categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
                                 onClick = { onSelectOwned(owned.id) }
                             )
+                            if (guidedStep == CollectionGuideStep.COMPARE &&
+                                pvpCompareStage != PvpGuideStage.ALL
+                            ) {
+                                Text(
+                                    PvpGuidePolicy.assess(
+                                        owned, speciesById[owned.speciesId], pvpCompareLeague
+                                    ).reason,
+                                    color = PvpColors.TextSecondary,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
                             if (CollectionGuidePolicy.canOpenIvComparison(
                                     guidedStep, speciesById.containsKey(owned.speciesId)
                                 )
@@ -455,7 +474,11 @@ private fun PendingReviewCard(count: Int, onClick: () -> Unit) {
 private fun CollectionJourneyGuide(
     selected: CollectionGuideStep,
     visibleCount: Int,
-    onSelect: (CollectionGuideStep) -> Unit
+    onSelect: (CollectionGuideStep) -> Unit,
+    compareLeague: League,
+    compareStage: PvpGuideStage,
+    onCompareLeague: (League) -> Unit,
+    onCompareStage: (PvpGuideStage) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -484,6 +507,49 @@ private fun CollectionJourneyGuide(
             color = PvpColors.TextSecondary,
             style = MaterialTheme.typography.bodySmall
         )
+        if (selected == CollectionGuideStep.COMPARE) {
+            Text("Liga", color = CollectionBlue,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                League.entries.forEach { option ->
+                    FilterChip(
+                        selected = option == compareLeague,
+                        onClick = { onCompareLeague(option) },
+                        label = { Text(leagueShort(option)) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                            .testTag("pvp-compare-league-${option.name.lowercase()}")
+                    )
+                }
+            }
+            Text("Verificação e perfil IV (opcional)", color = CollectionBlue,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                PvpGuideStage.entries.forEach { option ->
+                    FilterChip(
+                        selected = option == compareStage,
+                        onClick = { onCompareStage(option) },
+                        label = { Text(option.title) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                            .testTag("pvp-compare-stage-${option.name.lowercase()}")
+                    )
+                }
+            }
+            Text(compareStage.explanation,
+                modifier = Modifier.testTag("pvp-compare-explanation"),
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall)
+            Text("Filtra o CP atual, não o ranking IV. Em IV Targets confirma a liga antes de comparar ranks.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall)
+        }
         Text(
             "$visibleCount ${if (visibleCount == 1) "exemplar" else "exemplares"} nesta seleção",
             modifier = Modifier.testTag("collection-guide-count"),
