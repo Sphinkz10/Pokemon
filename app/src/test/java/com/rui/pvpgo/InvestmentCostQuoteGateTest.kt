@@ -132,6 +132,30 @@ class InvestmentCostQuoteGateTest {
         assertEquals(CostQuoteGateStatus.VERIFIED_COST, updated.status)
     }
 
+    @Test fun luckySpecimenCannotReceiveAnUnverifiedExactDiscount() {
+        val lucky = owned.copy(isLucky = true)
+        val result = InvestmentCostQuoteGate.evaluate(lucky, preview, listOf(species),
+            emptyMap(), pack, ledger, target)
+        assertEquals(CostQuoteGateStatus.UNVERIFIED_COST_MODIFIER, result.status)
+        assertFalse(result.canDisplayExactAmounts)
+    }
+
+    @Test fun shadowSpecimenCannotReceiveBasePowerUpPricing() {
+        val shadow = owned.copy(isShadow = true)
+        val result = InvestmentCostQuoteGate.evaluate(shadow, preview, listOf(species),
+            emptyMap(), pack, ledger, target)
+        assertEquals(CostQuoteGateStatus.UNVERIFIED_COST_MODIFIER, result.status)
+        assertFalse(result.canDisplayExactAmounts)
+    }
+
+    @Test fun purifiedSpecimenCannotReceiveBasePowerUpPricing() {
+        val purified = owned.copy(isPurified = true)
+        val result = InvestmentCostQuoteGate.evaluate(purified, preview, listOf(species),
+            emptyMap(), pack, ledger, target)
+        assertEquals(CostQuoteGateStatus.UNVERIFIED_COST_MODIFIER, result.status)
+        assertFalse(result.canDisplayExactAmounts)
+    }
+
     @Test fun targetHasToBeCurrentSpeciesUntilEvolutionIsVerified() {
         val targetEvolution = target.copy(targetSpeciesId = "future_evolution")
         assertEquals(CostQuoteGateStatus.BLOCKED_TARGET, quote(selected = targetEvolution).status)
