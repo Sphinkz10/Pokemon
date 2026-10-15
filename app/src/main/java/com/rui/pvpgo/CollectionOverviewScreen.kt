@@ -78,7 +78,8 @@ internal fun CollectionOverviewScreen(
     onOpenIvTargets: (String) -> Unit,
     onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null,
     onStartPlan: ((String, League) -> Unit)? = null,
-    resourceStoreOverride: UserResourceStore? = null
+    resourceStoreOverride: UserResourceStore? = null,
+    onOpenSavedPlanAction: ((String, League, SavedPlanNextStep) -> Unit)? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
@@ -378,7 +379,11 @@ internal fun CollectionOverviewScreen(
                                             color = PvpColors.TextSecondary,
                                             style = MaterialTheme.typography.bodySmall)
                                         TextButton(
-                                            onClick = { onSelectOwned(owned.id) },
+                                            onClick = {
+                                                if (onOpenSavedPlanAction != null)
+                                                    onOpenSavedPlanAction(owned.id, savedPlan.league, nextAction.step)
+                                                else onSelectOwned(owned.id)
+                                            },
                                             modifier = Modifier.heightIn(min = 44.dp)
                                                 .testTag("collection-plan-open-next-${owned.id}")
                                         ) {

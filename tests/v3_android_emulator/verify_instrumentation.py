@@ -21,7 +21,7 @@ required={
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
-    "CollectionPlanJourneyAndroidTest":8,
+    "CollectionPlanJourneyAndroidTest":11,
 }
 
 def source_contract():
@@ -223,6 +223,19 @@ def source_contract():
             token in (root/"app/src/test/java/com/rui/pvpgo/SavedPlanNextActionPolicyTest.kt").read_text()
             for token in ["unknownRelevantResourcesAreListedWithoutInventingZero",
                           "zeroResourcesDoNotMeanAffordabilityOrPermissionToSpend"]
+        ),
+        "saved plan navigation carries true league and actionable step": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in ["onOpenSavedPlanAction = { ownedId, planLeague, nextStep ->",
+                          "speciesLeague = planLeague",
+                          "focusedNextPlanStep = nextStep",
+                          "SavedPlanFocusPolicy.targetIndex(focusNextPlanStep, count)"]
+        ),
+        "saved plan Android tests exercise real shortcuts": all(
+            token in (android_test/"CollectionPlanJourneyAndroidTest.kt").read_text()
+            for token in ["savedPlanActionHandsExactOwnedLeagueAndTaskToNavigation",
+                          "realAppSavedUltraPlanOpensOwnMoveEditorWithUltraLeagueAndReturnsToGuide",
+                          "realAppMissingCpJumpsToCpEditorWithoutWritingEstimatedValues"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count

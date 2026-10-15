@@ -246,4 +246,91 @@ class CollectionPlanJourneyAndroidTest {
         }
     }
 
+    @Test fun savedPlanActionHandsExactOwnedLeagueAndTaskToNavigation() {
+        var action: Triple<String, League, SavedPlanNextStep>? = null
+        rule.setContent {
+            MaterialTheme {
+                CollectionOverviewScreen(
+                    catalog = listOf(species), collection = listOf(saved.copy(cp = null)),
+                    buildPlans = listOf(savedPlan().copy(league = League.ULTRA)),
+                    pendingCount = 0, onAdd = {}, onInbox = {},
+                    onSelectOwned = {}, onOpenIvTargets = {},
+                    onOpenSavedPlanAction = { id, league, step ->
+                        action = Triple(id, league, step)
+                    },
+                    resourceStoreOverride = resourceStore
+                )
+            }
+        }
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
+        rule.runOnIdle {
+            assertEquals(
+                Triple("plan-owned", League.ULTRA, SavedPlanNextStep.VERIFY_SPECIMEN),
+                action
+            )
+        }
+    }
+
+    @Test fun realAppSavedUltraPlanOpensOwnMoveEditorWithUltraLeagueAndReturnsToGuide() {
+        runBlocking { repository.upsertBuildPlan(savedPlan().copy(league = League.ULTRA)) }
+        rule.setContent {
+            PvPGoApp(
+                catalogOverride = listOf(species),
+                collectionRepositoryOverride = repository
+            )
+        }
+        rule.onNodeWithTag("app-tab-collection").performClick()
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("pokemon-360-current-task"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithTag("pokemon-360-current-task")
+            .assertTextContains("Ultra · Confirmar ataques", substring = true)
+        rule.onNodeWithTag("pokemon-360-scroll")
+            .performScrollToNode(hasTestTag("pokemon-360-cp"))
+        rule.onNodeWithTag("pokemon-360-back").performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-open-next-plan-owned"))
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").assertExists()
+        rule.runOnIdle {
+            assertEquals(League.ULTRA, runBlocking { repository.buildPlans.first() }.single().league)
+            assertEquals(saved.cp, runBlocking { repository.currentCollection() }.single().cp)
+        }
+    }
+
+    @Test fun realAppMissingCpJumpsToCpEditorWithoutWritingEstimatedValues() {
+        runBlocking {
+            repository.upsertOwned(saved.copy(cp = null))
+            repository.upsertBuildPlan(savedPlan().copy(league = League.MASTER))
+        }
+        rule.setContent {
+            PvPGoApp(
+                catalogOverride = listOf(species),
+                collectionRepositoryOverride = repository
+            )
+        }
+        rule.onNodeWithTag("app-tab-collection").performClick()
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("pokemon-360-current-task"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithTag("pokemon-360-current-task")
+            .assertTextContains("Master · Confirmar CP e nível", substring = true)
+        rule.onNodeWithTag("pokemon-360-scroll")
+            .performScrollToNode(hasTestTag("pokemon-360-cp"))
+        rule.onNodeWithTag("pokemon-360-cp").assertExists()
+        rule.runOnIdle {
+            assertEquals(null, runBlocking { repository.currentCollection() }.single().cp)
+            assertEquals(20.0, runBlocking { repository.currentCollection() }.single().level!!, 0.0)
+        }
+    }
+
 }
