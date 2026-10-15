@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rui.pvpgo.domain.InvestmentPlanStatus
@@ -147,10 +148,10 @@ internal fun InvestmentTargetPanel(
                 label = { Text("Nível objetivo (1–50)") },
                 placeholder = { Text("Ex.: 35,5") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("investment-level-input")
             )
             OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("cap-target-button"),
                 enabled = !hasPendingBuildChanges && suggestedCapTarget.canApply,
                 onClick = {
                     suggestedCapTarget.targetLevel?.let {
@@ -182,6 +183,7 @@ internal fun InvestmentTargetPanel(
                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Checkbox(
                         checked = allowCommunityEstimate,
+                        modifier = Modifier.testTag("community-estimate-consent"),
                         onCheckedChange = { allowCommunityEstimate = it }
                     )
                     Text(
@@ -209,6 +211,7 @@ internal fun InvestmentTargetPanel(
                 Text(
                     "Nível alcançável: ${LeagueCapTargetPolicy.displayLevel(calculatedLevel)} · " +
                         "${affordable.affordableCp} CP · ${affordable.affordableSteps} incrementos",
+                    modifier = Modifier.testTag("affordable-level-result"),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -241,7 +244,7 @@ internal fun InvestmentTargetPanel(
                     onClick = {
                         targetText = LeagueCapTargetPolicy.displayLevel(calculatedLevel)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("affordable-target-button")
                 ) {
                     Text("Usar o nível que consigo pagar")
                 }
