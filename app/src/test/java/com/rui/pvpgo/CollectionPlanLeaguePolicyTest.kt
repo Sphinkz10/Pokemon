@@ -99,10 +99,15 @@ class CollectionPlanLeaguePolicyTest {
             CollectionPlanLeaguePolicy.preferredByOwned(items, League.GREAT)["one"]?.id)
     }
 
-    @Test fun blankOwnedIdNeverCountsAsSavedGuidePlan() {
-        val items = listOf(plan("bad", owned = ""))
-        assertTrue(CollectionPlanLeaguePolicy.preferredByOwned(items, League.GREAT).isEmpty())
-        assertFalse(CollectionPlanLeaguePolicy.hasSavedPlanInLeague("", League.GREAT, items))
+    @Test fun blankOwnedIdIsRejectedBeforeAnyGuideSelection() {
+        var rejected = false
+        try {
+            plan("bad", owned = "")
+        } catch (expected: IllegalArgumentException) {
+            rejected = true
+        }
+        assertTrue(rejected)
+        assertFalse(CollectionPlanLeaguePolicy.hasSavedPlanInLeague("", League.GREAT, emptyList()))
     }
 
     @Test fun anEmptyListHasNoSavedPlanForAnyLeague() {
