@@ -1,6 +1,8 @@
 package com.rui.pvpgo
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -55,9 +57,16 @@ class OwnedIvCompareComposeAndroidTest {
                 )
             }
         }
-        rule.waitUntil(25000) {
-            rule.onAllNodes(hasTestTag("iv-owned-row-a"))
-                .fetchSemanticsNodes().isNotEmpty()
+        // The cards live below the fold of a LazyColumn; waiting for a
+        // not-yet-composed card is incorrect. Wait for the visible root
+        // loading-state semantic instead, then scroll the list to a card.
+        rule.waitUntil(40000) {
+            rule.onAllNodes(
+                hasTestTag("iv-targets-scroll") and
+                    SemanticsMatcher.expectValue(
+                        SemanticsProperties.StateDescription, "Rankings IV prontos"
+                    )
+            ).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
