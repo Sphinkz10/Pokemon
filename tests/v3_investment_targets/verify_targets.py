@@ -33,7 +33,7 @@ checks={
 "GUI only shows cost status for valid target": "if (simulation.canRequestCosting)" in panel,
 "verified exact amount requires plan gate": "status == CostQuoteGateStatus.VERIFIED_COST" in gate,
 "unit coverage target": tests1.count("@Test fun ")>=16,
-"unit coverage cost": tests2.count("@Test fun ")>=12,
+"unit coverage cost": tests2.count("@Test fun ")>=15,
 }
 for label,ok in checks.items(): print(("PASS" if ok else "FAIL")+" "+label)
 print(f"TARGET_GATE {sum(checks.values())}/{len(checks)} PASS")
