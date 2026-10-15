@@ -108,6 +108,7 @@ fun CollectionModuleScreen(
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var selectedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
     var focusedPlanOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var focusedNextPlanStep by rememberSaveable { mutableStateOf<SavedPlanNextStep?>(null) }
     var selectedSpeciesId by rememberSaveable { mutableStateOf<String?>(null) }
     var compareFirstId by rememberSaveable { mutableStateOf<String?>(null) }
     var compareSecondId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -184,12 +185,26 @@ fun CollectionModuleScreen(
                 targetsReturnRoute = CollectionRoute.LIST
                 route = CollectionRoute.IV_TARGETS
             },
+            onOpenSavedPlanAction = { ownedId, planLeague, nextStep ->
+                val candidate = collection.firstOrNull { it.id == ownedId }
+                if (candidate != null && catalog.any { it.speciesId == candidate.speciesId } &&
+                    buildPlans.any { it.ownedPokemonId == ownedId && it.league == planLeague }) {
+                    selectedOwnedId = ownedId
+                    selectedSpeciesId = candidate.speciesId
+                    speciesLeague = planLeague
+                    focusedPlanOwnedId = null
+                    focusedNextPlanStep = nextStep
+                    detailReturnRoute = CollectionRoute.LIST
+                    route = CollectionRoute.DETAIL
+                }
+            },
             onStartPlan = { ownedId, selectedLeague ->
                 val candidate = collection.firstOrNull { it.id == ownedId }
                 if (candidate != null && catalog.any { it.speciesId == candidate.speciesId }) {
                     selectedOwnedId = ownedId
                     selectedSpeciesId = candidate.speciesId
                     focusedPlanOwnedId = ownedId
+                    focusedNextPlanStep = null
                     speciesLeague = selectedLeague
                     detailReturnRoute = CollectionRoute.LIST
                     route = CollectionRoute.DETAIL
@@ -293,9 +308,15 @@ fun CollectionModuleScreen(
                     moves = moves,
                     plans = buildPlans.filter { it.ownedPokemonId == owned.id },
                     repository = repository,
-                    initialPlanLeague = if (focusedPlanOwnedId == owned.id) speciesLeague else null,
+                    initialPlanLeague = if (focusedPlanOwnedId == owned.id ||
+                        focusedNextPlanStep != null) speciesLeague else null,
                     focusPlanEditor = focusedPlanOwnedId == owned.id,
-                    onBack = { focusedPlanOwnedId = null; route = detailReturnRoute }
+                    focusNextPlanStep = focusedNextPlanStep,
+                    onBack = {
+                        focusedPlanOwnedId = null
+                        focusedNextPlanStep = null
+                        route = detailReturnRoute
+                    }
                 )
             }
         }
@@ -1135,7 +1156,8 @@ private fun OwnedPokemonDetailScreen(
     repository: CollectionRepository,
     onBack: () -> Unit,
     initialPlanLeague: League? = null,
-    focusPlanEditor: Boolean = false
+    focusPlanEditor: Boolean = false,
+    focusNextPlanStep: SavedPlanNextStep? = null
 ) {
     val scope = rememberCoroutineScope()
     val editorListState = rememberLazyListState()
@@ -1146,6 +1168,13 @@ private fun OwnedPokemonDetailScreen(
             val count = snapshotFlow { editorListState.layoutInfo.totalItemsCount }
                 .first { it >= 6 }
             editorListState.scrollToItem((count - 6).coerceAtLeast(0))
+        }
+    }
+    LaunchedEffect(owned.id, focusNextPlanStep) {
+        if (focusNextPlanStep != null) {
+            val count = snapshotFlow { editorListState.layoutInfo.totalItemsCount }
+                .first { it >= 14 }
+            editorListState.scrollToItem(SavedPlanFocusPolicy.targetIndex(focusNextPlanStep, count))
         }
     }
     val movesById = remember(moves) { moves.associateBy { it.moveId } }
@@ -1227,7 +1256,13 @@ private fun OwnedPokemonDetailScreen(
                 title = {
                     Column {
                         Text(owned.nickname?.takeIf(String::isNotBlank) ?: species?.name ?: owned.speciesId)
-                        Text("${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina}", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            if (focusNextPlanStep != null)
+                                "${SpeciesLeaguePolicy.shortLabel(league)} · ${SavedPlanFocusPolicy.label(focusNextPlanStep)}"
+                            else "${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina}",
+                            modifier = Modifier.testTag("pokemon-360-current-task"),
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 },
                 navigationIcon = {
