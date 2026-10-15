@@ -50,7 +50,7 @@ class UpgradePersistenceAndroidTest {
     private fun versionCode(): Long {
         val info = context.packageManager.getPackageInfo(packageId, 0)
         return if (Build.VERSION.SDK_INT >= 28) info.longVersionCode
-        else @Suppress("DEPRECATION") info.versionCode.toLong()
+        else info.versionCode.toLong()
     }
 
     private fun expectedVersion(): Long = requireNotNull(
