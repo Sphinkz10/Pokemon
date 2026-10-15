@@ -5,13 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -237,4 +241,69 @@ class InvestmentComposeUiAndroidTest {
             assertEquals(0, store.load(family).xlCandy)
         }
     }
+    @Test fun unsavedResourceDraftSurvivesComposeStateRecreationButIsNotPersisted() {
+        val restoration = StateRestorationTester(rule)
+        restoration.setContent {
+            var balances by remember { mutableStateOf(store.load(family)) }
+            MaterialTheme {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    UserResourcePanel(
+                        familyId = family, familyLabel = "Teste Compose",
+                        saved = balances, store = store, onSaved = { balances = it }
+                    )
+                }
+            }
+        }
+        openEditor()
+        enter("stardust", "12345")
+        enter("candy", "0")
+        rule.runOnIdle {
+            assertNull(store.load(family).stardust)
+            assertNull(store.load(family).candy)
+        }
+        restoration.emulateSavedInstanceStateRestore()
+        rule.onNodeWithTag("resource-input-stardust")
+            .performScrollTo().assertTextContains("12345", substring = true)
+        rule.onNodeWithTag("resource-input-candy")
+            .performScrollTo().assertTextContains("0", substring = true)
+        rule.runOnIdle {
+            assertNull(store.load(family).stardust)
+            assertNull(store.load(family).candy)
+        }
+        saveEditor()
+        rule.runOnIdle {
+            assertEquals(12345, store.load(family).stardust)
+            assertEquals(0, store.load(family).candy)
+        }
+    }
+
+    @Test fun resourceFormRemainsScrollableAndSaveableWithTwoHundredPercentFontScale() {
+        rule.setContent {
+            var balances by remember { mutableStateOf(store.load(family)) }
+            val systemDensity = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(systemDensity.density, fontScale = 2f)
+            ) {
+                MaterialTheme {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        UserResourcePanel(
+                            familyId = family, familyLabel = "Teste Compose",
+                            saved = balances, store = store, onSaved = { balances = it }
+                        )
+                    }
+                }
+            }
+        }
+        openEditor()
+        enter("stardust", "7000")
+        enter("candy", "0")
+        rule.onNodeWithTag("resource-save").performScrollTo().performClick()
+        rule.onNodeWithText("2/7 saldos registados · Candy de Teste Compose")
+            .assertTextContains("2/7", substring = true)
+        rule.runOnIdle {
+            assertEquals(7000, store.load(family).stardust)
+            assertEquals(0, store.load(family).candy)
+        }
+    }
+
 }
