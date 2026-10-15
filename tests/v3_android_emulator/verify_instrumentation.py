@@ -19,7 +19,7 @@ required={
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
     "CollectionGuidedIvAndroidTest":3,
-    "PvpGuidedCollectionComposeAndroidTest":5,
+    "PvpGuidedCollectionComposeAndroidTest":8,
 }
 
 def source_contract():
@@ -135,6 +135,22 @@ def source_contract():
             token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text()
             for token in ["iv-targets-league", "pvp-compare-league-ultra",
                           "pvp-compare-league-master", "iv-targets-back"]
+        ),
+        "guide empty selection has actionable reset and honest explanation": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in [
+                "recoverEmptySelection", 'testTag("collection-guide-reset-empty")',
+                'testTag("collection-guide-empty-explanation")',
+                '"LIMPAR SELEÇÃO"', "pvpCompareStage = PvpGuideStage.ALL"
+            ]
+        ),
+        "real Compose reset tests protect safe recovery": all(
+            token in (android_test/"PvpGuidedCollectionComposeAndroidTest.kt").read_text()
+            for token in [
+                "impossibleLeagueCapSelectionOffersSafeResetAndReturnsAllOwnedPokemon",
+                "noSavedPlansHasPracticalExitInsteadOfAnUnreachableEmptyStage",
+                "nonEmptyGuidedSelectionNeverDisplaysIrrelevantResetButton"
+            ]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
