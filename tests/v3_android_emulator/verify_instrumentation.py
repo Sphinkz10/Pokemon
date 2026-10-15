@@ -21,7 +21,7 @@ required={
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
-    "CollectionPlanJourneyAndroidTest":17,
+    "CollectionPlanJourneyAndroidTest":18,
 }
 
 def source_contract():
