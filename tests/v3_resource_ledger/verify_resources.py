@@ -26,7 +26,7 @@ checks={
  "UI uses confirmed on-device inventory": 'val resourceStore = remember(context)' in panel and 'resourceStore::load' in panel,
  "invalid catalog species does not get a family resource bucket": 'familyId = species?.takeIf { it.speciesId == owned.speciesId }' in panel,
  "engine only receives complete known ledger": 'UserResourcePolicy.completeLedgerOrNull' in panel and 'ledger = knownLedger' in panel,
- "cost pack remains absent until actual validation": 'pack = null' in panel,
+ "only a reviewed source may activate a cost pack": 'pack = selectedPack' in panel and "CommunityNormalPowerUpPack.authenticatedReference()" in panel and "allowCommunityEstimate" in panel,
  "existing Room user data unaffected": 'version = 2' in db and 'MIGRATION_1_2' in db,
  "policy JVM scenarios required": tests.count('@Test fun ') >= 18,
  "Android persistence tests added not claimed executed": android.count('@Test fun ') >= 4,
