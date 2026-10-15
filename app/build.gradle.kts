@@ -14,8 +14,8 @@ android {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 58
-        versionName = "1.58.0-dev"
+        versionCode = 59
+        versionName = "1.59.0-dev"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -24,6 +24,16 @@ android {
         getByName("debug") {
             applicationIdSuffix = ".installtestv190"
             versionNameSuffix = "-installtestv190"
+        }
+    }
+
+    // The APK-replacement workflow builds an isolated two-phase instrumentation
+    // suite. Ordinary 51-case Android suites remain the default on every PR.
+    sourceSets {
+        getByName("androidTest") {
+            if (providers.gradleProperty("upgradeSuite").isPresent) {
+                java.setSrcDirs(listOf("src/upgradeTest/java"))
+            }
         }
     }
 
