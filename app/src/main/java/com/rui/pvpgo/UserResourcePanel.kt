@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -59,7 +60,7 @@ internal fun UserResourcePanel(
             )
             OutlinedButton(
                 onClick = { expanded = !expanded; feedback = null },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("resource-toggle")
             ) { Text(if (expanded) "Fechar edição de recursos" else "Registar ou atualizar recursos") }
             if (expanded) {
                 ResourceBalanceField.entries.forEach { field ->
@@ -77,7 +78,7 @@ internal fun UserResourcePanel(
                             Text("Vazio = desconhecido · 0 = zero confirmado")
                         },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag("resource-input-${field.name.lowercase()}")
                     )
                 }
                 Button(
@@ -97,7 +98,7 @@ internal fun UserResourcePanel(
                                 }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("resource-save")
                 ) { Text("Guardar recursos") }
             }
             feedback?.let {
