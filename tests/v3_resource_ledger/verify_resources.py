@@ -23,7 +23,7 @@ checks={
  "storage commit checked": 'check(edit.commit())' in storage,
  "UI explicit save action": 'Text("Guardar recursos")' in ui and 'store.save(familyId, parsed)' in ui,
  "user is warned missing does not mean zero": 'desconhecidos, não são considerados zero' in ui,
- "UI uses confirmed on-device inventory": 'val resourceStore = remember(context)' in panel and 'resourceStore::load' in panel,
+ "UI uses confirmed on-device inventory": 'val resourceStore = remember(context, resourceStoreOverride)' in panel and 'resourceStore::load' in panel,
  "invalid catalog species does not get a family resource bucket": 'familyId = species?.takeIf { it.speciesId == owned.speciesId }' in panel,
  "engine only receives complete known ledger": 'UserResourcePolicy.completeLedgerOrNull' in panel and 'ledger = knownLedger' in panel,
  "only a reviewed source may activate a cost pack": 'pack = selectedPack' in panel and "CommunityNormalPowerUpPack.authenticatedReference()" in panel and "allowCommunityEstimate" in panel,

@@ -1,4 +1,4 @@
-name: Android Room integration tests
+name: Android instrumented + Compose UI tests
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ permissions:
 jobs:
   room-instrumented:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -45,7 +45,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Run SQLite Room integration on emulator
+      - name: Run SQLite Room and Compose UI on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -59,7 +59,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-instrumentation-v3-results
+          name: android-instrumentation-v3-room-compose-results
           path: |
             app/build/reports/androidTests/**
             app/build/outputs/androidTest-results/**
