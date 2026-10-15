@@ -898,7 +898,8 @@ private fun InboxScreen(
                                     species = species,
                                     candidate = c,
                                     collection = collection,
-                                    collectionLoaded = collectionLoaded
+                                    collectionLoaded = collectionLoaded,
+                                    catalog = catalog
                                 )
                             }
                             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -943,7 +944,8 @@ private fun CandidateRankPreview(
     species: PokemonSpecies?,
     candidate: OwnedPokemon,
     collection: List<OwnedPokemon>,
-    collectionLoaded: Boolean
+    collectionLoaded: Boolean,
+    catalog: List<PokemonSpecies>
 ) {
     var league by rememberSaveable(candidate.id) { mutableStateOf(League.GREAT) }
     var evidence by remember(species, candidate.iv, candidate.id, league, collection, collectionLoaded) {
@@ -974,6 +976,34 @@ private fun CandidateRankPreview(
             }.getOrNull()
         }
         computed = true
+    }
+    // Evolution paths are a distinct, opt-in IV comparison; they cannot
+    // certify real evolution availability, Candy costs or PvP eligibility.
+    val knownEvolutionTargets = remember(species, catalog) {
+        species?.let { CandidateEvolutionAdvisor.targets(it, catalog).size } ?: 0
+    }
+    var evolutionOverview by remember(
+        species, candidate.id, candidate.iv, league, collection, collectionLoaded, catalog
+    ) {
+        mutableStateOf<CandidateEvolutionIvOverview?>(null)
+    }
+    var evolutionsComputed by remember(
+        species, candidate.id, candidate.iv, league, collection, collectionLoaded, catalog
+    ) { mutableStateOf(false) }
+    LaunchedEffect(species, candidate.id, candidate.iv, league, collection, collectionLoaded, catalog) {
+        evolutionOverview = if (species == null || !collectionLoaded) null else
+            withContext(Dispatchers.Default) {
+                runCatching {
+                    CandidateEvolutionAdvisor.evaluate(
+                        source = species,
+                        candidate = candidate,
+                        collection = collection,
+                        catalog = catalog,
+                        league = league
+                    )
+                }.getOrNull()
+            }
+        evolutionsComputed = true
     }
     val decision = CandidateReviewPolicy.explainIvComparison(
         speciesAvailable = species != null,
@@ -1014,6 +1044,43 @@ private fun CandidateRankPreview(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.tertiary
             )
+            if (knownEvolutionTargets > 0) {
+                HorizontalDivider()
+                Text(
+                    "Possíveis evoluções · ${SpeciesLeaguePolicy.shortLabel(league)}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                when {
+                    !collectionLoaded || !evolutionsComputed ->
+                        Text("A calcular IVs nas evoluções ligadas ao catálogo…")
+                    evolutionOverview == null ->
+                        Text("Não foi possível avaliar estas evoluções. Sem recomendação.")
+                    else -> {
+                        evolutionOverview!!.rows.forEach { row ->
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(row.targetName, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    CandidateEvolutionAdvisor.explain(row),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        if (evolutionOverview!!.omittedCount > 0) {
+                            Text(
+                                "Mais ${evolutionOverview!!.omittedCount} evolução(ões) no catálogo. " +
+                                    "A pré-visualização está limitada; revê as restantes individualmente.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+                Text(
+                    CandidateEvolutionAdvisor.LIMITATIONS,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
         }
     }
 }
