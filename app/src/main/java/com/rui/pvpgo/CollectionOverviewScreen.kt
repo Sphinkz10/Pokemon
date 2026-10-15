@@ -75,7 +75,8 @@ fun CollectionOverviewScreen(
     onAdd: () -> Unit,
     onInbox: () -> Unit,
     onSelectOwned: (String) -> Unit,
-    onOpenIvTargets: (String) -> Unit
+    onOpenIvTargets: (String) -> Unit,
+    onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
@@ -312,12 +313,19 @@ fun CollectionOverviewScreen(
                                 )
                             ) {
                                 TextButton(
-                                    onClick = { onOpenIvTargets(owned.speciesId) },
+                                    onClick = {
+                                        val selectedLeague = pvpCompareLeague
+                                        if (onOpenIvTargetsForLeague != null) {
+                                            onOpenIvTargetsForLeague(owned.speciesId, selectedLeague)
+                                        } else {
+                                            onOpenIvTargets(owned.speciesId)
+                                        }
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                         .heightIn(min = 44.dp)
                                         .testTag("collection-guide-open-iv-${owned.id}")
                                 ) {
-                                    Text("Comparar IVs por liga →")
+                                    Text("Comparar IVs · ${SpeciesLeaguePolicy.title(pvpCompareLeague)} →")
                                 }
                             }
                         }
