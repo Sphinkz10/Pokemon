@@ -28,12 +28,13 @@ class CandidateEvolutionAdvisorTest {
     private fun owned(id: String, type: String, iv: IvSpread = IvSpread(14, 15, 15)) =
         OwnedPokemon(id = id, speciesId = type, iv = iv, createdAtEpochMs = 1L)
 
-    private val source = species("seed", 1, listOf("bud", "mega_bud", "hidden", "unknown"))
+    private val source = species("seed", 1, listOf("bud", "mega_bud", "hidden", "unknown", "kyogre_primal", "kyogre_primal"))
     private val bud = species("bud", 2, listOf("flower"))
     private val flower = species("flower", 3)
     private val mega = species("mega_bud", 4, tags = setOf("mega"))
     private val hidden = species("hidden", 5, released = false)
-    private val catalog = listOf(source, bud, flower, mega, hidden)
+    private val primal = species("kyogre_primal", 6, tags = setOf("primal"))
+    private val catalog = listOf(source, bud, flower, mega, hidden, primal)
     private val settings = RankSettings(ivFloor = 14)
 
     @Test fun targetListFollowsRealCatalogGraphNotFamilyIdGuess() {
