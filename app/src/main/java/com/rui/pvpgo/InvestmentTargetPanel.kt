@@ -31,7 +31,7 @@ import com.rui.pvpgo.engine.PokemonSpecies
 /**
  * A concrete, interactive step towards a real cost estimate.
  * Uses only confirmed, persisted specimen data; edits in the Build real form
- * must be saved first. No pack/ledger is wired to this UI yet.
+ * must be saved first. Cost reference is community-reviewed and opt-in.
  */
 @Composable
 internal fun InvestmentTargetPanel(
@@ -91,6 +91,20 @@ internal fun InvestmentTargetPanel(
             pack = selectedPack,
             ledger = knownLedger,
             target = target
+        )
+    }
+    val affordable = remember(
+        owned, species, league, hasPendingBuildChanges, allowCommunityEstimate,
+        knownLedger, selectedPack, suggestedCapTarget
+    ) {
+        if (hasPendingBuildChanges) AffordableLevelResult(
+            AffordableLevelStatus.NO_ELIGIBLE_TARGET,
+            "Guarda primeiro as alterações ao Build real; os recursos não alteram dados por guardar."
+        ) else AffordableLevelPolicy.advise(
+            owned = owned, species = species, league = league,
+            consented = allowCommunityEstimate,
+            pack = selectedPack, ledger = knownLedger,
+            suggestion = suggestedCapTarget
         )
     }
     Surface(
@@ -162,6 +176,81 @@ internal fun InvestmentTargetPanel(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            if (!hasPendingBuildChanges && suggestedCapTarget.canApply &&
+                referenceAvailable && supported
+            ) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = allowCommunityEstimate,
+                        onCheckedChange = { allowCommunityEstimate = it }
+                    )
+                    Text(
+                        "Usar tabela comunitária revista em 15/10/2026 (não oficial)",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            HorizontalDivider()
+            Text(
+                "Até onde chegam os meus recursos?",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                affordable.explanation,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (affordable.canApply) MaterialTheme.colorScheme.onSurface
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (!hasPendingBuildChanges && affordable.canApply) {
+                val calculated = requireNotNull(affordable.affordablePlan)
+                val calculatedLevel = requireNotNull(affordable.affordableLevel)
+                Text(
+                    "Nível alcançável: ${LeagueCapTargetPolicy.displayLevel(calculatedLevel)} · " +
+                        "${affordable.affordableCp} CP · ${affordable.affordableSteps} incrementos",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Custo acumulado estimado: ${calculated.costs.stardust} Stardust · " +
+                        "${calculated.costs.candyByFamily[familyId] ?: 0} Candy · " +
+                        "${calculated.costs.xlCandyByFamily[familyId] ?: 0} XL Candy.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (affordable.nextStepShortages.isNotEmpty()) {
+                    Text(
+                        "Para o próximo incremento faltam: " +
+                            affordable.nextStepShortages.joinToString(" · ") {
+                                "${it.amount ?: "?"} ${it.kind.name.replace('_', ' ')}"
+                            },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                if (affordable.goalShortages.isNotEmpty()) {
+                    Text(
+                        "Até ao limite da liga faltam: " +
+                            affordable.goalShortages.joinToString(" · ") {
+                                "${it.amount ?: "?"} ${it.kind.name.replace('_', ' ')}"
+                            },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                OutlinedButton(
+                    onClick = {
+                        targetText = LeagueCapTargetPolicy.displayLevel(calculatedLevel)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Usar o nível que consigo pagar")
+                }
+            }
+            Text(
+                AffordableLevelPolicy.LIMITATION,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             if (hasPendingBuildChanges) {
                 Text(
                     "Guarda primeiro as alterações do Build real. A projeção só usa os dados já guardados.",
@@ -197,18 +286,6 @@ internal fun InvestmentTargetPanel(
                                 "Sem orçamento normal aplicável.",
                             style = MaterialTheme.typography.bodySmall
                         )
-                    } else {
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = allowCommunityEstimate,
-                                onCheckedChange = { allowCommunityEstimate = it }
-                            )
-                            Text(
-                                "Usar tabela comunitária revista em 15/10/2026 (não oficial)",
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
                     }
                     Text(
                         if (!allowCommunityEstimate) "A estimativa fica desativada até a autorizares."
