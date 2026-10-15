@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -121,7 +122,7 @@ fun IvTargetsScreen(
 private fun IvTargetsHeader(name: String, league: League, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Surface(
-            modifier = Modifier.size(48.dp).clickable(onClick = onBack),
+            modifier = Modifier.size(48.dp).testTag("iv-targets-back").clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
             color = PvpColors.CanvasMiddle,
             border = BorderStroke(1.dp, IvBorder)
@@ -133,7 +134,12 @@ private fun IvTargetsHeader(name: String, league: League, onBack: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("IV Targets", color = PvpColors.TextPrimary, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-            Text("$name · ${SpeciesLeaguePolicy.title(league)}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+            Text(
+                "$name · ${SpeciesLeaguePolicy.title(league)}",
+                modifier = Modifier.testTag("iv-targets-league"),
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
