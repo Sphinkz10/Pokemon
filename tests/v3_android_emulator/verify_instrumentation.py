@@ -13,6 +13,7 @@ required={
     "InvestmentJourneyAndroidTest":7,
     "MainActivityLaunchAndroidTest":1,
     "InvestmentComposeUiAndroidTest":10,
+    "CollectionNavigationJourneyAndroidTest":5,
 }
 
 def source_contract():
@@ -36,6 +37,14 @@ def source_contract():
         "UI tests perform real clicks typing clearing": all(token in (android_test/"InvestmentComposeUiAndroidTest.kt").read_text() for token in [
             'createComposeRule()', 'performClick()', 'performTextInput(', 'performTextClearance()', 'assertIsNotEnabled()'
         ]),
+        "root app routes are actually exercised": all(token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text() for token in [
+            "PvPGoApp(", 'app-tab-collection', 'owned-row-nav-owned-one',
+            'species-owned-nav-owned-one', 'pokemon-360-back',
+            'Descartar alterações', 'Continuar a editar'
+        ]),
+        "isolation is an explicit real Room repository": "CollectionRepository.forTesting(database)" in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text() and "Room.inMemoryDatabaseBuilder" in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text(),
+        "app defaults to production catalog": "catalogOverride ?: emptyList()" in (root/"app/src/main/java/com/rui/pvpgo/MainActivity.kt").read_text(),
+        "app defaults to production repository": "repositoryOverride ?: CollectionRepository.get(context)" in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text(),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()
