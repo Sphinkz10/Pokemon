@@ -27,7 +27,7 @@ def check_source():
         "APK bytes must actually differ": "sha256sum" in sh and "sort -u" in sh,
         "old APK installed without wipe": 'adb install "$APK_BASELINE"' in sh,
         "forced process stopped": 'adb shell am force-stop "$PACKAGE"' in sh,
-        "explicit MainActivity relaunches": sh.count('adb shell am start -W -n "$PACKAGE/.MainActivity"') >= 2,
+        "explicit MainActivity relaunches": sh.count('adb shell am start -W -n "$PACKAGE/com.rui.pvpgo.MainActivity"') >= 2,
         "new APK replaced without uninstall": 'adb install -r "$APK_CANDIDATE"' in sh,
         "no destructive reinstall": all(q not in sh for q in ["adb uninstall", "pm clear", "adb shell pm clear", "fallbackToDestructiveMigration"]),
         "three test stages exercised": all(q in sh for q in ["run_stage seed_baseline", "run_stage after_force_stop", "run_stage after_upgrade"]),
