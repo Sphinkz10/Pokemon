@@ -333,6 +333,7 @@ fun CollectionModuleScreen(
             collection = collection,
             pending = pending,
             pendingLoaded = pendingLoaded,
+            collectionLoaded = collectionLoaded,
             onBack = { route = CollectionRoute.LIST },
             onAddAnother = { route = CollectionRoute.IMPORT_HOME },
             onQuickAdd = {
@@ -809,6 +810,7 @@ private fun InboxScreen(
     collection: List<OwnedPokemon>,
     pending: List<CandidateInboxItem>,
     pendingLoaded: Boolean,
+    collectionLoaded: Boolean,
     onBack: () -> Unit,
     onAddAnother: () -> Unit,
     onQuickAdd: () -> Unit,
@@ -892,7 +894,12 @@ private fun InboxScreen(
                                 )
                             }
                             if (expandedCandidateId == item.id) {
-                                CandidateRankPreview(species = species, iv = c.iv)
+                                CandidateRankPreview(
+                                    species = species,
+                                    candidate = c,
+                                    collection = collection,
+                                    collectionLoaded = collectionLoaded
+                                )
                             }
                             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(
@@ -932,26 +939,55 @@ private fun InboxScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CandidateRankPreview(species: PokemonSpecies?, iv: IvSpread) {
-    var league by rememberSaveable(species?.speciesId) { mutableStateOf(League.GREAT) }
-    var rank by remember(species, iv, league) {
-        mutableStateOf<com.rui.pvpgo.engine.PvPRankEntry?>(null)
+private fun CandidateRankPreview(
+    species: PokemonSpecies?,
+    candidate: OwnedPokemon,
+    collection: List<OwnedPokemon>,
+    collectionLoaded: Boolean
+) {
+    var league by rememberSaveable(candidate.id) { mutableStateOf(League.GREAT) }
+    var evidence by remember(species, candidate.iv, candidate.id, league, collection, collectionLoaded) {
+        mutableStateOf<CandidateIvEvidence?>(null)
     }
-    var computed by remember(species, iv, league) { mutableStateOf(false) }
-    LaunchedEffect(species, iv, league) {
-        rank = withContext(Dispatchers.Default) {
-            runCatching { species?.let { RankRepository.find(it, league, iv, RankSettings()) } }
-                .getOrNull()
+    var computed by remember(species, candidate.iv, candidate.id, league, collection, collectionLoaded) {
+        mutableStateOf(false)
+    }
+    // Only calculate when the user expands the card; never block the UI thread.
+    // On a league change or Room emission, Compose cancels the old calculation.
+    LaunchedEffect(species, candidate.iv, candidate.id, league, collection, collectionLoaded) {
+        evidence = if (species == null || !collectionLoaded) null else withContext(Dispatchers.Default) {
+            runCatching {
+                val sameSpecies = collection.filter {
+                    it.speciesId == species.speciesId && it.id != candidate.id
+                }
+                val candidateRank = RankRepository.find(
+                    species, league, candidate.iv, RankSettings()
+                )?.rank
+                val bestExistingRank = sameSpecies.mapNotNull { saved ->
+                    RankRepository.find(species, league, saved.iv, RankSettings())?.rank
+                }.minOrNull()
+                CandidateIvEvidence(
+                    candidateRank = candidateRank,
+                    sameSpeciesOwnedCount = sameSpecies.size,
+                    bestOwnedRank = bestExistingRank
+                )
+            }.getOrNull()
         }
         computed = true
     }
+    val decision = CandidateReviewPolicy.explainIvComparison(
+        speciesAvailable = species != null,
+        collectionLoaded = collectionLoaded,
+        computed = computed,
+        evidence = evidence
+    )
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Pré-visualização · sem guardar", fontWeight = FontWeight.SemiBold)
+            Text("IVs nesta liga · pré-visualização sem guardar", fontWeight = FontWeight.SemiBold)
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -966,11 +1002,15 @@ private fun CandidateRankPreview(species: PokemonSpecies?, iv: IvSpread) {
                 }
             }
             Text(
-                CandidateReviewPolicy.rankStatus(species != null, computed, rank?.rank),
+                CandidateReviewPolicy.rankStatus(species != null, computed, evidence?.candidateRank),
                 fontWeight = FontWeight.Bold
             )
+            HorizontalDivider()
+            Text(decision.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(decision.reason, style = MaterialTheme.typography.bodySmall)
+            Text(decision.nextStep, style = MaterialTheme.typography.bodySmall)
             Text(
-                CandidateReviewPolicy.RANK_LIMITATION,
+                CandidateReviewPolicy.DECISION_LIMITATIONS,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.tertiary
             )
