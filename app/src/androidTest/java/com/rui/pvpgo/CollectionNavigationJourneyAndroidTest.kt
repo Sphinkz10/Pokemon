@@ -2,6 +2,7 @@ package com.rui.pvpgo
 
 import android.content.Context
 import androidx.room.Room
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -180,4 +181,35 @@ class CollectionNavigationJourneyAndroidTest {
             assertEquals(1, runBlocking { repository.currentCollection() }.size)
         }
     }
+    private fun guidedLeagueComparison(leagueTag: String, title: String) {
+        launchRoot()
+        intoCollection()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-compare"))
+        rule.onNodeWithTag("collection-guide-compare").performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag(leagueTag))
+        rule.onNodeWithTag(leagueTag).performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-open-iv-nav-owned-one"))
+        rule.onNodeWithTag("collection-guide-open-iv-nav-owned-one").performClick()
+        rule.onNodeWithTag("iv-targets-league")
+            .assertTextContains(title, substring = true)
+        rule.onNodeWithTag("iv-targets-back").performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-compare"))
+        rule.onNodeWithTag("collection-guide-compare").assertExists()
+        rule.runOnIdle {
+            assertEquals(original.cp, runBlocking { repository.currentCollection() }.single().cp)
+        }
+    }
+
+    @Test fun selectingUltraInCollectionOpensIvTargetsOnUltraAndReturnsSafely() {
+        guidedLeagueComparison("pvp-compare-league-ultra", "Ultra")
+    }
+
+    @Test fun selectingMasterInCollectionOpensIvTargetsOnMasterAndReturnsSafely() {
+        guidedLeagueComparison("pvp-compare-league-master", "Master")
+    }
+
 }

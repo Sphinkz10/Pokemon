@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.rui.pvpgo.domain.OwnedPokemon
+import com.rui.pvpgo.engine.League
 import com.rui.pvpgo.engine.IvSpread
 import com.rui.pvpgo.engine.PokemonMath
 import com.rui.pvpgo.engine.PokemonSpecies
@@ -43,7 +44,7 @@ class PvpGuidedCollectionComposeAndroidTest {
     private var opened = ""
     private var compared = ""
 
-    private fun render() {
+    private fun render(onCompareLeague: ((String, League) -> Unit)? = null) {
         rule.setContent {
             MaterialTheme {
                 CollectionOverviewScreen(
@@ -51,7 +52,8 @@ class PvpGuidedCollectionComposeAndroidTest {
                     buildPlans = emptyList(), pendingCount = 0,
                     onAdd = {}, onInbox = {},
                     onSelectOwned = { opened = it },
-                    onOpenIvTargets = { compared = it }
+                    onOpenIvTargets = { compared = it },
+                    onOpenIvTargetsForLeague = onCompareLeague
                 )
             }
         }
@@ -117,4 +119,32 @@ class PvpGuidedCollectionComposeAndroidTest {
             assertEquals(3, saved.size)
         }
     }
+
+    @Test fun ultraChoiceReachesExplicitCompareCallbackWithoutSwitchingLeague() {
+        var received: Pair<String, League>? = null
+        render { speciesId, league -> received = speciesId to league }
+        compareStep()
+        tap("pvp-compare-league-ultra")
+        scrollTo("collection-guide-open-iv-guide-low")
+        rule.onNodeWithTag("collection-guide-open-iv-guide-low").performClick()
+        rule.runOnIdle {
+            assertEquals(species.speciesId to League.ULTRA, received)
+            assertEquals("", compared) // the old fallback is not wrongly invoked
+        }
+    }
+
+    @Test fun masterChoiceReachesExplicitCallbackAndLeavesOwnedDataUntouched() {
+        var received: Pair<String, League>? = null
+        render { speciesId, league -> received = speciesId to league }
+        compareStep()
+        tap("pvp-compare-league-master")
+        scrollTo("collection-guide-open-iv-guide-high")
+        rule.onNodeWithTag("collection-guide-open-iv-guide-high").performClick()
+        rule.runOnIdle {
+            assertEquals(species.speciesId to League.MASTER, received)
+            assertEquals(3, saved.size)
+            assertEquals("", opened)
+        }
+    }
+
 }

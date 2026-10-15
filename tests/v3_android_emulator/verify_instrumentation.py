@@ -13,13 +13,13 @@ required={
     "InvestmentJourneyAndroidTest":7,
     "MainActivityLaunchAndroidTest":1,
     "InvestmentComposeUiAndroidTest":12,
-    "CollectionNavigationJourneyAndroidTest":5,
+    "CollectionNavigationJourneyAndroidTest":7,
     "MainActivityLifecycleA11yAndroidTest":4,
     "PersistentCollectionReopenAndroidTest":8,
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
     "CollectionGuidedIvAndroidTest":3,
-    "PvpGuidedCollectionComposeAndroidTest":3,
+    "PvpGuidedCollectionComposeAndroidTest":5,
 }
 
 def source_contract():
@@ -117,6 +117,24 @@ def source_contract():
             token in (root/"app/src/main/java/com/rui/pvpgo/PvpGuidePolicy.kt").read_text()
             for token in ["owned.uncertainFields.isNotEmpty()", "expectedCp != cp",
                           "PvpGuideVerdict.NEEDS_REVIEW", "Não é ranking IV"]
+        ),
+        "selected IV guide league travels to actual IV Targets route": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in ["onOpenIvTargetsForLeague = { speciesId, selectedLeague ->",
+                          "speciesLeague = selectedLeague",
+                          "targetsReturnRoute = CollectionRoute.LIST"]
+        ),
+        "guide labels chosen league and preserves older one-argument callers": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in ["onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null",
+                          "onOpenIvTargetsForLeague(owned.speciesId, selectedLeague)",
+                          "onOpenIvTargets(owned.speciesId)",
+                          "Comparar IVs ·"]
+        ),
+        "UI verifies Ultra and Master in destination not only callback": all(
+            token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text()
+            for token in ["iv-targets-league", "pvp-compare-league-ultra",
+                          "pvp-compare-league-master", "iv-targets-back"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
