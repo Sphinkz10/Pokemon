@@ -67,8 +67,12 @@ internal object InvestmentReadinessPolicy {
             else ReadinessCheck("Nível atual", ReadinessCheckStatus.MISSING,
                     "Indica o nível atual do exemplar; sem nível não calculamos power-ups."))
 
-            val consistency = if (species != null && owned.cp != null && owned.level != null)
-                runCatching { PokemonMath.cp(species, owned.iv, owned.level) }.getOrNull()
+            // Snapshot cross-module nullable fields locally: Kotlin cannot smart-cast
+            // public properties from the engine module inside a captured lambda.
+            val recordedCp = owned.cp
+            val recordedLevel = owned.level
+            val consistency = if (species != null && recordedCp != null && recordedLevel != null)
+                runCatching { PokemonMath.cp(species, owned.iv, recordedLevel) }.getOrNull()
             else null
             add(when {
                 consistency == null ->
