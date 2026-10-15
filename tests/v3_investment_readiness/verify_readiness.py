@@ -11,7 +11,7 @@ store=(base/"CollectionDatabase.kt").read_text(encoding="utf-8")
 checks={
   "real specimen in Inbox is checked without saving it": "owned = candidate" in core and "compact = true" in core,
   "confirmed Pokemon 360 shows full readiness detail": "owned = owned" in core and "compact = false" in core,
-  "policy computes actual CP from species and IV and recorded level": "PokemonMath.cp(species, owned.iv, owned.level)" in policy,
+  "policy computes actual CP from species and IV and recorded level": "PokemonMath.cp(species, owned.iv, recordedLevel)" in policy,
   "missing CP remains unknown": "owned.cp != null" in policy and "CP atual" in policy,
   "missing level remains unknown": "owned.level != null" in policy and "Nível atual" in policy,
   "mismatched CP is flagged for review": "consistency != owned.cp" in policy and "ReadinessCheckStatus.RECHECK" in policy,
