@@ -184,6 +184,16 @@ fun CollectionOverviewScreen(
         return
     }
 
+    // Every guided filter combination must have a practical escape route.
+    // Reset only collection-level selection; preserve the user's saved Pokémon,
+    // chosen league preference, sorting choice and independent Pokédex state.
+    val recoverEmptySelection: () -> Unit = {
+        query = ""
+        filter = CollectionQuickFilter.ALL
+        guidedStep = CollectionGuideStep.ALL
+        pvpCompareStage = PvpGuideStage.ALL
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("collection-overview-scroll"),
         state = if (tab == CollectionViewTab.POKEDEX) nationalScroll else collectionScroll,
@@ -224,7 +234,9 @@ fun CollectionOverviewScreen(
                     compareLeague = pvpCompareLeague,
                     compareStage = pvpCompareStage,
                     onCompareLeague = { pvpCompareLeague = it },
-                    onCompareStage = { pvpCompareStage = it }
+                    onCompareStage = { pvpCompareStage = it },
+                    hasSavedPokemon = collection.isNotEmpty(),
+                    onRecoverEmptySelection = recoverEmptySelection
                 )
             }
             item { CollectionFilterRow(filter, onSelect = { filter = it }) }
@@ -282,9 +294,9 @@ fun CollectionOverviewScreen(
                     item {
                         CollectionEmptyState(
                             title = if (collection.isEmpty()) "A tua coleção está vazia" else "Sem resultados",
-                            detail = if (collection.isEmpty()) "Adiciona o primeiro Pokémon. A importação continua protegida por reconciliação e confirmação humana." else "Experimenta outro nome ou remove o filtro atual.",
-                            action = if (collection.isEmpty()) "ADICIONAR POKÉMON" else null,
-                            onAction = onAdd
+                            detail = if (collection.isEmpty()) "Adiciona o primeiro Pokémon. A importação continua protegida por reconciliação e confirmação humana." else "Os filtros não encontraram exemplares nesta seleção. Isto não avalia a força nem o rank IV dos teus Pokémon.",
+                            action = if (collection.isEmpty()) "ADICIONAR POKÉMON" else "LIMPAR SELEÇÃO",
+                            onAction = if (collection.isEmpty()) onAdd else recoverEmptySelection
                         )
                     }
                 } else {
@@ -486,7 +498,9 @@ private fun CollectionJourneyGuide(
     compareLeague: League,
     compareStage: PvpGuideStage,
     onCompareLeague: (League) -> Unit,
-    onCompareStage: (PvpGuideStage) -> Unit
+    onCompareStage: (PvpGuideStage) -> Unit,
+    hasSavedPokemon: Boolean,
+    onRecoverEmptySelection: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -564,6 +578,20 @@ private fun CollectionJourneyGuide(
             color = CollectionBlue,
             style = MaterialTheme.typography.labelMedium
         )
+        if (hasSavedPokemon && visibleCount == 0) {
+            Text(
+                "Nenhum exemplar corresponde a esta seleção. Isto não é uma avaliação da qualidade PvP.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("collection-guide-empty-explanation")
+            )
+            TextButton(
+                onClick = onRecoverEmptySelection,
+                modifier = Modifier.fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .testTag("collection-guide-reset-empty")
+            ) { Text("Limpar filtros e mostrar todos") }
+        }
     }
 }
 
