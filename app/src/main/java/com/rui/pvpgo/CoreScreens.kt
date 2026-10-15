@@ -1196,7 +1196,8 @@ private fun OwnedPokemonDetailScreen(
         }
     ) { padding ->
         LazyColumn(
-            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
+            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize()
+                .testTag("pokemon-360-scroll"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp)
         ) {
