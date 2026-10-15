@@ -18,6 +18,7 @@ required={
     "PersistentCollectionReopenAndroidTest":8,
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
+    "PvpGuidedCollectionComposeAndroidTest":3,
 }
 
 def source_contract():
@@ -82,6 +83,17 @@ def source_contract():
             token in (android_test/"ResourceResponsiveConstraintsAndroidTest.kt").read_text()
             for token in ["widthDp = 320, fontScale = 2f", "widthDp = 390, fontScale = 1.5f",
                           "widthDp = 600, fontScale = 1f", "performScrollTo().performClick()"]
+        ),
+        "guided PvP policy and UI are both exercised on Android": all(
+            token in (android_test/"PvpGuidedCollectionComposeAndroidTest.kt").read_text()
+            for token in ["CollectionOverviewScreen(", "pvp-guide-toggle",
+                          "pvp-guide-stage-over_limit", "pvp-guide-stage-iv_pattern",
+                          "performScrollToNode", "Não é ranking IV"]
+        ),
+        "guide refuses missing or contradictory CP": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/PvpGuidePolicy.kt").read_text()
+            for token in ["owned.uncertainFields.isNotEmpty()", "expectedCp != cp",
+                          "PvpGuideVerdict.NEEDS_REVIEW", "PvpGuideStage.IV_PATTERN"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
