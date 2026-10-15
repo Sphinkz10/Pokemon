@@ -34,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -115,6 +116,7 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
                         .clip(RoundedCornerShape(14.dp))
                         .background(if (selected) PvpColors.AccentDeep else Color.Transparent)
                         .clickable { onSelect(tab) }
+                        .testTag("app-tab-${tab.name.lowercase()}")
                         .padding(vertical = 7.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -137,18 +139,25 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
 }
 
 @Composable
-private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () -> Unit = {}) {
+internal fun PvPGoApp(
+    initialSpeciesId: String? = null,
+    onDeepLinkConsumed: () -> Unit = {},
+    catalogOverride: List<PokemonSpecies>? = null,
+    collectionRepositoryOverride: CollectionRepository? = null
+) {
     val context = LocalContext.current
     var skin by remember { mutableStateOf(PvpSkinPreferences.load(context)) }
     var eventCalendar by remember { mutableStateOf<CalendarSnapshot?>(null) }
     var eventRefreshToken by remember { mutableIntStateOf(0) }
-    var catalog by remember { mutableStateOf<List<PokemonSpecies>>(emptyList()) }
+    var catalog by remember(catalogOverride) {
+        mutableStateOf(catalogOverride ?: emptyList())
+    }
     var moves by remember { mutableStateOf<List<PvpMove>>(emptyList()) }
     var source by remember { mutableStateOf("a carregar…") }
     var moveWarning by remember { mutableStateOf<String?>(null) }
     var sourceUpdatedAt by remember { mutableStateOf<Long?>(null) }
     var warning by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(true) }
+    var loading by remember(catalogOverride) { mutableStateOf(catalogOverride == null) }
     var refreshToken by remember { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<PokemonSpecies?>(null) }
     val tabsState = rememberSaveableStateHolder()
@@ -159,11 +168,14 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
 
-    LaunchedEffect(eventRefreshToken) {
-        eventCalendar = EventCalendarRepository.load(context, forceRefresh = eventRefreshToken > 0)
+    LaunchedEffect(eventRefreshToken, catalogOverride) {
+        if (catalogOverride == null) {
+            eventCalendar = EventCalendarRepository.load(context, forceRefresh = eventRefreshToken > 0)
+        }
     }
 
-    LaunchedEffect(refreshToken) {
+    LaunchedEffect(refreshToken, catalogOverride) {
+        if (catalogOverride != null) return@LaunchedEffect
         loading = true
         val loaded = PokemonRepository.load(context, forceRefresh = refreshToken > 0)
         val loadedMoves = MoveRepository.load(context, forceRefresh = refreshToken > 0)
@@ -253,7 +265,8 @@ private fun PvPGoApp(initialSpeciesId: String? = null, onDeepLinkConsumed: () ->
                             )
                             AppTab.COLLECTION -> CollectionModuleScreen(
                                 catalog = catalog, moves = moves,
-                                inboxRequestCounter = guidedInboxRequest
+                                inboxRequestCounter = guidedInboxRequest,
+                                repositoryOverride = collectionRepositoryOverride
                             )
                             AppTab.TEAMS -> TeamLabRootScreen(catalog = catalog, moves = moves)
                             AppTab.BATTLES -> BattlesRootScreen(catalog = catalog, moves = moves)
