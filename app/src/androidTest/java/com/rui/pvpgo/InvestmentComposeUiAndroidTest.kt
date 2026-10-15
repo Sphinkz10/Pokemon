@@ -122,10 +122,10 @@ class InvestmentComposeUiAndroidTest {
         renderResources()
         rule.onNodeWithTag("resource-save").assertDoesNotExist()
         rule.onNodeWithText("0/7 saldos registados · Candy de Teste Compose")
-            .assertTextContains("0/7")
+            .assertTextContains("0/7", substring = true)
         rule.onNodeWithText(
             "Os saldos em falta continuam desconhecidos, não são considerados zero."
-        ).assertTextContains("desconhecidos")
+        ).assertTextContains("desconhecidos", substring = true)
     }
 
     @Test fun userCanExpandTypeNumbersSaveAndSeeUpdatedKnownCount() {
@@ -136,7 +136,7 @@ class InvestmentComposeUiAndroidTest {
         saveEditor()
         rule.onNodeWithTag("resource-save").assertDoesNotExist()
         rule.onNodeWithText("2/7 saldos registados · Candy de Teste Compose")
-            .assertTextContains("2/7")
+            .assertTextContains("2/7", substring = true)
         rule.runOnIdle {
             assertEquals(12345, store.load(family).stardust)
             assertEquals(0, store.load(family).candy)
@@ -195,9 +195,9 @@ class InvestmentComposeUiAndroidTest {
 
     @Test fun tappingMasterMaximumLevelOnlyUpdatesTheDraftTarget() {
         renderInvestment()
-        rule.onNodeWithTag("investment-level-input").assertTextContains("")
+        rule.onNodeWithTag("investment-level-input").assertTextContains("", substring = true)
         rule.onNodeWithTag("cap-target-button").performScrollTo().performClick()
-        rule.onNodeWithTag("investment-level-input").assertTextContains("50")
+        rule.onNodeWithTag("investment-level-input").assertTextContains("50", substring = true)
         rule.runOnIdle {
             assertEquals(20.0, owned.level!!, 0.0)
             assertEquals(0, store.load(family).knownCount)
@@ -211,7 +211,7 @@ class InvestmentComposeUiAndroidTest {
         rule.onNodeWithTag("affordable-target-button").assertDoesNotExist()
         rule.onNodeWithText(
             "Guarda as alterações ao Build real antes de sugerir um nível."
-        ).assertTextContains("Guarda")
+        ).assertTextContains("Guarda", substring = true)
     }
 
     @Test fun mismatchedStoredCpDisablesTheAutomaticTarget() {
@@ -228,10 +228,10 @@ class InvestmentComposeUiAndroidTest {
         rule.onNodeWithTag("community-estimate-consent")
             .performScrollTo().performClick()
         rule.onNodeWithTag("affordable-level-result")
-            .assertTextContains("40")
+            .assertTextContains("40", substring = true)
         rule.onNodeWithTag("affordable-target-button")
             .performScrollTo().performClick()
-        rule.onNodeWithTag("investment-level-input").assertTextContains("40")
+        rule.onNodeWithTag("investment-level-input").assertTextContains("40", substring = true)
         rule.runOnIdle {
             assertEquals(20.0, owned.level!!, 0.0)
             assertEquals(0, store.load(family).xlCandy)
