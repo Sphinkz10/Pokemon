@@ -2,10 +2,21 @@ name: Android Room integration tests
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/src/**'
+      - 'app/build.gradle.kts'
+      - 'engine/**'
+      - 'tests/v3_android_emulator/**'
+      - '.github/workflows/android-room-instrumentation.yml'
   push:
     branches: [main]
     paths:
-      - 'app/src/androidTest/**'
+      - 'app/src/**'
+      - 'app/build.gradle.kts'
+      - 'engine/**'
+      - 'tests/v3_android_emulator/**'
       - '.github/workflows/android-room-instrumentation.yml'
 
 permissions:
@@ -27,6 +38,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Check instrumented test source and CI gates
+        run: python3 tests/v3_android_emulator/verify_instrumentation.py --check-source
       - name: Enable KVM access
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -40,13 +53,15 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: gradle --no-daemon --stacktrace :app:connectedDebugAndroidTest
+      - name: Validate executed Android JUnit report
+        run: python3 tests/v3_android_emulator/verify_instrumentation.py --verify-results
       - name: Upload instrumented results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-room-instrumentation-results
+          name: android-instrumentation-v3-results
           path: |
             app/build/reports/androidTests/**
             app/build/outputs/androidTest-results/**
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 21
