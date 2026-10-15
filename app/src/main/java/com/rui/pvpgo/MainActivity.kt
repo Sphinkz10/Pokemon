@@ -16,6 +16,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,9 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -115,7 +119,12 @@ private fun AppBottomBar(current: AppTab, onSelect: (AppTab) -> Unit) {
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(14.dp))
                         .background(if (selected) PvpColors.AccentDeep else Color.Transparent)
-                        .clickable { onSelect(tab) }
+                        .selectable(
+                            selected = selected,
+                            role = Role.Tab,
+                            onClick = { onSelect(tab) }
+                        )
+                        .semantics { contentDescription = tab.label }
                         .testTag("app-tab-${tab.name.lowercase()}")
                         .padding(vertical = 7.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
