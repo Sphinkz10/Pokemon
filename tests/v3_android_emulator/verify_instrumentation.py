@@ -17,6 +17,7 @@ required={
     "MainActivityLifecycleA11yAndroidTest":4,
     "PersistentCollectionReopenAndroidTest":8,
     "ResourceResponsiveConstraintsAndroidTest":3,
+    "ActualApkUpgradeAndroidTest":1,
 }
 
 def source_contract():
