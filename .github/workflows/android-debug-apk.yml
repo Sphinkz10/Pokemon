@@ -65,6 +65,8 @@ jobs:
         run: python3 tests/v3_candidate_review/verify_handoff.py
       - name: Validate V3 explainable candidate decisions
         run: python3 tests/v3_candidate_decision/verify_decision.py
+      - name: Validate V3 catalog-linked evolution candidates
+        run: python3 tests/v3_evolution_preview/verify_evolution_preview.py
       - name: Validate V1.58 lifecycle-safe Collection navigation
         run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
       - name: Validate Team Advisor locked-slot regression wiring
@@ -150,6 +152,8 @@ jobs:
               "CollectionNavigationPolicyTest": 9,
               "CandidateReviewPolicyTest": 12,
               "CandidateDecisionPolicyTest": 11,
+              "CandidateEvolutionAdvisorTest": 12,
+              "CandidateEvolutionExplanationTest": 8,
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
