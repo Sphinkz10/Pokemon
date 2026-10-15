@@ -123,4 +123,36 @@ class CollectionPlanLeaguePolicyTest {
         CollectionPlanLeaguePolicy.preferredByOwned(items, League.ULTRA)
         assertEquals(before, items)
     }
+    @Test fun archivedOnlyPlanAllowsNewPlanForSameLeague() {
+        val items = listOf(plan("old", league = League.GREAT, status = BuildStatus.ARCHIVED))
+        assertTrue(CollectionPlanLeaguePolicy.hasSavedPlanInLeague("one", League.GREAT, items))
+        assertFalse(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.GREAT, items))
+        assertEquals("old", CollectionPlanLeaguePolicy.preferredByOwned(items, League.GREAT)["one"]?.id)
+    }
+
+    @Test fun livePlanStillPreventsDuplicateCreationEvenWithArchivedHistory() {
+        val items = listOf(
+            plan("old", status = BuildStatus.ARCHIVED, priority = 100),
+            plan("live", status = BuildStatus.IDEA, priority = 1)
+        )
+        assertTrue(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.GREAT, items))
+        assertEquals("live", CollectionPlanLeaguePolicy.preferredByOwned(items, League.GREAT)["one"]?.id)
+    }
+
+    @Test fun archivedUltraPlanDoesNotAffectActiveGreatPlan() {
+        val items = listOf(
+            plan("ultra-archived", league = League.ULTRA, status = BuildStatus.ARCHIVED),
+            plan("great", league = League.GREAT)
+        )
+        assertTrue(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.GREAT, items))
+        assertFalse(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.ULTRA, items))
+        assertFalse(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.MASTER, items))
+    }
+
+    @Test fun archivedHistoryFromOtherSpecimenDoesNotPreventNewPlan() {
+        val items = listOf(plan("retired", owned = "other", status = BuildStatus.ARCHIVED))
+        assertFalse(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("one", League.GREAT, items))
+        assertFalse(CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague("", League.GREAT, items))
+    }
+
 }
