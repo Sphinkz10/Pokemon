@@ -462,7 +462,7 @@ class CollectionPlanJourneyAndroidTest {
         openStep()
         openCandidate()
         rule.waitUntil(15000) {
-            rule.onAllNodes(hasTestTag("pokemon-360-save-plan"))
+            rule.onAllNodes(hasTestTag("pokemon-360-back"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         rule.onNodeWithTag("pokemon-360-scroll")
