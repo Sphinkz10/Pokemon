@@ -29,7 +29,7 @@ checks={
 "null pack blocks exact price": "if (pack == null)" in gate,
 "null inventory never becomes zero": "if (ledger == null)" in gate and not re.search(r"(?m)^\\s*(?:val|var)\\s+\\w+\\s*=\\s*ResourceLedger\\(\\)", gate),
 "incomplete cost cannot be shown as exact": "if (!plan.exactCostKnown)" in gate and "CostQuoteGateStatus.INCOMPLETE_COST" in gate,
-"the current app passes null pack and ledger": "pack = null" in panel and "ledger = null" in panel,
+"app requires complete explicit inventory and still lacks a price pack": "pack = null" in panel and "ledger = knownLedger" in panel and "UserResourcePolicy.completeLedgerOrNull" in panel,
 "GUI only shows cost status for valid target": "if (simulation.canRequestCosting)" in panel,
 "verified exact amount requires plan gate": "status == CostQuoteGateStatus.VERIFIED_COST" in gate,
 "unit coverage target": tests1.count("@Test fun ")>=16,
