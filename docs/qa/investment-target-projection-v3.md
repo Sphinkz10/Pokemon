@@ -8,7 +8,8 @@
 - Unsaved edits in the Build real form show a warning: only persisted data are simulated. No Room writes from the simulator.
 - **New InvestmentCostQuoteGate** is a usable pure integration bridge to the existing engine InvestmentPlanner. If and only if a validated InvestmentCostPack, explicit Inventory Ledger, valid target, complete costs and a non-invalid plan are present, a future caller may expose an exact cost. Missing pack and missing inventory are **different** blocked states.
 - This UI does **not yet have** an installed real InvestmentCostPack or a ResourceLedger: both are deliberately passed as null, not an invented pack or empty inventory. It displays “Sem pack de custos ...” rather than arbitrary Stardust/Candy prices.
-- **Trust improvement:** exact totals for Lucky, Shadow and Purified specimens are refused until their distinct price modifiers are independently supported and versioned. This is a deliberate unknown, not a guessed normal-species price.\n- No edits to the persisted Collection schema, current Saved Team builds or IV-rank tables.
+- **Trust improvement:** exact totals for Lucky, Shadow and Purified specimens are refused until their distinct price modifiers are independently supported and versioned. This is a deliberate unknown, not a guessed normal-species price.
+- No edits to the persisted Collection schema, current Saved Team builds or IV-rank tables.
 
 ## Android manual acceptance scenarios (all NOT executed)
 | ID | Action | Pass condition |
@@ -50,5 +51,7 @@
 - [ ] Introduce versioned user-selected goal builds (level, species evolution, fast/charged move plan and Best Buddy strategy).
 - [ ] Verify resource calculations on an actual Pokémon GO account without scraping credentials.
 - [ ] Validate external event/cup rules and season meta before claiming that an investment is useful.
+
+Cost modifiers for Lucky, Shadow and Purified remain blocked until independently sourced, rather than treating them as ordinary prices.
 
 No exact resource prices have been asserted for Pokémon GO in this PR; the fixture's values in tests are deliberately synthetic.
