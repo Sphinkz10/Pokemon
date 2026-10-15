@@ -56,7 +56,7 @@ class CollectionGuidedIvAndroidTest {
         render()
         rule.onNodeWithTag("collection-guide-review").performScrollTo().performClick()
         rule.onNodeWithTag("collection-guide-count")
-            .assertTextContains("1 exemplares", substring = true)
+            .assertTextContains("1 exemplar", substring = true)
         rule.onNodeWithTag("collection-overview-scroll")
             .performScrollToNode(hasTestTag("owned-row-iv-missing"))
         rule.onNodeWithTag("owned-row-iv-missing").assertExists()
