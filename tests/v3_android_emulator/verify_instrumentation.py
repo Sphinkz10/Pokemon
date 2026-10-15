@@ -21,6 +21,7 @@ required={
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
+    "CollectionPlanJourneyAndroidTest":4,
 }
 
 def source_contract():
@@ -180,6 +181,28 @@ def source_contract():
             token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text()
             for token in ["leagueIvTargetsCanOpenOwnedPokemon360AndReturnToSameLeague",
                           "iv-owned-open-nav-owned-one", "iv-targets-league"]
+        ),
+        "plan journey uses real collection, explicit draft and real saved Room": all(
+            token in (android_test/"CollectionPlanJourneyAndroidTest.kt").read_text()
+            for token in [
+                "CollectionOverviewScreen(", "PvPGoApp(", "onStartPlan =",
+                "collection-plan-start-plan-owned", "pokemon-360-save-plan",
+                "repository.buildPlans.first()", "repository.currentCollection()"
+            ]
+        ),
+        "plan entry never automatically saves a plan": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in [
+                "onStartPlan: ((String, League) -> Unit)? = null",
+                "collection-plan-start-", "onStartPlan(owned.id, pvpCompareLeague)"
+            ]
+        ),
+        "guide opens direct 360 and scrolls actual plan editor": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in [
+                "focusedPlanOwnedId = ownedId", "route = CollectionRoute.DETAIL",
+                "editorListState.scrollToItem(", 'testTag("pokemon-360-save-plan")'
+            ]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count

@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -70,6 +71,7 @@ import com.rui.pvpgo.ui.theme.PvpSkin
 import com.rui.pvpgo.ui.theme.PvpSkinPalettes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -105,6 +107,7 @@ fun CollectionModuleScreen(
     var pendingLoaded by remember { mutableStateOf(false) }
     var buildPlans by remember { mutableStateOf<List<PvpBuildPlan>>(emptyList()) }
     var selectedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
+    var focusedPlanOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSpeciesId by rememberSaveable { mutableStateOf<String?>(null) }
     var compareFirstId by rememberSaveable { mutableStateOf<String?>(null) }
     var compareSecondId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -180,6 +183,17 @@ fun CollectionModuleScreen(
                 speciesLeague = selectedLeague
                 targetsReturnRoute = CollectionRoute.LIST
                 route = CollectionRoute.IV_TARGETS
+            },
+            onStartPlan = { ownedId, selectedLeague ->
+                val candidate = collection.firstOrNull { it.id == ownedId }
+                if (candidate != null && catalog.any { it.speciesId == candidate.speciesId }) {
+                    selectedOwnedId = ownedId
+                    selectedSpeciesId = candidate.speciesId
+                    focusedPlanOwnedId = ownedId
+                    speciesLeague = selectedLeague
+                    detailReturnRoute = CollectionRoute.LIST
+                    route = CollectionRoute.DETAIL
+                }
             }
             )
         }
@@ -279,7 +293,9 @@ fun CollectionModuleScreen(
                     moves = moves,
                     plans = buildPlans.filter { it.ownedPokemonId == owned.id },
                     repository = repository,
-                    onBack = { route = detailReturnRoute }
+                    initialPlanLeague = if (focusedPlanOwnedId == owned.id) speciesLeague else null,
+                    focusPlanEditor = focusedPlanOwnedId == owned.id,
+                    onBack = { focusedPlanOwnedId = null; route = detailReturnRoute }
                 )
             }
         }
@@ -1117,9 +1133,21 @@ private fun OwnedPokemonDetailScreen(
     moves: List<PvpMove>,
     plans: List<PvpBuildPlan>,
     repository: CollectionRepository,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    initialPlanLeague: League? = null,
+    focusPlanEditor: Boolean = false
 ) {
     val scope = rememberCoroutineScope()
+    val editorListState = rememberLazyListState()
+    // The plan editor is the final six lazy items. Jump directly to it for
+    // callers from the guided journey; never create or save a plan implicitly.
+    LaunchedEffect(owned.id, focusPlanEditor) {
+        if (focusPlanEditor) {
+            val count = snapshotFlow { editorListState.layoutInfo.totalItemsCount }
+                .first { it >= 6 }
+            editorListState.scrollToItem((count - 6).coerceAtLeast(0))
+        }
+    }
     val movesById = remember(moves) { moves.associateBy { it.moveId } }
     val fastPool = remember(species, moves) { species?.fastMoveIds.orEmpty().mapNotNull(movesById::get) }
     val chargedPool = remember(species, moves) { species?.chargedMoveIds.orEmpty().mapNotNull(movesById::get) }
@@ -1128,7 +1156,9 @@ private fun OwnedPokemonDetailScreen(
     var levelText by remember(owned.id, owned.updatedAtEpochMs) { mutableStateOf(owned.level?.let(::formatCompactLevel).orEmpty()) }
     var fastMoveId by remember(owned.id, owned.updatedAtEpochMs) { mutableStateOf(owned.fastMoveId) }
     var chargedMoveIds by remember(owned.id, owned.updatedAtEpochMs) { mutableStateOf(owned.chargedMoveIds) }
-    var league by remember(owned.id) { mutableStateOf(League.GREAT) }
+    var league by remember(owned.id, initialPlanLeague) {
+        mutableStateOf(initialPlanLeague ?: League.GREAT)
+    }
     var ownedRank by remember(owned.id, owned.iv, species, league) { mutableStateOf<com.rui.pvpgo.engine.PvPRankEntry?>(null) }
     var rankComputed by remember(owned.id, owned.iv, species, league) { mutableStateOf(false) }
     LaunchedEffect(owned.id, owned.iv, species, league) {
@@ -1212,6 +1242,7 @@ private fun OwnedPokemonDetailScreen(
         LazyColumn(
             Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize()
                 .testTag("pokemon-360-scroll"),
+            state = editorListState,
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(top = 10.dp, bottom = 32.dp)
         ) {
@@ -1452,7 +1483,8 @@ private fun OwnedPokemonDetailScreen(
             item {
                 HorizontalDivider()
                 Spacer(Modifier.height(4.dp))
-                Text("Plano PvP", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Plano PvP", modifier = Modifier.testTag("pokemon-360-plan-heading"),
+                    style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text("O plano é intenção de investimento. Não altera os moves reais do Pokémon.", style = MaterialTheme.typography.bodySmall)
             }
             item {
@@ -1531,7 +1563,7 @@ private fun OwnedPokemonDetailScreen(
                         }
                     },
                     enabled = !busy,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag("pokemon-360-save-plan")
                 ) { Text(if (existing == null) "Criar plano PvP" else "Atualizar plano PvP") }
             }
         }

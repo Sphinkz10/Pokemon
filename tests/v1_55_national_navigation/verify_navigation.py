@@ -28,7 +28,7 @@ checks = {
  "no fake PvP details": "Não inventamos esses dados" in detail,
  "detail does not auto-mutate collection": "CollectionRepository" not in detail and "delete" not in detail,
  "return routes declared": all(x in core for x in ("detailReturnRoute", "compareReturnRoute", "targetsReturnRoute")),
- "owned detail remembers actual origin": "onBack = { route = detailReturnRoute }" in core,
+ "owned detail remembers actual origin": ("onBack = { route = detailReturnRoute }" in core or "onBack = { focusedPlanOwnedId = null; route = detailReturnRoute }" in core),
  "compares return to actual origin": "onBack = { route = compareReturnRoute }" in core,
  "targets return to actual origin": "onBack = { route = targetsReturnRoute }" in core,
  "national Dex targets return to list": "targetsReturnRoute = CollectionRoute.LIST" in core,
