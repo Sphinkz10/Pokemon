@@ -121,10 +121,15 @@ internal object InvestmentReadinessPolicy {
                 "Sem pack de custos validado, nível alvo, movimentos pretendidos e inventário de recursos não há orçamento exato."))
         }
 
+        // Resource costing is independently blocked until a validated pack,
+        // target and ledger are available. Do not let that fixed Unknown
+        // obliterate a useful distinction between complete and incomplete
+        // *basic specimen data*.
+        val basicChecks = checks.filterNot { it.name == "Custo do investimento" }
         val summary = when {
-            checks.any { it.status in setOf(ReadinessCheckStatus.RECHECK, ReadinessCheckStatus.BASE_INELIGIBLE) } ->
+            basicChecks.any { it.status in setOf(ReadinessCheckStatus.RECHECK, ReadinessCheckStatus.BASE_INELIGIBLE) } ->
                 ReadinessSummary.NEEDS_CORRECTION
-            checks.any { it.status == ReadinessCheckStatus.MISSING } ->
+            basicChecks.any { it.status == ReadinessCheckStatus.MISSING } ->
                 ReadinessSummary.NEEDS_DATA
             else -> ReadinessSummary.BASIC_DATA_CONSISTENT
         }
