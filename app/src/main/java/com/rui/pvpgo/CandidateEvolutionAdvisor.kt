@@ -51,7 +51,7 @@ internal object CandidateEvolutionAdvisor {
 
 
     /**
-     * Explicit outgoing catalog links only, excluding unreleased or Mega forms
+     * Explicit outgoing catalog links only, excluding unreleased, Mega or Primal forms
      * from this quick preview. The catalog does not validate candies, items,
      * time-limited rules, forms, CP cap or investment.
      */
@@ -59,7 +59,10 @@ internal object CandidateEvolutionAdvisor {
         EvolutionRepository.descendants(source, catalog)
             .asSequence()
             .filter { it.speciesId.isNotBlank() && it.speciesId != source.speciesId }
-            .filter { it.released && !it.isMega }
+            .filter {
+                it.released && !it.isMega && "primal" !in it.tags &&
+                    !it.speciesId.contains("primal", ignoreCase = true)
+            }
             .distinctBy { it.speciesId }
             .sortedWith(compareBy<PokemonSpecies> { it.dex }.thenBy { it.speciesId })
             .toList()
