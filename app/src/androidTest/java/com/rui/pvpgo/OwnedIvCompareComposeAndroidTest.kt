@@ -62,7 +62,7 @@ class OwnedIvCompareComposeAndroidTest {
     }
 
     private fun scroll(tag: String) {
-        rule.onRoot().performScrollToNode(hasTestTag(tag))
+        rule.onNodeWithTag("iv-targets-scroll").performScrollToNode(hasTestTag(tag))
     }
 
     @Test fun listsRealOwnedRanksAndDoesNotPretendThoseAreMetaRankings() {
