@@ -14,7 +14,7 @@ preview=core[start:end]
 checks={
   "Inbox passes real catalog to candidate preview": "catalog = catalog" in core and "CandidateRankPreview(" in core,
   "catalog explicit edges are required": "EvolutionRepository.descendants(source, catalog)" in advisor and "evolutionSpeciesIds.forEach" in evolution,
-  "unreleased and Mega forms excluded": "it.released && !it.isMega" in advisor,
+  "unreleased, Mega and Primal forms excluded": "it.released && !it.isMega" in advisor and '"primal" !in it.tags' in advisor,
   "candidate source form checked": "require(candidate.speciesId == source.speciesId)" in advisor,
   "comparison uses target ranks not unrelated species ranks": "RankRepository.find(target, league, candidate.iv, settings)" in advisor and "RankRepository.find(target, league, saved.iv, settings)" in advisor,
   "comparable individuals must have reachable catalog paths": "target.speciesId in reachableIds(it.speciesId)" in advisor,
