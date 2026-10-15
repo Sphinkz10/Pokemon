@@ -80,7 +80,7 @@ private fun percentText(n: Double): String = String.format(Locale.US, "%.1f", n)
 private fun CollectionDetailHeader(title: String, subtitle: String, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Surface(
-            modifier = Modifier.size(48.dp).clickable(onClick = onBack),
+            modifier = Modifier.size(48.dp).testTag("species-back").clickable(onClick = onBack),
             shape = RoundedCornerShape(14.dp),
             color = PvpColors.CanvasMiddle,
             border = BorderStroke(1.dp, speciesBorder)
