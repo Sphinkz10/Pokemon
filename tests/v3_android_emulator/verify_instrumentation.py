@@ -21,7 +21,7 @@ required={
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
-    "CollectionPlanJourneyAndroidTest":11,
+    "CollectionPlanJourneyAndroidTest":14,
 }
 
 def source_contract():
@@ -236,6 +236,24 @@ def source_contract():
             for token in ["savedPlanActionHandsExactOwnedLeagueAndTaskToNavigation",
                           "realAppSavedUltraPlanOpensOwnMoveEditorWithUltraLeagueAndReturnsToGuide",
                           "realAppMissingCpJumpsToCpEditorWithoutWritingEstimatedValues"]
+        ),
+        "plan guide filters by selected league": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in [
+                "CollectionPlanLeaguePolicy.preferredByOwned(buildPlans, pvpCompareLeague)",
+                "!selectedLeaguePlans.containsKey(owned.id)",
+                "val savedPlan = selectedLeaguePlans[owned.id]",
+                "hasSavedPlan = visiblePlanByOwned.containsKey(owned.id)"
+            ]
+        ),
+        "guide league tests are actual Compose clicks": all(
+            token in (android_test/"CollectionPlanJourneyAndroidTest.kt").read_text()
+            for token in [
+                "greatGuideWithOnlyUltraPlanOffersGreatCreationInsteadOfWrongAction",
+                "selectingUltraShowsSavedUltraPlanAndHidesCreateButton",
+                "higherPriorityGreatPlanCannotHijackUltraSavedAction",
+                "pvp-compare-league-"
+            ]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count

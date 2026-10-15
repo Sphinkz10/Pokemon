@@ -77,6 +77,12 @@ class CollectionPlanJourneyAndroidTest {
         rule.onNodeWithTag("collection-guide-plan").performClick()
     }
 
+    private fun chooseLeague(league: League) {
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("pvp-compare-league-${league.name.lowercase()}"))
+        rule.onNodeWithTag("pvp-compare-league-${league.name.lowercase()}").performClick()
+    }
+
     private fun openCandidate() {
         rule.onNodeWithTag("collection-overview-scroll")
             .performScrollToNode(hasTestTag("collection-plan-start-plan-owned"))
@@ -263,6 +269,7 @@ class CollectionPlanJourneyAndroidTest {
             }
         }
         openStep()
+        chooseLeague(League.ULTRA)
         scrollToNextAction()
         rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
         rule.runOnIdle {
@@ -283,6 +290,7 @@ class CollectionPlanJourneyAndroidTest {
         }
         rule.onNodeWithTag("app-tab-collection").performClick()
         openStep()
+        chooseLeague(League.ULTRA)
         scrollToNextAction()
         rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
         rule.waitUntil(15000) {
@@ -316,6 +324,7 @@ class CollectionPlanJourneyAndroidTest {
         }
         rule.onNodeWithTag("app-tab-collection").performClick()
         openStep()
+        chooseLeague(League.MASTER)
         scrollToNextAction()
         rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
         rule.waitUntil(15000) {
@@ -330,6 +339,61 @@ class CollectionPlanJourneyAndroidTest {
         rule.runOnIdle {
             assertEquals(null, runBlocking { repository.currentCollection() }.single().cp)
             assertEquals(20.0, runBlocking { repository.currentCollection() }.single().level!!, 0.0)
+        }
+    }
+
+    @Test fun greatGuideWithOnlyUltraPlanOffersGreatCreationInsteadOfWrongAction() {
+        standalone(plans = listOf(savedPlan().copy(league = League.ULTRA)))
+        openStep()
+        rule.onNodeWithTag("collection-guide-count")
+            .assertTextContains("0 exemplares", substring = true)
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-start-plan-owned"))
+        rule.onNodeWithTag("collection-plan-start-plan-owned").assertExists()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").assertDoesNotExist()
+        openCandidate()
+        rule.runOnIdle { assertEquals("plan-owned" to League.GREAT, launched) }
+    }
+
+    @Test fun selectingUltraShowsSavedUltraPlanAndHidesCreateButton() {
+        standalone(plans = listOf(savedPlan().copy(league = League.ULTRA)))
+        openStep()
+        chooseLeague(League.ULTRA)
+        rule.onNodeWithTag("collection-guide-count")
+            .assertTextContains("1 exemplar", substring = true)
+        rule.onNodeWithTag("collection-plan-start-plan-owned").assertDoesNotExist()
+        scrollToNextAction()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").assertExists()
+    }
+
+    @Test fun higherPriorityGreatPlanCannotHijackUltraSavedAction() {
+        var action: Triple<String, League, SavedPlanNextStep>? = null
+        rule.setContent {
+            MaterialTheme {
+                CollectionOverviewScreen(
+                    catalog = listOf(species), collection = listOf(saved.copy(cp = null)),
+                    buildPlans = listOf(
+                        savedPlan().copy(priority = 100),
+                        savedPlan().copy(id = "plan:plan-owned:ULTRA", league = League.ULTRA, priority = 1)
+                    ),
+                    pendingCount = 0, onAdd = {}, onInbox = {},
+                    onSelectOwned = {}, onOpenIvTargets = {},
+                    onOpenSavedPlanAction = { id, league, step ->
+                        action = Triple(id, league, step)
+                    },
+                    resourceStoreOverride = resourceStore
+                )
+            }
+        }
+        openStep()
+        chooseLeague(League.ULTRA)
+        scrollToNextAction()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
+        rule.runOnIdle {
+            assertEquals(
+                Triple("plan-owned", League.ULTRA, SavedPlanNextStep.VERIFY_SPECIMEN),
+                action
+            )
         }
     }
 

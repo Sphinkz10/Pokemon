@@ -111,11 +111,19 @@ internal fun CollectionOverviewScreen(
     val planByOwned = remember(buildPlans) {
         buildPlans.groupBy { it.ownedPokemonId }.mapValues { (_, plans) -> plans.maxByOrNull { it.priority } }
     }
+    // The chosen guide league is authoritative. Plans from other leagues
+    // are neither presented as actions nor counted as 'already planned'.
+    val selectedLeaguePlans = remember(buildPlans, pvpCompareLeague) {
+        CollectionPlanLeaguePolicy.preferredByOwned(buildPlans, pvpCompareLeague)
+    }
+    val visiblePlanByOwned = if (guidedStep == CollectionGuideStep.PLAN) {
+        selectedLeaguePlans
+    } else planByOwned
     // Keep saved plans distinct from available Pokémon: no false 'plan created'
     // state. The user must explicitly open the 360 and press Save.
-    val unplannedCandidates = remember(collection, planByOwned, speciesById) {
+    val unplannedCandidates = remember(collection, selectedLeaguePlans, speciesById) {
         collection.filter { owned ->
-            !planByOwned.containsKey(owned.id) && speciesById.containsKey(owned.speciesId)
+            !selectedLeaguePlans.containsKey(owned.id) && speciesById.containsKey(owned.speciesId)
         }.sortedWith(compareBy<OwnedPokemon> { speciesById[it.speciesId]?.name ?: it.speciesId }
             .thenBy { it.id })
     }
@@ -124,7 +132,7 @@ internal fun CollectionOverviewScreen(
     }
 
     val normalizedQuery = query.trim().lowercase(Locale.ROOT)
-    val collectionItems = remember(collection, normalizedQuery, filter, guidedStep, pvpCompareLeague, pvpCompareStage, speciesById, pvpBoxByOwned, planByOwned) {
+    val collectionItems = remember(collection, normalizedQuery, filter, guidedStep, pvpCompareLeague, pvpCompareStage, speciesById, pvpBoxByOwned, visiblePlanByOwned) {
         collection.filter { owned ->
             val species = speciesById[owned.speciesId]
             val matchesQuery = normalizedQuery.isBlank() ||
@@ -138,18 +146,18 @@ internal fun CollectionOverviewScreen(
                 CollectionQuickFilter.PVP -> box?.categories?.isNotEmpty() == true
                 CollectionQuickFilter.HUNDO -> owned.iv.attack == 15 && owned.iv.defense == 15 && owned.iv.stamina == 15
                 CollectionQuickFilter.SHINY -> owned.isShiny
-                CollectionQuickFilter.TARGETS -> planByOwned.containsKey(owned.id)
+                CollectionQuickFilter.TARGETS -> visiblePlanByOwned.containsKey(owned.id)
             }
             val matchesCompareStage = guidedStep != CollectionGuideStep.COMPARE ||
                 PvpGuidePolicy.matches(owned, species, pvpCompareLeague, pvpCompareStage)
             matchesQuery && matchesFilter && matchesCompareStage && CollectionGuidePolicy.matches(
                 guidedStep, owned,
                 speciesExistsInCatalog = species != null,
-                hasSavedPlan = planByOwned.containsKey(owned.id)
+                hasSavedPlan = visiblePlanByOwned.containsKey(owned.id)
             )
         }.let { base ->
             if (sortByPriority) {
-                base.sortedWith(compareByDescending<OwnedPokemon> { planByOwned[it.id]?.priority ?: 0 }
+                base.sortedWith(compareByDescending<OwnedPokemon> { visiblePlanByOwned[it.id]?.priority ?: 0 }
                     .thenBy { speciesById[it.speciesId]?.dex ?: Int.MAX_VALUE })
             } else {
                 base.sortedWith(compareBy<OwnedPokemon> { speciesById[it.speciesId]?.name ?: it.speciesId }
@@ -305,8 +313,8 @@ internal fun CollectionOverviewScreen(
                         style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     Text(
                         if (unplannedCandidates.isEmpty())
-                            "Todos os exemplares disponíveis já têm um plano, ou falta a espécie no catálogo."
-                        else "${unplannedCandidates.size} por planear · escolhe um exemplar para definir o objetivo da liga.",
+                            "Todos os exemplares disponíveis já têm plano nesta liga, ou falta a espécie no catálogo."
+                        else "${unplannedCandidates.size} por planear nesta liga · escolhe um exemplar para definir o objetivo.",
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -352,12 +360,12 @@ internal fun CollectionOverviewScreen(
                             CollectionOwnedRow(
                                 owned = owned,
                                 species = speciesById[owned.speciesId],
-                                plan = planByOwned[owned.id],
+                                plan = visiblePlanByOwned[owned.id],
                                 categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
                                 onClick = { onSelectOwned(owned.id) }
                             )
                             if (guidedStep == CollectionGuideStep.PLAN) {
-                                val savedPlan = planByOwned[owned.id]
+                                val savedPlan = selectedLeaguePlans[owned.id]
                                 if (savedPlan != null) {
                                     val species = speciesById[owned.speciesId]
                                     val familyId = species?.familyId?.takeIf(String::isNotBlank)
