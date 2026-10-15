@@ -63,7 +63,7 @@ adb shell am force-stop "$PACKAGE"
 adb shell am start -W -n "$PACKAGE/.MainActivity" | tee "$REPORT/relaunch-before-upgrade.txt"
 run_stage after_force_stop
 adb shell am force-stop "$PACKAGE"
-# "-r" expressly PRESERVES userdata: never call pm clear or uninstall.
+# "-r" expressly PRESERVES userdata and the installed package sandbox.
 adb install -r "$APK_CANDIDATE" | tee "$REPORT/install-replace.txt"
 assert_version 59
 adb shell am start -W -n "$PACKAGE/.MainActivity" | tee "$REPORT/relaunch-after-upgrade.txt"
