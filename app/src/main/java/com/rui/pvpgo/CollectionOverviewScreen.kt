@@ -485,7 +485,7 @@ private fun CollectionJourneyGuide(
             style = MaterialTheme.typography.bodySmall
         )
         Text(
-            "$visibleCount exemplares nesta seleção",
+            "$visibleCount ${if (visibleCount == 1) "exemplar" else "exemplares"} nesta seleção",
             modifier = Modifier.testTag("collection-guide-count"),
             color = CollectionBlue,
             style = MaterialTheme.typography.labelMedium
