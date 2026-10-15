@@ -14,8 +14,8 @@ android {
         applicationId = "com.rui.pvpgo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 58
-        versionName = "1.58.0-dev"
+        versionCode = 59
+        versionName = "1.59.0-dev"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
