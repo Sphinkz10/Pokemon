@@ -77,7 +77,8 @@ fun CollectionOverviewScreen(
     onSelectOwned: (String) -> Unit,
     onOpenIvTargets: (String) -> Unit,
     onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null,
-    onStartPlan: ((String, League) -> Unit)? = null
+    onStartPlan: ((String, League) -> Unit)? = null,
+    resourceStoreOverride: UserResourceStore? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
@@ -91,6 +92,9 @@ fun CollectionOverviewScreen(
     val collectionScroll = rememberLazyListState()
     val nationalScroll = rememberLazyListState()
     val context = LocalContext.current.applicationContext
+    val resourceStore = remember(context, resourceStoreOverride) {
+        resourceStoreOverride ?: UserResourceStore.get(context)
+    }
     var national by remember { mutableStateOf<NationalDexLoad?>(null) }
     // Lazy-load the national catalog only when Pokédex is opened. Battle data stays in PvPoke.
     LaunchedEffect(tab, catalog) {
@@ -351,6 +355,38 @@ fun CollectionOverviewScreen(
                                 categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
                                 onClick = { onSelectOwned(owned.id) }
                             )
+                            if (guidedStep == CollectionGuideStep.PLAN) {
+                                val savedPlan = planByOwned[owned.id]
+                                if (savedPlan != null) {
+                                    val species = speciesById[owned.speciesId]
+                                    val familyId = species?.familyId?.takeIf(String::isNotBlank)
+                                        ?: species?.speciesId
+                                    val resources = familyId?.let(resourceStore::load)
+                                        ?: UserResourceBalances()
+                                    val nextAction = SavedPlanNextActionPolicy.next(
+                                        owned, species, savedPlan, resources
+                                    )
+                                    Column(
+                                        Modifier.fillMaxWidth().testTag("collection-plan-next-${owned.id}"),
+                                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                                    ) {
+                                        Text("Ação seguinte · ${nextAction.title}",
+                                            color = CollectionBlue,
+                                            fontWeight = FontWeight.SemiBold,
+                                            style = MaterialTheme.typography.labelMedium)
+                                        Text(nextAction.explanation,
+                                            color = PvpColors.TextSecondary,
+                                            style = MaterialTheme.typography.bodySmall)
+                                        TextButton(
+                                            onClick = { onSelectOwned(owned.id) },
+                                            modifier = Modifier.heightIn(min = 44.dp)
+                                                .testTag("collection-plan-open-next-${owned.id}")
+                                        ) {
+                                            Text("Resolver no Pokémon 360 →")
+                                        }
+                                    }
+                                }
+                            }
                             if (guidedStep == CollectionGuideStep.COMPARE &&
                                 pvpCompareStage != PvpGuideStage.ALL
                             ) {
