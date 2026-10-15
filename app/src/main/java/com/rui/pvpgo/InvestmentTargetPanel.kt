@@ -39,10 +39,14 @@ internal fun InvestmentTargetPanel(
     owned: OwnedPokemon,
     species: PokemonSpecies?,
     league: League,
-    hasPendingBuildChanges: Boolean
+    hasPendingBuildChanges: Boolean,
+    resourceStoreOverride: UserResourceStore? = null
 ) {
     val context = LocalContext.current
-    val resourceStore = remember(context) { UserResourceStore.get(context) }
+    // Injectable store keeps Compose UI tests isolated from real user balances.
+    val resourceStore = remember(context, resourceStoreOverride) {
+        resourceStoreOverride ?: UserResourceStore.get(context)
+    }
     // Costing stays blocked if catalog identity/family cannot be determined.
     val familyId = species?.takeIf { it.speciesId == owned.speciesId }
         ?.let { it.familyId?.takeIf(String::isNotBlank) ?: it.speciesId }
