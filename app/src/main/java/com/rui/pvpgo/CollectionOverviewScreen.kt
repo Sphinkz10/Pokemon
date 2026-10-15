@@ -76,7 +76,8 @@ fun CollectionOverviewScreen(
     onInbox: () -> Unit,
     onSelectOwned: (String) -> Unit,
     onOpenIvTargets: (String) -> Unit,
-    onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null
+    onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null,
+    onStartPlan: ((String, League) -> Unit)? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
@@ -104,6 +105,14 @@ fun CollectionOverviewScreen(
     val ownedBySpecies = remember(collection) { collection.groupBy { it.speciesId } }
     val planByOwned = remember(buildPlans) {
         buildPlans.groupBy { it.ownedPokemonId }.mapValues { (_, plans) -> plans.maxByOrNull { it.priority } }
+    }
+    // Keep saved plans distinct from available Pokémon: no false 'plan created'
+    // state. The user must explicitly open the 360 and press Save.
+    val unplannedCandidates = remember(collection, planByOwned, speciesById) {
+        collection.filter { owned ->
+            !planByOwned.containsKey(owned.id) && speciesById.containsKey(owned.speciesId)
+        }.sortedWith(compareBy<OwnedPokemon> { speciesById[it.speciesId]?.name ?: it.speciesId }
+            .thenBy { it.id })
     }
     val pvpBoxByOwned = remember(collection, buildPlans) {
         PvpBoxClassifier.build(collection, buildPlans, System.currentTimeMillis()).associateBy { it.ownedPokemonId }
@@ -278,6 +287,39 @@ fun CollectionOverviewScreen(
                     reason = attentionReason,
                     onClick = { onSelectOwned(attention.id) }
                 )
+            }
+        }
+
+        // Show an actionable list even if no plan has ever been created.
+        // Saved plans continue to use the separate real-data filter below.
+        if (tab == CollectionViewTab.COLLECTION && guidedStep == CollectionGuideStep.PLAN) {
+            item {
+                Column(Modifier.fillMaxWidth().testTag("collection-plan-entry"),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("COMEÇAR UM PLANO PvP", color = CollectionBlue,
+                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (unplannedCandidates.isEmpty())
+                            "Todos os exemplares disponíveis já têm um plano, ou falta a espécie no catálogo."
+                        else "${unplannedCandidates.size} por planear · escolhe um exemplar para definir o objetivo da liga.",
+                        color = PvpColors.TextSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text("Abrir o editor não gasta Stardust, Candy ou TMs. O plano só é criado depois de o guardares no Pokémon 360.",
+                        color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            items(unplannedCandidates, key = { "plan:${it.id}" }) { owned ->
+                TextButton(
+                    onClick = {
+                        if (onStartPlan != null) onStartPlan(owned.id, pvpCompareLeague)
+                        else onSelectOwned(owned.id)
+                    },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("collection-plan-start-${owned.id}")
+                ) {
+                    Text("Criar plano · ${owned.nickname?.takeIf(String::isNotBlank) ?: speciesById[owned.speciesId]?.name ?: owned.speciesId} · ${SpeciesLeaguePolicy.title(pvpCompareLeague)} →")
+                }
             }
         }
 
@@ -529,8 +571,8 @@ private fun CollectionJourneyGuide(
             color = PvpColors.TextSecondary,
             style = MaterialTheme.typography.bodySmall
         )
-        if (selected == CollectionGuideStep.COMPARE) {
-            Text("Liga", color = CollectionBlue,
+        if (selected == CollectionGuideStep.COMPARE || selected == CollectionGuideStep.PLAN) {
+            Text(if (selected == CollectionGuideStep.PLAN) "Liga do plano" else "Liga", color = CollectionBlue,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold)
             Row(
@@ -547,6 +589,8 @@ private fun CollectionJourneyGuide(
                     )
                 }
             }
+        }
+        if (selected == CollectionGuideStep.COMPARE) {
             Text("Verificação e perfil IV (opcional)", color = CollectionBlue,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold)
