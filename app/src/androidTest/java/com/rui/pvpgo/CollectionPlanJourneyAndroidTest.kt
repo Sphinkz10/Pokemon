@@ -50,15 +50,26 @@ class CollectionPlanJourneyAndroidTest {
     private lateinit var db: PvpUserDatabase
     private lateinit var repository: CollectionRepository
     private var launched: Pair<String, League>? = null
+    private var openedOwned: String? = null
+    private lateinit var resourceStore: UserResourceStore
 
     @Before fun setup() {
         launched = null
+        openedOwned = null
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val isolatedPreferences = context.getSharedPreferences("pr34-plan-next-ui", Context.MODE_PRIVATE)
+        isolatedPreferences.edit().clear().commit()
+        resourceStore = UserResourceStore(isolatedPreferences)
         db = Room.inMemoryDatabaseBuilder(context, PvpUserDatabase::class.java).build()
         repository = CollectionRepository.forTesting(db)
         runBlocking { repository.upsertOwned(saved) }
     }
-    @After fun teardown() { db.close() }
+    @After fun teardown() {
+        db.close()
+        ApplicationProvider.getApplicationContext<Context>()
+            .getSharedPreferences("pr34-plan-next-ui", Context.MODE_PRIVATE)
+            .edit().clear().commit()
+    }
 
     private fun openStep() {
         rule.onNodeWithTag("collection-overview-scroll")
@@ -72,15 +83,19 @@ class CollectionPlanJourneyAndroidTest {
         rule.onNodeWithTag("collection-plan-start-plan-owned").performClick()
     }
 
-    private fun standalone(plans: List<PvpBuildPlan> = emptyList()) {
+    private fun standalone(
+        plans: List<PvpBuildPlan> = emptyList(),
+        record: OwnedPokemon = saved
+    ) {
         rule.setContent {
             MaterialTheme {
                 CollectionOverviewScreen(
-                    catalog = listOf(species), collection = listOf(saved),
+                    catalog = listOf(species), collection = listOf(record),
                     buildPlans = plans, pendingCount = 0,
-                    onAdd = {}, onInbox = {}, onSelectOwned = {},
+                    onAdd = {}, onInbox = {}, onSelectOwned = { openedOwned = it },
                     onOpenIvTargets = {},
-                    onStartPlan = { id, league -> launched = id to league }
+                    onStartPlan = { id, league -> launched = id to league },
+                    resourceStoreOverride = resourceStore
                 )
             }
         }
@@ -165,4 +180,70 @@ class CollectionPlanJourneyAndroidTest {
             .assertTextContains("1 exemplar", substring = true)
         rule.onNodeWithTag("collection-plan-start-plan-owned").assertDoesNotExist()
     }
+    private fun savedPlan() = PvpBuildPlan(
+        id = "plan:plan-owned:GREAT", ownedPokemonId = saved.id,
+        league = League.GREAT, priority = 50, createdAtEpochMs = 100L
+    )
+
+    private fun scrollToNextAction() {
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-next-plan-owned"))
+        rule.onNodeWithTag("collection-plan-next-plan-owned").assertExists()
+    }
+
+    @Test fun savedPlanShowsNextCpVerificationWithoutInventingData() {
+        standalone(plans = listOf(savedPlan()), record = saved.copy(cp = null))
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithText("Ação seguinte · Confirmar CP, nível e dados reais")
+            .assertExists()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned")
+            .performClick()
+        rule.runOnIdle {
+            assertEquals(saved.id, openedOwned)
+            assertEquals(saved.cp, PokemonMath.cp(species, iv, 20.0))
+        }
+    }
+
+    @Test fun savedConsistentSpecimenWithMissingAttacksAsksToConfirmMoves() {
+        standalone(plans = listOf(savedPlan()))
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithText("Ação seguinte · Confirmar ataques reais").assertExists()
+        rule.onNodeWithTag("collection-plan-start-plan-owned").assertDoesNotExist()
+        rule.runOnIdle { assertTrue(saved.fastMoveId == null) }
+    }
+
+    @Test fun recordedMovesAndUnknownCandyDemandUserEnteredResources() {
+        standalone(
+            plans = listOf(savedPlan()),
+            record = saved.copy(fastMoveId = "fast", chargedMoveIds = listOf("charged"))
+        )
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithText("Ação seguinte · Registar recursos em falta").assertExists()
+        rule.onNodeWithText("Resolver no Pokémon 360 →").assertExists()
+    }
+
+    @Test fun threeKnownBalancesOnlyUnlockTargetReviewNotSpending() {
+        resourceStore.save(
+            "plan-family",
+            UserResourceBalances(stardust = 0, candy = 0, xlCandy = 0)
+        )
+        standalone(
+            plans = listOf(savedPlan()),
+            record = saved.copy(fastMoveId = "fast", chargedMoveIds = listOf("charged"))
+        )
+        openStep()
+        scrollToNextAction()
+        rule.onNodeWithText("Ação seguinte · Definir nível alvo e validar custos")
+            .assertExists()
+        rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
+        rule.runOnIdle {
+            assertEquals(saved.id, openedOwned)
+            assertEquals(0, resourceStore.load("plan-family").candy)
+            assertEquals(0, resourceStore.load("plan-family").xlCandy)
+        }
+    }
+
 }

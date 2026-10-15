@@ -21,7 +21,7 @@ required={
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
-    "CollectionPlanJourneyAndroidTest":4,
+    "CollectionPlanJourneyAndroidTest":8,
 }
 
 def source_contract():
@@ -203,6 +203,26 @@ def source_contract():
                 "focusedPlanOwnedId = ownedId", "route = CollectionRoute.DETAIL",
                 "editorListState.scrollToItem(", 'testTag("pokemon-360-save-plan")'
             ]
+        ),
+        "saved plan next action visible on actual collection UI": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in [
+                "SavedPlanNextActionPolicy.next(", 'testTag("collection-plan-next-',
+                'testTag("collection-plan-open-next-', "resourceStoreOverride ?: UserResourceStore.get(context)"
+            ]
+        ),
+        "no fabricated meta or affordability approval": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/SavedPlanNextActionPolicy.kt").read_text()
+            for token in [
+                "balances.stardust == null", "balances.candy == null", "balances.xlCandy == null",
+                "InvestmentReadinessPolicy.inspect(", "CAVEAT",
+                "não prova que sejam atuais nem suficientes"
+            ]
+        ),
+        "10 pure policy tests explicitly cover unknown vs zero": all(
+            token in (root/"app/src/test/java/com/rui/pvpgo/SavedPlanNextActionPolicyTest.kt").read_text()
+            for token in ["unknownRelevantResourcesAreListedWithoutInventingZero",
+                          "zeroResourcesDoNotMeanAffordabilityOrPermissionToSpend"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
