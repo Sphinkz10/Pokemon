@@ -80,7 +80,7 @@ fun IvTargetsScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("iv-targets-scroll"),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
