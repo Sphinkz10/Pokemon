@@ -60,12 +60,12 @@ assert_version 58
 adb install "$APK_TEST"
 run_stage seed_baseline
 adb shell am force-stop "$PACKAGE"
-adb shell am start -W -n "$PACKAGE/.MainActivity" | tee "$REPORT/relaunch-before-upgrade.txt"
+adb shell am start -W -n "$PACKAGE/com.rui.pvpgo.MainActivity" | tee "$REPORT/relaunch-before-upgrade.txt"
 run_stage after_force_stop
 adb shell am force-stop "$PACKAGE"
 # "-r" expressly PRESERVES userdata and the installed package sandbox.
 adb install -r "$APK_CANDIDATE" | tee "$REPORT/install-replace.txt"
 assert_version 59
-adb shell am start -W -n "$PACKAGE/.MainActivity" | tee "$REPORT/relaunch-after-upgrade.txt"
+adb shell am start -W -n "$PACKAGE/com.rui.pvpgo.MainActivity" | tee "$REPORT/relaunch-after-upgrade.txt"
 run_stage after_upgrade
 echo "UPGRADE_GATE_PASS baseline=58 candidate=59 seed=1 process_relaunch=1 upgrade=1"
