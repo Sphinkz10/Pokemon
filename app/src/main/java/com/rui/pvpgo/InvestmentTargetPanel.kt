@@ -214,8 +214,8 @@ internal fun InvestmentTargetPanel(
                 )
                 Text(
                     "Custo acumulado estimado: ${calculated.costs.stardust} Stardust · " +
-                        "${calculated.costs.candyByFamily[familyId] ?: 0} Candy · " +
-                        "${calculated.costs.xlCandyByFamily[familyId] ?: 0} XL Candy.",
+                        "${familyId?.let { calculated.costs.candyByFamily[it] } ?: 0} Candy · " +
+                        "${familyId?.let { calculated.costs.xlCandyByFamily[it] } ?: 0} XL Candy.",
                     style = MaterialTheme.typography.bodySmall
                 )
                 if (affordable.nextStepShortages.isNotEmpty()) {
