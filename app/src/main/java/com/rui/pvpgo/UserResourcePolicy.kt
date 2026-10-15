@@ -23,7 +23,41 @@ internal data class UserResourceBalances(
     ).count { it != null }
 }
 
+internal enum class ResourceBalanceField(val label: String) {
+    STARDUST("Stardust"), CANDY("Candy desta família"), XL_CANDY("XL Candy desta família"),
+    FAST_TM("Fast TM"), CHARGED_TM("Charged TM"),
+    ELITE_FAST_TM("Elite Fast TM"), ELITE_CHARGED_TM("Elite Charged TM")
+}
+
 internal object UserResourcePolicy {
+    fun inputsFrom(balances: UserResourceBalances): Map<ResourceBalanceField, String> =
+        mapOf(
+            ResourceBalanceField.STARDUST to balances.stardust,
+            ResourceBalanceField.CANDY to balances.candy,
+            ResourceBalanceField.XL_CANDY to balances.xlCandy,
+            ResourceBalanceField.FAST_TM to balances.fastTm,
+            ResourceBalanceField.CHARGED_TM to balances.chargedTm,
+            ResourceBalanceField.ELITE_FAST_TM to balances.eliteFastTm,
+            ResourceBalanceField.ELITE_CHARGED_TM to balances.eliteChargedTm
+        ).mapValues { (_, amount) -> amount?.toString().orEmpty() }
+
+    /** Returns null for invalid data; blank fields remain explicitly unknown. */
+    fun balancesFrom(inputs: Map<ResourceBalanceField, String>): UserResourceBalances? {
+        val fields = ResourceBalanceField.entries
+        if (fields.any { !isValidInput(inputs[it].orEmpty()) }) return null
+        fun value(field: ResourceBalanceField): Int? = parse(inputs[field].orEmpty())
+        return UserResourceBalances(
+            stardust = value(ResourceBalanceField.STARDUST),
+            candy = value(ResourceBalanceField.CANDY),
+            xlCandy = value(ResourceBalanceField.XL_CANDY),
+            fastTm = value(ResourceBalanceField.FAST_TM),
+            chargedTm = value(ResourceBalanceField.CHARGED_TM),
+            eliteFastTm = value(ResourceBalanceField.ELITE_FAST_TM),
+            eliteChargedTm = value(ResourceBalanceField.ELITE_CHARGED_TM)
+        )
+    }
+
+
     private const val MAX_BALANCE = 999_999_999
 
     /**
