@@ -86,7 +86,7 @@ internal fun InvestmentTargetPanel(
             if (familyId != null) {
                 UserResourcePanel(
                     familyId = familyId,
-                    familyLabel = species.name,
+                    familyLabel = species?.name ?: familyId,
                     saved = savedResources,
                     store = resourceStore,
                     onSaved = { savedResources = it }
