@@ -42,6 +42,12 @@ class PersistentCollectionReopenAndroidTest {
             .addMigrations(PvpUserDatabase.MIGRATION_1_2)
             .build()
 
+    /** RoomDatabase is AutoCloseable; explicit finally works on all Kotlin/AGP variants. */
+    private suspend fun <T> withDatabase(block: suspend (PvpUserDatabase) -> T): T {
+        val db = open()
+        return try { block(db) } finally { db.close() }
+    }
+
     private fun owned(id: String = "persistent-25") = OwnedPokemonEntity(
         id = id, speciesId = "pikachu", ivAttack = 0, ivDefense = 15,
         ivStamina = 15, cp = 495, level = 20.0, nickname = "Parceiro",
@@ -93,20 +99,20 @@ class PersistentCollectionReopenAndroidTest {
 
     @Test fun wholeOwnedSpecimenSurvivesActualFileCloseAndReopen() = runBlocking {
         val original = owned()
-        open().use { it.collectionDao().upsertOwned(original) }
-        open().use {
+        withDatabase { it.collectionDao().upsertOwned(original) }
+        withDatabase {
             assertEquals(original, it.collectionDao().collection().single())
             assertTrue(context.getDatabasePath(filename).exists())
         }
     }
 
     @Test fun savedBuildEditsAndExplicitUnknownCpArePreservedAcrossReopen() = runBlocking {
-        open().use {
+        withDatabase {
             val dao = it.collectionDao()
             dao.upsertOwned(owned())
             dao.upsertOwned(owned().copy(cp = null, level = null, nickname = "Por verificar", updatedAtEpochMs = 200L))
         }
-        open().use {
+        withDatabase {
             val item = it.collectionDao().collection().single()
             assertNull(item.cp) // UNKNOWN is never silently made zero
             assertNull(item.level)
@@ -116,12 +122,12 @@ class PersistentCollectionReopenAndroidTest {
     }
 
     @Test fun savedTeamAndBuildPlanSurviveSeparateRoomInstance() = runBlocking {
-        open().use {
+        withDatabase {
             it.collectionDao().upsertOwned(owned())
             it.collectionDao().upsertSavedTeam(team())
             it.collectionDao().upsertBuildPlan(plan())
         }
-        open().use {
+        withDatabase {
             val dao = it.collectionDao()
             assertEquals(team(), dao.observeSavedTeams().first().single())
             assertEquals(plan(), dao.observeBuildPlans().first().single())
@@ -130,8 +136,8 @@ class PersistentCollectionReopenAndroidTest {
     }
 
     @Test fun pendingCandidateDoesNotBecomeOwnedAutomaticallyOnReopen() = runBlocking {
-        open().use { it.collectionDao().upsertInbox(candidate()) }
-        open().use {
+        withDatabase { it.collectionDao().upsertInbox(candidate()) }
+        withDatabase {
             val dao = it.collectionDao()
             assertTrue(dao.collection().isEmpty())
             assertEquals("PENDING", dao.observePendingInbox().first().single().status)
@@ -140,11 +146,11 @@ class PersistentCollectionReopenAndroidTest {
     }
 
     @Test fun completedBattleRecordSurvivesReopenWithoutChangingTeam() = runBlocking {
-        open().use {
+        withDatabase {
             it.collectionDao().upsertSavedTeam(team())
             it.collectionDao().upsertBattleRecord(battle())
         }
-        open().use {
+        withDatabase {
             val dao = it.collectionDao()
             assertEquals(battle(), dao.observeBattleRecords().first().single())
             assertEquals(team(), dao.observeSavedTeams().first().single())
@@ -152,20 +158,20 @@ class PersistentCollectionReopenAndroidTest {
     }
 
     @Test fun explicitDeletionPersistsAndOtherOwnedRecordsStaySafe() = runBlocking {
-        open().use {
+        withDatabase {
             val dao = it.collectionDao()
             dao.upsertOwned(owned("delete-me"))
             dao.upsertOwned(owned("keep-me"))
             dao.deleteOwned("delete-me")
         }
-        open().use {
+        withDatabase {
             assertEquals("keep-me", it.collectionDao().collection().single().id)
         }
     }
 
     @Test fun largeCollectionCanBeReopenedWithStableIdsAndNoDataLoss() = runBlocking {
         val count = 240
-        open().use { db ->
+        withDatabase { db ->
             for (n in 1..count) {
                 db.collectionDao().upsertOwned(owned("batch-$n").copy(
                     cp = 500 + n,
@@ -174,7 +180,7 @@ class PersistentCollectionReopenAndroidTest {
                 ))
             }
         }
-        open().use {
+        withDatabase {
             val rows = it.collectionDao().collection()
             assertEquals(count, rows.size)
             assertEquals(count, rows.map { item -> item.id }.toSet().size)
@@ -184,11 +190,11 @@ class PersistentCollectionReopenAndroidTest {
     }
 
     @Test fun reopenDoesNotCreateResourcesOrInventUnverifiedFields() = runBlocking {
-        open().use { it.collectionDao().upsertOwned(owned().copy(
+        withDatabase { it.collectionDao().upsertOwned(owned().copy(
             cp = null, level = null, lastVerifiedAtEpochMs = null,
             verificationSource = "UNVERIFIED", uncertainFields = "CP\u001FLEVEL"
         )) }
-        open().use {
+        withDatabase {
             val result = it.collectionDao().collection().single()
             assertNull(result.cp)
             assertNull(result.level)
