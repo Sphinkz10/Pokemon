@@ -30,6 +30,20 @@ internal object CollectionPlanLeaguePolicy {
                 )!!
             }
 
+    /**
+     * Archived plans remain accessible in the historical review list, but
+     * they do not count as an active plan and must not prevent the user
+     * from starting a new plan for the same specimen and league.
+     */
+    fun hasNonArchivedPlanInLeague(
+        ownedId: String,
+        league: League,
+        plans: List<PvpBuildPlan>
+    ): Boolean = ownedId.isNotBlank() && plans.any {
+        it.ownedPokemonId == ownedId && it.league == league &&
+            it.status != BuildStatus.ARCHIVED
+    }
+
     fun hasSavedPlanInLeague(
         ownedId: String,
         league: League,

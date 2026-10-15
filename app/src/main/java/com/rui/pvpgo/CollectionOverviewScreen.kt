@@ -121,9 +121,11 @@ internal fun CollectionOverviewScreen(
     } else planByOwned
     // Keep saved plans distinct from available Pokémon: no false 'plan created'
     // state. The user must explicitly open the 360 and press Save.
-    val unplannedCandidates = remember(collection, selectedLeaguePlans, speciesById) {
+    val unplannedCandidates = remember(collection, buildPlans, pvpCompareLeague, speciesById) {
         collection.filter { owned ->
-            !selectedLeaguePlans.containsKey(owned.id) && speciesById.containsKey(owned.speciesId)
+            !CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague(
+                owned.id, pvpCompareLeague, buildPlans
+            ) && speciesById.containsKey(owned.speciesId)
         }.sortedWith(compareBy<OwnedPokemon> { speciesById[it.speciesId]?.name ?: it.speciesId }
             .thenBy { it.id })
     }

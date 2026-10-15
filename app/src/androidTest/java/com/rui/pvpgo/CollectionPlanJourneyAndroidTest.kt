@@ -397,4 +397,92 @@ class CollectionPlanJourneyAndroidTest {
         }
     }
 
+    @Test fun archivedOnlyPlanRemainsReviewableButAllowsFreshGreatPlan() {
+        val archived = savedPlan().copy(
+            status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        standalone(plans = listOf(archived))
+        openStep()
+        rule.onNodeWithTag("collection-guide-count")
+            .assertTextContains("1 exemplar", substring = true)
+        // Historical plan stays reviewable while the new plan CTA is not blocked.
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-start-plan-owned"))
+        openCandidate()
+        rule.runOnIdle {
+            assertEquals(saved.id to League.GREAT, launched)
+        }
+    }
+
+    @Test fun archivedUltraOnlyAllowsNewUltraPlanWithoutBorrowingGreatState() {
+        val archived = savedPlan().copy(
+            league = League.ULTRA,
+            status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        standalone(plans = listOf(archived))
+        openStep()
+        chooseLeague(League.ULTRA)
+        openCandidate()
+        rule.runOnIdle {
+            assertEquals(saved.id to League.ULTRA, launched)
+        }
+    }
+
+    @Test fun activePlanStillSuppressesDuplicateCreationWhenOldPlanArchived() {
+        val old = savedPlan().copy(
+            id = "archived-history", status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+        )
+        val live = savedPlan().copy(id = "live-plan")
+        standalone(plans = listOf(old, live))
+        openStep()
+        rule.onNodeWithTag("collection-plan-start-plan-owned").assertDoesNotExist()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-plan-next-plan-owned"))
+        rule.onNodeWithTag("collection-plan-next-plan-owned").assertExists()
+    }
+
+    @Test fun creatingFreshPlanInActual360KeepsArchivedRecordAndItsIdentity() {
+        val archived = savedPlan().copy(
+            id = "plan:${saved.id}:great",
+            status = com.rui.pvpgo.domain.BuildStatus.ARCHIVED,
+            notes = "Histórico imutável"
+        )
+        runBlocking { repository.upsertBuildPlan(archived) }
+        rule.setContent {
+            PvPGoApp(
+                catalogOverride = listOf(species),
+                collectionRepositoryOverride = repository
+            )
+        }
+        rule.onNodeWithTag("app-tab-collection").performClick()
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("collection-guide-plan"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        openStep()
+        openCandidate()
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("pokemon-360-back"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithTag("pokemon-360-scroll")
+            .performScrollToNode(hasTestTag("pokemon-360-save-plan"))
+        rule.onNodeWithTag("pokemon-360-save-plan")
+            .assertTextContains("Criar plano", substring = true)
+            .performClick()
+        rule.waitUntil(15000) {
+            runBlocking { repository.buildPlans.first() }.size == 2
+        }
+        rule.runOnIdle {
+            val rows = runBlocking { repository.buildPlans.first() }
+            assertEquals(2, rows.map { it.id }.toSet().size)
+            assertEquals(archived, rows.single { it.id == archived.id })
+            assertEquals(1, rows.count {
+                it.ownedPokemonId == saved.id &&
+                    it.league == League.GREAT &&
+                    it.status != com.rui.pvpgo.domain.BuildStatus.ARCHIVED
+            })
+        }
+    }
+
 }

@@ -1196,14 +1196,22 @@ private fun OwnedPokemonDetailScreen(
         }
         rankComputed = true
     }
-    var planStatus by remember(owned.id, league, plans) {
-        mutableStateOf(plans.firstOrNull { it.league == league }?.status ?: BuildStatus.IDEA)
+    // Archived plans are historical and never edited implicitly.
+    // Prefer the existing non-archived plan for this exact specimen/league.
+    val activePlan = remember(owned.id, league, plans) {
+        plans.filter { it.ownedPokemonId == owned.id && it.league == league &&
+            it.status != BuildStatus.ARCHIVED }
+            .maxWithOrNull(compareBy<PvpBuildPlan> { it.priority }
+                .thenBy { it.updatedAtEpochMs }.thenBy { it.id })
+    }
+    var planStatus by remember(owned.id, league, activePlan) {
+        mutableStateOf(activePlan?.status ?: BuildStatus.IDEA)
     }
     var priority by remember(owned.id, league, plans) {
-        mutableIntStateOf(plans.firstOrNull { it.league == league }?.priority ?: 50)
+        mutableIntStateOf(activePlan?.priority ?: 50)
     }
     var notes by remember(owned.id, league, plans) {
-        mutableStateOf(plans.firstOrNull { it.league == league }?.notes.orEmpty())
+        mutableStateOf(activePlan?.notes.orEmpty())
     }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -1211,7 +1219,7 @@ private fun OwnedPokemonDetailScreen(
     val hasUnsavedBuild = cpText != owned.cp?.toString().orEmpty() ||
         levelText.replace(',', '.') != owned.level?.let(::formatCompactLevel).orEmpty() ||
         fastMoveId != owned.fastMoveId || chargedMoveIds != owned.chargedMoveIds
-    val currentPlan = plans.firstOrNull { it.league == league }
+    val currentPlan = activePlan
     val hasUnsavedPlan = planStatus != (currentPlan?.status ?: BuildStatus.IDEA) ||
         priority != (currentPlan?.priority ?: 50) ||
         notes.trim() != currentPlan?.notes.orEmpty().trim()
@@ -1225,7 +1233,7 @@ private fun OwnedPokemonDetailScreen(
     }
 
     LaunchedEffect(league, plans) {
-        val plan = plans.firstOrNull { it.league == league }
+        val plan = activePlan
         planStatus = plan?.status ?: BuildStatus.IDEA
         priority = plan?.priority ?: 50
         notes = plan?.notes.orEmpty()
@@ -1569,7 +1577,7 @@ private fun OwnedPokemonDetailScreen(
                 )
             }
             item {
-                val existing = plans.firstOrNull { it.league == league }
+                val existing = activePlan
                 OutlinedButton(
                     onClick = {
                         scope.launch {
@@ -1579,7 +1587,13 @@ private fun OwnedPokemonDetailScreen(
                                 val now = System.currentTimeMillis()
                                 repository.upsertBuildPlan(
                                     (existing ?: PvpBuildPlan(
-                                        id = "plan:${owned.id}:${league.name.lowercase()}",
+                                        id = "plan:${owned.id}:${league.name.lowercase()}".let { baseId ->
+                                            // Existing canonical ID may belong to an archived plan:
+                                            // never upsert over its history when creating a fresh plan.
+                                            if (plans.any { it.id == baseId })
+                                                "${baseId}:${java.util.UUID.randomUUID()}"
+                                            else baseId
+                                        },
                                         ownedPokemonId = owned.id,
                                         league = league,
                                         createdAtEpochMs = now
