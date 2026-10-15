@@ -11,15 +11,37 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+
+/**
+ * Only unsaved editor draft text is restored after recreation/rotation.
+ * Maps with enum keys are not automatically saveable in Android Bundles:
+ * serialize into a fixed-order String list and reconstruct the enum keys.
+ * Saving to SharedPreferences remains an explicit separate user action.
+ */
+private val resourceDraftSaver: Saver<MutableState<Map<ResourceBalanceField, String>>, List<String>> =
+    Saver(
+        save = { state ->
+            ResourceBalanceField.entries.map { field -> state.value[field].orEmpty() }
+        },
+        restore = { values ->
+            mutableStateOf(
+                ResourceBalanceField.entries.mapIndexed { index, field ->
+                    field to values.getOrElse(index) { "" }
+                }.toMap()
+            )
+        }
+    )
 
 /**
  * Player-controlled private ledger. Blank means unknown, "0" means a
@@ -34,7 +56,7 @@ internal fun UserResourcePanel(
     onSaved: (UserResourceBalances) -> Unit
 ) {
     var expanded by rememberSaveable(familyId) { mutableStateOf(false) }
-    var inputs by remember(familyId, saved) {
+    var inputs by rememberSaveable(familyId, saved, saver = resourceDraftSaver) {
         mutableStateOf(UserResourcePolicy.inputsFrom(saved))
     }
     var feedback by remember(familyId) { mutableStateOf<String?>(null) }
