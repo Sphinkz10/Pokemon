@@ -256,8 +256,8 @@ private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon,
                     Text("OBJETIVO · encontrar um bom IV PvP", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                 } else {
                     val (owned, rank) = bestOwned
-                    Text("Melhor teu: ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · Rank #${rank.rank}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                    Text("${rank.cp} CP · L${compactLevel(rank.level)} · ${oneDecimal(rank.percentOfRank1)}% do #1", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    Text("Melhor IV potencial teu: ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · Rank #${rank.rank}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Text("CP alvo ${rank.cp} · L${compactLevel(rank.level)} · ${oneDecimal(rank.percentOfRank1)}% do #1", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
