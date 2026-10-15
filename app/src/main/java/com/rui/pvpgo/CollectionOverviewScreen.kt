@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +80,7 @@ fun CollectionOverviewScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
     var filter by rememberSaveable { mutableStateOf(CollectionQuickFilter.ALL) }
+    var guidedStep by rememberSaveable { mutableStateOf(CollectionGuideStep.ALL) }
     var sortByPriority by rememberSaveable { mutableStateOf(true) }
     var generation by rememberSaveable { mutableStateOf("Todas") }
     var selectedDex by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -105,7 +107,7 @@ fun CollectionOverviewScreen(
     }
 
     val normalizedQuery = query.trim().lowercase(Locale.ROOT)
-    val collectionItems = remember(collection, normalizedQuery, filter, speciesById, pvpBoxByOwned) {
+    val collectionItems = remember(collection, normalizedQuery, filter, guidedStep, speciesById, pvpBoxByOwned, planByOwned) {
         collection.filter { owned ->
             val species = speciesById[owned.speciesId]
             val matchesQuery = normalizedQuery.isBlank() ||
@@ -121,7 +123,11 @@ fun CollectionOverviewScreen(
                 CollectionQuickFilter.SHINY -> owned.isShiny
                 CollectionQuickFilter.TARGETS -> planByOwned.containsKey(owned.id)
             }
-            matchesQuery && matchesFilter
+            matchesQuery && matchesFilter && CollectionGuidePolicy.matches(
+                guidedStep, owned,
+                speciesExistsInCatalog = species != null,
+                hasSavedPlan = planByOwned.containsKey(owned.id)
+            )
         }.let { base ->
             if (sortByPriority) {
                 base.sortedWith(compareByDescending<OwnedPokemon> { planByOwned[it.id]?.priority ?: 0 }
@@ -174,7 +180,7 @@ fun CollectionOverviewScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("collection-overview-scroll"),
         state = if (tab == CollectionViewTab.POKEDEX) nationalScroll else collectionScroll,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -205,6 +211,13 @@ fun CollectionOverviewScreen(
             item { PendingReviewCard(pendingCount, onInbox) }
         }
         if (tab != CollectionViewTab.POKEDEX) {
+            item {
+                CollectionJourneyGuide(
+                    selected = guidedStep,
+                    visibleCount = collectionItems.size,
+                    onSelect = { guidedStep = it; filter = CollectionQuickFilter.ALL }
+                )
+            }
             item { CollectionFilterRow(filter, onSelect = { filter = it }) }
         } else {
             item {
@@ -267,13 +280,28 @@ fun CollectionOverviewScreen(
                     }
                 } else {
                     items(collectionItems, key = { it.id }) { owned ->
-                        CollectionOwnedRow(
-                            owned = owned,
-                            species = speciesById[owned.speciesId],
-                            plan = planByOwned[owned.id],
-                            categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
-                            onClick = { onSelectOwned(owned.id) }
-                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            CollectionOwnedRow(
+                                owned = owned,
+                                species = speciesById[owned.speciesId],
+                                plan = planByOwned[owned.id],
+                                categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
+                                onClick = { onSelectOwned(owned.id) }
+                            )
+                            if (CollectionGuidePolicy.canOpenIvComparison(
+                                    guidedStep, speciesById.containsKey(owned.speciesId)
+                                )
+                            ) {
+                                TextButton(
+                                    onClick = { onOpenIvTargets(owned.speciesId) },
+                                    modifier = Modifier.fillMaxWidth()
+                                        .heightIn(min = 44.dp)
+                                        .testTag("collection-guide-open-iv-${owned.id}")
+                                ) {
+                                    Text("Comparar IVs por liga →")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -420,6 +448,48 @@ private fun PendingReviewCard(count: Int, onClick: () -> Unit) {
             }
             Text("REVER ›", color = CollectionAmber, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun CollectionJourneyGuide(
+    selected: CollectionGuideStep,
+    visibleCount: Int,
+    onSelect: (CollectionGuideStep) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            "AVALIAR A MINHA COLEÇÃO · POR ETAPAS",
+            color = PvpColors.TextPrimary,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            CollectionGuideStep.entries.forEach { step ->
+                FilterChip(
+                    selected = selected == step,
+                    onClick = { onSelect(step) },
+                    label = { Text(step.title) },
+                    modifier = Modifier.heightIn(min = 48.dp)
+                        .testTag("collection-guide-${step.name.lowercase()}")
+                )
+            }
+        }
+        Text(
+            selected.description,
+            modifier = Modifier.testTag("collection-guide-explanation"),
+            color = PvpColors.TextSecondary,
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
+            "$visibleCount ${if (visibleCount == 1) "exemplar" else "exemplares"} nesta seleção",
+            modifier = Modifier.testTag("collection-guide-count"),
+            color = CollectionBlue,
+            style = MaterialTheme.typography.labelMedium
+        )
     }
 }
 
