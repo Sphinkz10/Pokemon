@@ -174,6 +174,12 @@ fun CollectionModuleScreen(
                 selectedSpeciesId = speciesId
                 targetsReturnRoute = CollectionRoute.LIST
                 route = CollectionRoute.IV_TARGETS
+            },
+            onOpenIvTargetsForLeague = { speciesId, selectedLeague ->
+                selectedSpeciesId = speciesId
+                speciesLeague = selectedLeague
+                targetsReturnRoute = CollectionRoute.LIST
+                route = CollectionRoute.IV_TARGETS
             }
             )
         }
