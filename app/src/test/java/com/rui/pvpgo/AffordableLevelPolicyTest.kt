@@ -131,7 +131,7 @@ class AffordableLevelPolicyTest {
     }
 
     @Test fun unknownFamilyDoesNotBorrowCandyFromAnotherEvolutionLine() {
-        val value = inventory(species = bulky)
+        val value = inventory(species = normal.copy(familyId = "other-family"))
         assertEquals(AffordableLevelStatus.UNKNOWN_BALANCES, find(ledger = value).status)
     }
 
