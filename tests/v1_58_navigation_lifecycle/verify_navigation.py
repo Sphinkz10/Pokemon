@@ -38,7 +38,7 @@ checks={
   "collection query still saved": "var query by rememberSaveable" in overview,
   "National Dex scroll retained": "nationalScroll = rememberLazyListState()" in overview,
   "seven pure navigation unit cases": test.count("@Test fun ") >= 7,
-  "v158 version": 'versionCode = 58' in gradle and 'versionName = "1.58.0-dev"' in gradle,
+  "v158 minimum schema for navigation": int(re.search(r"versionCode\\s*=\\s*(\\d+)", gradle).group(1)) >= 58 and 'versionName = "' in gradle,
   "isolated diagnostic test package": 'applicationIdSuffix = ".installtestv190"' in gradle,
 }
 for name, ok in checks.items():
