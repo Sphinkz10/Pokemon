@@ -1044,6 +1044,12 @@ private fun CandidateRankPreview(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.tertiary
             )
+            InvestmentReadinessPanel(
+                owned = candidate,
+                species = species,
+                league = league,
+                compact = true
+            )
             if (knownEvolutionTargets > 0) {
                 HorizontalDivider()
                 Text(
@@ -1272,6 +1278,14 @@ private fun OwnedPokemonDetailScreen(
                         )
                     }
                 }
+            }
+            item {
+                InvestmentReadinessPanel(
+                    owned = owned,
+                    species = species,
+                    league = league,
+                    compact = false
+                )
             }
             item {
                 Text("Build real", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
