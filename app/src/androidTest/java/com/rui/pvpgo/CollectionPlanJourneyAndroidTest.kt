@@ -324,6 +324,7 @@ class CollectionPlanJourneyAndroidTest {
         }
         rule.onNodeWithTag("app-tab-collection").performClick()
         openStep()
+        chooseLeague(League.MASTER)
         scrollToNextAction()
         rule.onNodeWithTag("collection-plan-open-next-plan-owned").performClick()
         rule.waitUntil(15000) {
