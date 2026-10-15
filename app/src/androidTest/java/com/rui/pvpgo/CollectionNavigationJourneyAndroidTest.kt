@@ -212,4 +212,33 @@ class CollectionNavigationJourneyAndroidTest {
         guidedLeagueComparison("pvp-compare-league-master", "Master")
     }
 
+    @Test fun leagueIvTargetsCanOpenOwnedPokemon360AndReturnToSameLeague() {
+        launchRoot()
+        intoCollection()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-compare"))
+        rule.onNodeWithTag("collection-guide-compare").performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("pvp-compare-league-ultra"))
+        rule.onNodeWithTag("pvp-compare-league-ultra").performClick()
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-open-iv-nav-owned-one"))
+        rule.onNodeWithTag("collection-guide-open-iv-nav-owned-one").performClick()
+        rule.onNodeWithTag("iv-targets-league")
+            .assertTextContains("Ultra", substring = true)
+        rule.onNodeWithTag("iv-targets-scroll")
+            .performScrollToNode(hasTestTag("iv-owned-open-nav-owned-one"))
+        rule.onNodeWithTag("iv-owned-open-nav-owned-one").performClick()
+        rule.onNodeWithTag("pokemon-360-back").assertExists()
+        rule.onNodeWithTag("pokemon-360-back").performClick()
+        rule.onNodeWithTag("iv-targets-league")
+            .assertTextContains("Ultra", substring = true)
+        rule.runOnIdle {
+            val persisted = runBlocking { repository.currentCollection() }.single()
+            assertEquals(original.id, persisted.id)
+            assertEquals(original.cp, persisted.cp)
+            assertEquals(original.level, persisted.level)
+        }
+    }
+
 }

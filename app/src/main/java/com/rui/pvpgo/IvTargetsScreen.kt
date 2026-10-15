@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,10 +26,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,11 +58,14 @@ fun IvTargetsScreen(
     collection: List<OwnedPokemon>,
     league: League,
     onLeagueChange: (League) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenOwned: ((String) -> Unit)? = null
 ) {
     val owned = remember(collection, species.speciesId) { collection.filter { it.speciesId == species.speciesId } }
     var topRows by remember(species.speciesId, league) { mutableStateOf<List<PvPRankEntry>>(emptyList()) }
-    var bestOwned by remember(species.speciesId, owned, league) { mutableStateOf<Pair<OwnedPokemon, PvPRankEntry>?>(null) }
+    var ownedDecisions by remember(species.speciesId, owned, league) { mutableStateOf<List<OwnedIvDecision>>(emptyList()) }
+    val bestOwned = ownedDecisions.firstOrNull { it.rank != null }?.let { it.owned to requireNotNull(it.rank) }
+    var showAllOwned by rememberSaveable(species.speciesId, league) { mutableStateOf(false) }
     var loading by remember(species.speciesId, owned, league) { mutableStateOf(true) }
 
     LaunchedEffect(species.speciesId, owned, league) {
@@ -66,18 +73,20 @@ fun IvTargetsScreen(
         val result = withContext(Dispatchers.Default) {
             val settings = RankSettings()
             val ranks = RankRepository.ranks(species, league, settings)
-            val best = owned.mapNotNull { pokemon ->
-                RankRepository.find(species, league, pokemon.iv, settings)?.let { pokemon to it }
-            }.minByOrNull { it.second.rank }
-            ranks.take(4) to best
+            val decisions = OwnedIvDecisionPolicy.sort(species, league, owned, ranks)
+            ranks.take(4) to decisions
         }
         topRows = result.first
-        bestOwned = result.second
+        ownedDecisions = result.second
         loading = false
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("iv-targets-scroll")
+            .semantics {
+                stateDescription = if (loading) "Rankings IV a calcular"
+                else "Rankings IV prontos"
+            },
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -113,8 +122,93 @@ fun IvTargetsScreen(
                 }
             }
         }
+        item { IvSectionHeader("OS TEUS EXEMPLARES · ${owned.size}") }
+        item {
+            Text(
+                "Ordenados pelo rank de IV potencial, não pelo CP atual nem pela força no meta. " +
+                    "Abre o Pokémon 360 para confirmar dados e custos antes de investir.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        if (!loading) {
+            val visible = if (showAllOwned) ownedDecisions else ownedDecisions.take(3)
+            items(visible.size, key = { "owned-rank-${visible[it].owned.id}" }) { index ->
+                IvOwnedDecisionCard(
+                    candidate = visible[index],
+                    index = index + 1,
+                    onOpenOwned = onOpenOwned
+                )
+            }
+            if (ownedDecisions.size > 3) {
+                item {
+                    TextButton(
+                        onClick = { showAllOwned = !showAllOwned },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            .testTag("iv-owned-toggle-all")
+                    ) {
+                        Text(if (showAllOwned) "Mostrar só os três primeiros"
+                            else "Ver os ${ownedDecisions.size} exemplares")
+                    }
+                }
+            }
+        }
         item { IvSectionHeader("AÇÃO") }
         item { IvActionCard(bestOwned, league, owned.size, loading) }
+    }
+}
+
+@Composable
+private fun IvOwnedDecisionCard(
+    candidate: OwnedIvDecision,
+    index: Int,
+    onOpenOwned: ((String) -> Unit)?
+) {
+    val owned = candidate.owned
+    val label = owned.nickname?.takeIf { it.isNotBlank() } ?: owned.speciesId
+    Surface(
+        modifier = Modifier.fillMaxWidth().testTag("iv-owned-row-${owned.id}"),
+        shape = RoundedCornerShape(14.dp),
+        color = IvCard,
+        border = BorderStroke(1.dp, IvBorder)
+    ) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    "$index · $label",
+                    color = PvpColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    candidate.rank?.let { "Rank IV #${it.rank}" } ?: "SEM RANK",
+                    color = if (candidate.rank != null) IvBlue else IvAmber,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.testTag("iv-owned-rank-${owned.id}")
+                )
+            }
+            Text(
+                "IV ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · " +
+                    "CP ${owned.cp?.toString() ?: "?"} · " +
+                    "Nível ${owned.level?.let(::compactLevel) ?: "?"}",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                OwnedIvDecisionPolicy.explanation(candidate),
+                color = if (candidate.readiness.verdict == PvpGuideVerdict.WITHIN_LIMIT &&
+                    candidate.rank != null) PvpColors.TextSecondary else IvAmber,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("iv-owned-status-${owned.id}")
+            )
+            if (onOpenOwned != null) {
+                TextButton(
+                    onClick = { onOpenOwned(owned.id) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("iv-owned-open-${owned.id}")
+                ) { Text("Abrir Pokémon 360 →") }
+            }
+        }
     }
 }
 
@@ -168,8 +262,8 @@ private fun IvSpeciesHero(species: PokemonSpecies, bestOwned: Pair<OwnedPokemon,
                     Text("OBJETIVO · encontrar um bom IV PvP", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                 } else {
                     val (owned, rank) = bestOwned
-                    Text("Melhor teu: ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · Rank #${rank.rank}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                    Text("${rank.cp} CP · L${compactLevel(rank.level)} · ${oneDecimal(rank.percentOfRank1)}% do #1", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    Text("Melhor IV potencial teu: ${owned.iv.attack}/${owned.iv.defense}/${owned.iv.stamina} · Rank #${rank.rank}", color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Text("CP alvo ${rank.cp} · L${compactLevel(rank.level)} · ${oneDecimal(rank.percentOfRank1)}% do #1", color = IvBlue, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }

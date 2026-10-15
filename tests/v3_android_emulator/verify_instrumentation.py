@@ -13,13 +13,14 @@ required={
     "InvestmentJourneyAndroidTest":7,
     "MainActivityLaunchAndroidTest":1,
     "InvestmentComposeUiAndroidTest":12,
-    "CollectionNavigationJourneyAndroidTest":7,
+    "CollectionNavigationJourneyAndroidTest":8,
     "MainActivityLifecycleA11yAndroidTest":4,
     "PersistentCollectionReopenAndroidTest":8,
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
     "CollectionGuidedIvAndroidTest":3,
     "PvpGuidedCollectionComposeAndroidTest":8,
+    "OwnedIvCompareComposeAndroidTest":4,
 }
 
 def source_contract():
@@ -151,6 +152,34 @@ def source_contract():
                 "noSavedPlansHasPracticalExitInsteadOfAnUnreachableEmptyStage",
                 "nonEmptyGuidedSelectionNeverDisplaysIrrelevantResetButton"
             ]
+        ),
+        "own IV rank reflects potential and protects unknown CP": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/OwnedIvDecisionPolicy.kt").read_text()
+            for token in ["PvpGuidePolicy.assess(", "it.rank?.rank ?: Int.MAX_VALUE",
+                          "candidate.readiness.verdict == PvpGuideVerdict.NEEDS_REVIEW",
+                          "CP atual acima do limite"]
+        ),
+        "IV ranking shows exact saved owned rows with safe route": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/IvTargetsScreen.kt").read_text()
+            for token in ['testTag("iv-owned-row-${owned.id}")',
+                          'testTag("iv-owned-open-${owned.id}")',
+                          "onOpenOwned: ((String) -> Unit)? = null",
+                          "OwnedIvDecisionPolicy.sort(", "showAllOwned"]
+        ) and all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in ["detailReturnRoute = CollectionRoute.IV_TARGETS",
+                          "selectedOwnedId = ownedId",
+                          "it.speciesId == species.speciesId"]
+        ),
+        "new Compose tests open exact owned and never alter unknown CP": all(
+            token in (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text()
+            for token in ["OwnedIvCompareComposeAndroidTest", "iv-owned-toggle-all",
+                          "iv-owned-status-d", "iv-owned-open-d", "assertEquals(null, owned.last().cp)"]
+        ),
+        "full app goes IV targets to 360 and back to chosen league": all(
+            token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text()
+            for token in ["leagueIvTargetsCanOpenOwnedPokemon360AndReturnToSameLeague",
+                          "iv-owned-open-nav-owned-one", "iv-targets-league"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count

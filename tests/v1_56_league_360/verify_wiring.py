@@ -29,7 +29,7 @@ checks={
  "rank comparison not hardwired to Great": "SpeciesCollectionPolicy.betterLeagueRank(first, second, ranks)" in screen,
  "compare dynamically labels correct league": "ComparisonMetricRow(SpeciesLeaguePolicy.title(league)" in screen,
  "iv targets use shared selector": "SpeciesLeagueSelector(league, onLeagueChange)" in targets,
- "iv targets recalculate actual league": "RankRepository.ranks(species, league, settings)" in targets and "RankRepository.find(species, league, pokemon.iv, settings)" in targets,
+ "iv targets recalculate actual league": "RankRepository.ranks(species, league, settings)" in targets and "OwnedIvDecisionPolicy.sort(species, league, owned, ranks)" in targets and "ranks.associateBy { it.iv }" in read("OwnedIvDecisionPolicy.kt"),
  "iv targets state keyed by league": "LaunchedEffect(species.speciesId, owned, league)" in targets and "remember(species.speciesId, owned, league)" in targets,
  "iv targets distinguish calculating vs ineligible": "if (loading)" in targets and "nenhum ranking elegível" in targets,
  "iv targets avoid hardcoded color values": "Color(0xFF" not in targets,
