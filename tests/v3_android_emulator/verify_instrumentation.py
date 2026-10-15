@@ -241,7 +241,8 @@ def source_contract():
             token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
             for token in [
                 "CollectionPlanLeaguePolicy.preferredByOwned(buildPlans, pvpCompareLeague)",
-                "!selectedLeaguePlans.containsKey(owned.id)",
+                "CollectionPlanLeaguePolicy.hasNonArchivedPlanInLeague(",
+                "owned.id, pvpCompareLeague, buildPlans",
                 "val savedPlan = selectedLeaguePlans[owned.id]",
                 "hasSavedPlan = visiblePlanByOwned.containsKey(owned.id)"
             ]
