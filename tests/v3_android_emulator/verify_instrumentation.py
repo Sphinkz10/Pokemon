@@ -12,6 +12,7 @@ required={
     "UserResourceStoreAndroidTest":4,
     "InvestmentJourneyAndroidTest":7,
     "MainActivityLaunchAndroidTest":1,
+    "InvestmentComposeUiAndroidTest":10,
 }
 
 def source_contract():
@@ -25,6 +26,16 @@ def source_contract():
         "launcher smoke runs on Android": "ActivityScenario.launch(MainActivity::class.java)" in (android_test/"MainActivityLaunchAndroidTest.kt").read_text(),
         "resource journey uses actual Room": "Room.inMemoryDatabaseBuilder" in (android_test/"InvestmentJourneyAndroidTest.kt").read_text(),
         "resource journey uses Android preferences": 'getSharedPreferences("journey-android-test-v1"' in (android_test/"InvestmentJourneyAndroidTest.kt").read_text(),
+        "Compose UI harness included": 'androidTestImplementation("androidx.compose.ui:ui-test-junit4")' in (root/"app/build.gradle.kts").read_text(),
+        "resource form exposed with stable UI semantics": all(tag in (root/"app/src/main/java/com/rui/pvpgo/UserResourcePanel.kt").read_text() for tag in [
+            'testTag("resource-toggle")','testTag("resource-save")','testTag("resource-input-${field.name.lowercase()}")'
+        ]),
+        "investment target keeps meaningful UI test anchors": all(tag in (root/"app/src/main/java/com/rui/pvpgo/InvestmentTargetPanel.kt").read_text() for tag in [
+            'testTag("community-estimate-consent")','testTag("cap-target-button")','testTag("affordable-target-button")'
+        ]),
+        "UI tests perform real clicks typing clearing": all(token in (android_test/"InvestmentComposeUiAndroidTest.kt").read_text() for token in [
+            'createComposeRule()', 'performClick()', 'performTextInput(', 'performTextClearance()', 'assertIsNotEnabled()'
+        ]),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()
