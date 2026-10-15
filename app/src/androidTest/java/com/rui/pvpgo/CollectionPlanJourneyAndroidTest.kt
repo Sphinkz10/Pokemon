@@ -192,7 +192,7 @@ class CollectionPlanJourneyAndroidTest {
     }
 
     @Test fun savedPlanShowsNextCpVerificationWithoutInventingData() {
-        standalone(plans = listOf(savedPlan()))
+        standalone(plans = listOf(savedPlan()), record = saved.copy(cp = null))
         openStep()
         scrollToNextAction()
         rule.onNodeWithText("Ação seguinte · Confirmar CP, nível e dados reais")
@@ -201,7 +201,7 @@ class CollectionPlanJourneyAndroidTest {
             .performClick()
         rule.runOnIdle {
             assertEquals(saved.id, openedOwned)
-            assertTrue(saved.cp == PokemonMath.cp(species, iv, 20.0))
+            assertEquals(saved.cp, PokemonMath.cp(species, iv, 20.0))
         }
     }
 
