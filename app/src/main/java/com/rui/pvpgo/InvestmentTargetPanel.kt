@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rui.pvpgo.domain.InvestmentTarget
@@ -35,6 +36,17 @@ internal fun InvestmentTargetPanel(
     league: League,
     hasPendingBuildChanges: Boolean
 ) {
+    val context = LocalContext.current
+    val resourceStore = remember(context) { UserResourceStore.get(context) }
+    // Costing stays blocked if catalog identity/family cannot be determined.
+    val familyId = species?.takeIf { it.speciesId == owned.speciesId }
+        ?.let { it.familyId?.takeIf(String::isNotBlank) ?: it.speciesId }
+    var savedResources by remember(resourceStore, familyId) {
+        mutableStateOf(familyId?.let(resourceStore::load) ?: UserResourceBalances())
+    }
+    val knownLedger = remember(savedResources, familyId) {
+        familyId?.let { UserResourcePolicy.completeLedgerOrNull(savedResources, it) }
+    }
     var targetText by rememberSaveable(owned.id, league.name) { mutableStateOf("") }
     val simulation = remember(owned, species, league, targetText) {
         InvestmentTargetSimulator.simulate(owned, species, league, targetText)
@@ -49,16 +61,16 @@ internal fun InvestmentTargetPanel(
                 targetLevel = level
             )
         }
-    // A future pack/ledger repository must supply real, validated values.
-    // ResourceLedger() would falsely imply the player has zero resources.
-    val quote = remember(owned, target, simulation) {
+    // A verified cost pack is still missing; only explicit, complete saved
+    // resources can cross into the engine ResourceLedger.
+    val quote = remember(owned, target, simulation, knownLedger) {
         InvestmentCostQuoteGate.evaluate(
             owned = owned,
             simulation = simulation,
             catalog = listOfNotNull(species),
             movesById = emptyMap(),
             pack = null,
-            ledger = null,
+            ledger = knownLedger,
             target = target
         )
     }
@@ -71,6 +83,20 @@ internal fun InvestmentTargetPanel(
             modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            if (familyId != null) {
+                UserResourcePanel(
+                    familyId = familyId,
+                    familyLabel = species.name,
+                    saved = savedResources,
+                    store = resourceStore,
+                    onSaved = { savedResources = it }
+                )
+            } else {
+                Text(
+                    "Os recursos por família só podem ser registados após confirmar a espécie e forma.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             Text("Simular nível objetivo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(
                 "Nível atual: ${owned.level?.toString() ?: "por confirmar"} · " +
