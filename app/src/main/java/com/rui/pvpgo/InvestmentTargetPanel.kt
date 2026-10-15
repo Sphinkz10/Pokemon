@@ -2,8 +2,10 @@ package com.rui.pvpgo
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rui.pvpgo.domain.InvestmentPlanStatus
 import com.rui.pvpgo.domain.InvestmentTarget
 import com.rui.pvpgo.domain.OwnedPokemon
 import com.rui.pvpgo.engine.League
@@ -48,6 +51,15 @@ internal fun InvestmentTargetPanel(
         familyId?.let { UserResourcePolicy.completeLedgerOrNull(savedResources, it) }
     }
     var targetText by rememberSaveable(owned.id, league.name) { mutableStateOf("") }
+    // Default off: a dated community reference is not a live official price.
+    var allowCommunityEstimate by rememberSaveable(owned.id) { mutableStateOf(false) }
+    val reference = remember { CommunityNormalPowerUpPack.pack }
+    val supported = remember(species, owned) {
+        species != null &&
+            CommunityNormalPowerUpPack.isSupportedNormalPokemon(species.speciesId, species.form) &&
+            !species.isMega && !owned.isLucky && !owned.isShadow && !owned.isPurified
+    }
+    val referenceAvailable = remember { CommunityNormalPowerUpPack.authenticatedReference() }
     val simulation = remember(owned, species, league, targetText) {
         InvestmentTargetSimulator.simulate(owned, species, league, targetText)
     }
@@ -61,15 +73,18 @@ internal fun InvestmentTargetPanel(
                 targetLevel = level
             )
         }
-    // A verified cost pack is still missing; only explicit, complete saved
-    // resources can cross into the engine ResourceLedger.
-    val quote = remember(owned, target, simulation, knownLedger) {
+    // Accept only the independently pinned, source-reviewed baseline pack,
+    // and only when the user explicitly opts in on an eligible normal form.
+    val selectedPack = reference.takeIf {
+        allowCommunityEstimate && referenceAvailable && supported
+    }
+    val quote = remember(owned, target, simulation, knownLedger, selectedPack) {
         InvestmentCostQuoteGate.evaluate(
             owned = owned,
             simulation = simulation,
             catalog = listOfNotNull(species),
             movesById = emptyMap(),
-            pack = null,
+            pack = selectedPack,
             ledger = knownLedger,
             target = target
         )
@@ -135,7 +150,74 @@ internal fun InvestmentTargetPanel(
                 if (simulation.canRequestCosting) {
                     HorizontalDivider()
                     Text(
-                        "Orçamento · ${quote.explanation}",
+                        "Estimativa de recursos · só power-ups",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    if (!referenceAvailable) {
+                        Text(
+                            "Referência comunitária inválida ou incompleta. Cálculo bloqueado.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else if (!supported) {
+                        Text(
+                            "Este exemplar requer regras de custos especiais não certificadas. " +
+                                "Sem orçamento normal aplicável.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = allowCommunityEstimate,
+                                onCheckedChange = { allowCommunityEstimate = it }
+                            )
+                            Text(
+                                "Usar tabela comunitária revista em 15/10/2026 (não oficial)",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Text(
+                        if (!allowCommunityEstimate) "A estimativa fica desativada até a autorizares."
+                        else quote.explanation,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    val result = quote.plan
+                    if (quote.canDisplayExactAmounts && result != null && familyId != null) {
+                        val costs = result.costs
+                        Text(
+                            "Estimativa de power-ups: ${costs.stardust} Stardust · " +
+                                "${costs.candyByFamily[familyId] ?: 0} Candy · " +
+                                "${costs.xlCandyByFamily[familyId] ?: 0} XL Candy.",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (result.missingResources.isNotEmpty()) {
+                            val missing = result.missingResources.joinToString(" · ") {
+                                "${it.amount ?: "?"} ${it.kind.name.replace('_', ' ')}"
+                            }
+                            Text(
+                                "Em falta segundo os saldos que registaste: $missing",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else if (result.status == InvestmentPlanStatus.READY_NOW) {
+                            Text(
+                                "Saldos registados suficientes para este objetivo de power-ups. " +
+                                    "Não significa que valha a pena investir.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                    Text(
+                        CommunityNormalPowerUpPack.LIMITATIONS,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "Fontes: ${CommunityNormalPowerUpPack.SOURCE_URL} e Pokémon GO Hub.",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
