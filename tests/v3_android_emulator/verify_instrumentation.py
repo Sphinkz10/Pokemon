@@ -19,6 +19,7 @@ required={
     "ResourceResponsiveConstraintsAndroidTest":3,
     "ActualApkUpgradeAndroidTest":1,
     "CollectionGuidedIvAndroidTest":3,
+    "PvpGuidedCollectionComposeAndroidTest":3,
 }
 
 def source_contract():
@@ -100,6 +101,22 @@ def source_contract():
                 "onOpenIvTargets(owned.speciesId)",
                 "testTag(\"collection-guide-open-iv-${owned.id}\")"
             ]
+        ),
+        "integrated PvP league guide has real UI test taps": all(
+            token in (android_test/"PvpGuidedCollectionComposeAndroidTest.kt").read_text()
+            for token in ["CollectionOverviewScreen(", "collection-guide-compare",
+                          "pvp-compare-stage-over_limit", "pvp-compare-stage-iv_pattern",
+                          "collection-guide-open-iv-guide-low", "performClick()"]
+        ),
+        "single existing IV guide remains the only learning journey": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text()
+            for token in ["CollectionJourneyGuide(", "pvpCompareStage",
+                          "PvpGuidePolicy.matches(", 'pvp-compare-league-${option.name.lowercase()}']
+        ),
+        "CP checks do not invent data or ranks": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/PvpGuidePolicy.kt").read_text()
+            for token in ["owned.uncertainFields.isNotEmpty()", "expectedCp != cp",
+                          "PvpGuideVerdict.NEEDS_REVIEW", "Não é ranking IV"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
