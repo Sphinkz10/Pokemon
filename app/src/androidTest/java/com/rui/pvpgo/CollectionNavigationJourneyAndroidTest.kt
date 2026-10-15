@@ -73,9 +73,12 @@ class CollectionNavigationJourneyAndroidTest {
     private fun intoCollection() {
         rule.onNodeWithTag("app-tab-collection").performClick()
         rule.waitUntil(15000) {
-            rule.onAllNodes(hasTestTag("owned-row-nav-owned-one"))
+            rule.onAllNodes(hasTestTag("collection-overview-scroll"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("owned-row-nav-owned-one"))
+        rule.onNodeWithTag("owned-row-nav-owned-one").assertExists()
     }
 
     private fun intoSpecies() {
@@ -165,9 +168,12 @@ class CollectionNavigationJourneyAndroidTest {
         rule.onNodeWithTag("app-tab-home").performClick()
         rule.onNodeWithTag("app-tab-collection").performClick()
         rule.waitUntil(15000) {
-            rule.onAllNodes(hasTestTag("owned-row-nav-owned-one"))
+            rule.onAllNodes(hasTestTag("collection-overview-scroll"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("owned-row-nav-owned-one"))
+        rule.onNodeWithTag("owned-row-nav-owned-one").assertExists()
         rule.onNodeWithTag("owned-row-nav-owned-one").performClick()
         rule.onNodeWithTag("species-owned-nav-owned-one").assertExists()
         rule.runOnIdle {
