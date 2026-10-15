@@ -160,7 +160,7 @@ jobs:
               "CandidateEvolutionExplanationTest": 8,
               "InvestmentReadinessPolicyTest": 16,
               "InvestmentTargetSimulatorTest": 16,
-              "InvestmentCostQuoteGateTest": 12,
+              "InvestmentCostQuoteGateTest": 15,
               "TeamLockPolicyTest": 3,
               "TeamPickerSearchPolicyTest": 3,
               "TeamsGoldenResultPolicyTest": 4,
