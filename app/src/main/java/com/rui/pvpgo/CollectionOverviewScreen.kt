@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -82,6 +83,9 @@ fun CollectionOverviewScreen(
     var sortByPriority by rememberSaveable { mutableStateOf(true) }
     var generation by rememberSaveable { mutableStateOf("Todas") }
     var selectedDex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pvpGuideEnabled by rememberSaveable { mutableStateOf(false) }
+    var pvpGuideLeague by rememberSaveable { mutableStateOf(League.GREAT) }
+    var pvpGuideStage by rememberSaveable { mutableStateOf(PvpGuideStage.REVIEW) }
     val collectionScroll = rememberLazyListState()
     val nationalScroll = rememberLazyListState()
     val context = LocalContext.current.applicationContext
@@ -105,7 +109,7 @@ fun CollectionOverviewScreen(
     }
 
     val normalizedQuery = query.trim().lowercase(Locale.ROOT)
-    val collectionItems = remember(collection, normalizedQuery, filter, speciesById, pvpBoxByOwned) {
+    val collectionItems = remember(collection, normalizedQuery, filter, speciesById, pvpBoxByOwned, pvpGuideEnabled, pvpGuideLeague, pvpGuideStage) {
         collection.filter { owned ->
             val species = speciesById[owned.speciesId]
             val matchesQuery = normalizedQuery.isBlank() ||
@@ -121,7 +125,10 @@ fun CollectionOverviewScreen(
                 CollectionQuickFilter.SHINY -> owned.isShiny
                 CollectionQuickFilter.TARGETS -> planByOwned.containsKey(owned.id)
             }
-            matchesQuery && matchesFilter
+            val matchesGuide = !pvpGuideEnabled || PvpGuidePolicy.matches(
+                owned, species, pvpGuideLeague, pvpGuideStage
+            )
+            matchesQuery && matchesFilter && matchesGuide
         }.let { base ->
             if (sortByPriority) {
                 base.sortedWith(compareByDescending<OwnedPokemon> { planByOwned[it.id]?.priority ?: 0 }
@@ -206,6 +213,30 @@ fun CollectionOverviewScreen(
         }
         if (tab != CollectionViewTab.POKEDEX) {
             item { CollectionFilterRow(filter, onSelect = { filter = it }) }
+            item {
+                TextButton(
+                    onClick = {
+                        pvpGuideEnabled = !pvpGuideEnabled
+                        if (pvpGuideEnabled) filter = CollectionQuickFilter.ALL
+                    },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("pvp-guide-toggle")
+                ) {
+                    Text(if (pvpGuideEnabled) "Fechar guia PvP" else "Como escolher Pokémon para PvP? Abrir guia")
+                }
+            }
+            if (pvpGuideEnabled) {
+                item {
+                    CollectionPvpGuidePanel(
+                        league = pvpGuideLeague,
+                        stage = pvpGuideStage,
+                        onLeagueChange = { pvpGuideLeague = it },
+                        onStageChange = { pvpGuideStage = it },
+                        results = collectionItems.size,
+                        hasQuery = normalizedQuery.isNotBlank()
+                    )
+                }
+            }
         } else {
             item {
                 Row(
@@ -252,7 +283,8 @@ fun CollectionOverviewScreen(
                 item {
                     CollectionSectionHeader(
                         "POKÉMON",
-                        if (sortByPriority) "Ordenar ↗" else "A–Z ↗",
+                        if (pvpGuideEnabled) "${collectionItems.size} resultados · " + (if (sortByPriority) "Ordenar ↗" else "A–Z ↗")
+                        else if (sortByPriority) "Ordenar ↗" else "A–Z ↗",
                         onAction = { sortByPriority = !sortByPriority }
                     )
                 }
@@ -272,6 +304,7 @@ fun CollectionOverviewScreen(
                             species = speciesById[owned.speciesId],
                             plan = planByOwned[owned.id],
                             categories = pvpBoxByOwned[owned.id]?.categories?.map { it.name }.orEmpty().toSet(),
+                            guidedReason = if (pvpGuideEnabled) PvpGuidePolicy.assess(owned, speciesById[owned.speciesId], pvpGuideLeague).reason else null,
                             onClick = { onSelectOwned(owned.id) }
                         )
                     }
@@ -308,6 +341,75 @@ fun CollectionOverviewScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CollectionPvpGuidePanel(
+    league: League,
+    stage: PvpGuideStage,
+    onLeagueChange: (League) -> Unit,
+    onStageChange: (PvpGuideStage) -> Unit,
+    results: Int,
+    hasQuery: Boolean
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().testTag("pvp-guide-panel"),
+        shape = RoundedCornerShape(18.dp),
+        color = PvpColors.SurfaceRaised,
+        border = BorderStroke(1.dp, PvpColors.BorderDefault)
+    ) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Encontra os teus Pokémon em 2 passos",
+                color = PvpColors.TextPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold)
+            Text("1 · Escolhe a liga", color = CollectionBlue,
+                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                League.entries.forEach { option ->
+                    FilterChip(
+                        selected = option == league,
+                        onClick = { onLeagueChange(option) },
+                        label = { Text(leagueShort(option)) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                            .testTag("pvp-guide-league-${option.name.lowercase()}")
+                    )
+                }
+            }
+            Text("2 · O que precisas de fazer?", color = CollectionBlue,
+                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                PvpGuideStage.entries.forEach { option ->
+                    FilterChip(
+                        selected = option == stage,
+                        onClick = { onStageChange(option) },
+                        label = { Text(option.title) },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                            .testTag("pvp-guide-stage-${option.name.lowercase()}")
+                    )
+                }
+            }
+            Text(stage.explanation, color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("pvp-guide-explanation"))
+            Text("$results exemplares nesta fase", color = CollectionBlue,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.testTag("pvp-guide-result-count"))
+            if (hasQuery) {
+                Text("A pesquisa por nome continua aplicada. Apaga-a para veres todos os exemplares.",
+                    color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
+            }
+            Text("A app não modifica nem apaga a tua coleção; abre um exemplar para confirmar os dados.",
+                color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -503,6 +605,7 @@ private fun CollectionOwnedRow(
     species: PokemonSpecies?,
     plan: PvpBuildPlan?,
     categories: Set<String>,
+    guidedReason: String? = null,
     onClick: () -> Unit
 ) {
     val name = owned.nickname?.takeIf { it.isNotBlank() } ?: species?.name ?: owned.speciesId
@@ -534,6 +637,9 @@ private fun CollectionOwnedRow(
                     league?.let(::add)
                 }.joinToString(" · ")
                 Text(meta, color = PvpColors.TextSecondary, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                guidedReason?.let { reason ->
+                    Text(reason, color = CollectionBlue, style = MaterialTheme.typography.labelSmall)
+                }
                 if (!owned.nickname.isNullOrBlank() && species != null) {
                     Text(species.name, color = PvpColors.TextSecondary, style = MaterialTheme.typography.labelSmall)
                 }
