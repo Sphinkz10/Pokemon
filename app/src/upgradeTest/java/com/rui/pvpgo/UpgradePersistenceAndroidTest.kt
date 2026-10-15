@@ -2,7 +2,6 @@ package com.rui.pvpgo
 
 import android.content.Context
 import android.os.Build
-import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.flow.first
@@ -54,8 +53,12 @@ class UpgradePersistenceAndroidTest {
         else @Suppress("DEPRECATION") info.versionCode.toLong()
     }
 
+    private fun expectedVersion(): Long = requireNotNull(
+        InstrumentationRegistry.getArguments().getString("expectedVersionCode")
+    ) { "Upgrade CI must supply the installed APK version code" }.toLong()
+
     @Test fun seedPriorVersionAndConfirmDiskWrites() = runBlocking {
-        assertEquals("Seeding must happen on original v58 APK", 58L, versionCode())
+        assertEquals("Seeding must happen on expected prior APK", expectedVersion(), versionCode())
         assertEquals(packageId, context.packageName)
         val dao = PvpUserDatabase.get(context).collectionDao()
         assertTrue("Seeding must start from an EMPTY prior installation", dao.collection().isEmpty())
@@ -148,13 +151,13 @@ class UpgradePersistenceAndroidTest {
     }
 
     @Test fun verifyAfterRealForceStopOnPreviousVersion() = runBlocking {
-        assertEquals("Must still be v58 after force-stop", 58L, versionCode())
+        assertEquals("Must still be the prior APK after force-stop", expectedVersion(), versionCode())
         assertTrue(context.getDatabasePath("user.db").exists())
         assertBaselineContents()
     }
 
     @Test fun verifyAfterSignedApkReplacement() = runBlocking {
-        assertEquals("Must really be the upgraded v59 APK", 59L, versionCode())
+        assertEquals("Must really be the replacement APK", expectedVersion(), versionCode())
         assertTrue(context.getDatabasePath("user.db").exists())
         assertBaselineContents()
     }
