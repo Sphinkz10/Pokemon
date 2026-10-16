@@ -24,6 +24,7 @@ required={
     "CollectionPlanJourneyAndroidTest":18,
     "PokemonGoSearchComposeAndroidTest":5,
     "PokemonGoCandidateHandoffAndroidTest":7,
+    "InboxTriageComposeAndroidTest":5,
 }
 
 def source_contract():
@@ -303,6 +304,17 @@ def source_contract():
                 'assertEquals("DISCARDED", reviewed.status.name)',
                 'pokemon-360-back'
             ]
+        ),
+        "Inbox triage is real Android Room, not an invented result": all(
+            item in (android_test/"InboxTriageComposeAndroidTest.kt").read_text()
+            for item in ["Room.inMemoryDatabaseBuilder", "repository.pendingInbox.first()",
+                         "inbox-triage-possible_matches", "inbox-triage-reset",
+                         "inbox-discard-triage-different", "performClick()"]
+        ),
+        "Inbox filtering cannot silently mutate saved Pokémon": all(
+            item in (root/"app/src/main/java/com/rui/pvpgo/InboxTriagePolicy.kt").read_text()
+            for item in ["CandidateInboxStatus.PENDING", "CollectionReconciler.reconcile(",
+                         "ReconciliationReport", "matchesCategory"]
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
