@@ -15,6 +15,11 @@ Apenas alterações de **instrumentação**, sem mexer no código de produção:
 - Mantêm-se as rotas reais, o mesmo `CollectionRepository.forTesting` com Room em memória e os mesmos oito testes de navegação.
 - Verificação de fonte no gate Android exige essa ordem e uma espera explícita de idle.
 
+## Segunda falha de QA encontrada durante o PR
+Na primeira execução do PR #44, o erro de Room já não reapareceu, mas a suite acusou 1 falha em `OwnedIvCompareComposeAndroidTest`: procurava `iv-owned-rank-a` no top 3 sem garantir que o exemplar "a" ficaria no top 3 quando os resultados fossem realmente ordenados por rank IV. **O teste fazia uma suposição falsa acerca da posição**, não demonstrava erro no ranking.
+
+A suite foi corrigida para carregar os rankings verdadeiros e selecionar explicitamente `Ver os 4 exemplares` antes de procurar o ID "a". Um contrato no CI exige esse fluxo, sem alterar os cálculos reais da aplicação. O merge continua bloqueado até **112/112 testes passarem**.
+
 ## Gates para integração
 1. A compilação/JVM/APK mantém todos os verificadores verdes.
 2. O emulador Android 35 executa **112/112 casos**, incluindo a jornada que falhou na main, sem skips nem erros.
