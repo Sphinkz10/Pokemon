@@ -325,6 +325,31 @@ class CollectionRepository private constructor(private val db: PvpUserDatabase) 
         }
     }
 
+    /**
+     * Explicit user-initiated undo of a discarded Inbox candidate.
+     * Never restores a confirmed candidate or fabricates a new owned specimen.
+     * A restored record is reviewed again as PENDING, preserving its original ID.
+     */
+    suspend fun restoreDiscarded(inboxId: String) {
+        db.withTransaction {
+            val row = requireNotNull(dao.inboxById(inboxId)) {
+                "Unknown Inbox item $inboxId"
+            }
+            require(row.status == CandidateInboxStatus.DISCARDED.name) {
+                "Only discarded candidates can be restored"
+            }
+            require(row.linkedOwnedPokemonId == null &&
+                dao.ownedById(row.candidateOwnedId) == null) {
+                "A candidate already linked to the Collection cannot be restored"
+            }
+            dao.upsertInbox(row.copy(
+                status = CandidateInboxStatus.PENDING.name,
+                reviewedAtEpochMs = null,
+                linkedOwnedPokemonId = null
+            ))
+        }
+    }
+
     suspend fun upsertOwned(item: OwnedPokemon) = dao.upsertOwned(item.toEntity())
     suspend fun deleteOwned(id: String) = dao.deleteOwned(id)
     suspend fun upsertBuildPlan(item: PvpBuildPlan) = dao.upsertBuildPlan(item.toEntity())

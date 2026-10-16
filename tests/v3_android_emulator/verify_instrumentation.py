@@ -24,7 +24,8 @@ required={
     "CollectionPlanJourneyAndroidTest":18,
     "PokemonGoSearchComposeAndroidTest":5,
     "PokemonGoCandidateHandoffAndroidTest":7,
-    "InboxTriageComposeAndroidTest":5,
+    "InboxTriageComposeAndroidTest":7,
+    "InboxRestoreAndroidTest":5,
 }
 
 def source_contract():
@@ -315,6 +316,20 @@ def source_contract():
             item in (root/"app/src/main/java/com/rui/pvpgo/InboxTriagePolicy.kt").read_text()
             for item in ["CandidateInboxStatus.PENDING", "CollectionReconciler.reconcile(",
                          "ReconciliationReport", "matchesCategory"]
+        ),
+        "discard requires explicit confirmation and opt-in Undo": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in ['testTag("inbox-discard-confirm")',
+                          'testTag("inbox-discard-cancel")',
+                          'actionLabel = "Desfazer"',
+                          'repository.restoreDiscarded(item.id)']
+        ),
+        "Undo is transactional and refuses confirmed or linked items": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CollectionDatabase.kt").read_text()
+            for token in ['suspend fun restoreDiscarded(inboxId: String)',
+                          'row.status == CandidateInboxStatus.DISCARDED.name',
+                          'dao.ownedById(row.candidateOwnedId) == null',
+                          'status = CandidateInboxStatus.PENDING.name']
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count

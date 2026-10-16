@@ -883,6 +883,8 @@ private fun InboxScreen(
     var expandedCandidateId by rememberSaveable { mutableStateOf<String?>(null) }
     var triageSearch by rememberSaveable { mutableStateOf("") }
     var triageFilter by rememberSaveable { mutableStateOf(InboxTriageFilter.ALL) }
+    val undoSnackbar = remember { SnackbarHostState() }
+    var discardToConfirmId by rememberSaveable { mutableStateOf<String?>(null) }
     val triage = remember(pending, collection, byId, triageSearch, triageFilter) {
         InboxTriagePolicy.evaluate(
             pending = pending,
@@ -893,7 +895,61 @@ private fun InboxScreen(
         )
     }
 
-    Scaffold(topBar = { TopAppBar(title = { Text(if (pendingLoaded) "Review Inbox · ${pending.size}" else "Review Inbox") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
+    // Destructive-looking actions must have a named, explicit confirmation.
+    // Undo is a separate deliberate user action, never an automatic mutation.
+    pending.firstOrNull { it.id == discardToConfirmId }?.let { item ->
+        val name = byId[item.candidate.speciesId]?.name ?: item.candidate.speciesId
+        AlertDialog(
+            onDismissRequest = { discardToConfirmId = null },
+            title = { Text("Descartar este candidato?") },
+            text = {
+                Text("Vais retirar $name (IVs ${item.candidate.iv.attack}/" +
+                    "${item.candidate.iv.defense}/${item.candidate.iv.stamina}) da lista pendente. " +
+                    "Esta ação não transfere Pokémon no jogo nem apaga exemplares da Coleção. " +
+                    "Podes desfazer logo a seguir.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        discardToConfirmId = null
+                        scope.launch {
+                            busyId = item.id
+                            actionError = null
+                            val discarded = runCatching { repository.discardCandidate(item.id) }
+                            busyId = null
+                            if (discarded.isFailure) {
+                                actionError = discarded.exceptionOrNull()?.message
+                            } else {
+                                val action = undoSnackbar.showSnackbar(
+                                    message = "$name retirado dos candidatos pendentes.",
+                                    actionLabel = "Desfazer",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Long
+                                )
+                                if (action == SnackbarResult.ActionPerformed) {
+                                    runCatching { repository.restoreDiscarded(item.id) }
+                                        .onFailure { actionError = it.message }
+                                }
+                            }
+                        }
+                    },
+                    enabled = busyId == null,
+                    modifier = Modifier.testTag("inbox-discard-confirm")
+                ) { Text("Descartar candidato") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { discardToConfirmId = null },
+                    modifier = Modifier.testTag("inbox-discard-cancel")
+                ) { Text("Cancelar") }
+            }
+        )
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(undoSnackbar) },
+        topBar = { TopAppBar(title = { Text(if (pendingLoaded) "Review Inbox · ${pending.size}" else "Review Inbox") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }
+    ) { padding ->
         if (!pendingLoaded) {
             Column(
                 Modifier.padding(padding).padding(16.dp).fillMaxSize(),
@@ -1051,14 +1107,7 @@ private fun InboxScreen(
                                         .testTag("inbox-confirm-${item.id}")
                                 ) { Text(CandidateReviewPolicy.saveAction(report.matches.isNotEmpty())) }
                                 OutlinedButton(
-                                    onClick = {
-                                        scope.launch {
-                                            busyId = item.id; actionError = null
-                                            runCatching { repository.discardCandidate(item.id) }
-                                                .onFailure { actionError = it.message }
-                                            busyId = null
-                                        }
-                                    },
+                                    onClick = { discardToConfirmId = item.id },
                                     enabled = busyId == null,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                         .testTag("inbox-discard-${item.id}")
