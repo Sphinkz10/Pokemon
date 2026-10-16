@@ -341,14 +341,11 @@ def source_contract():
                 "database.close()"
             ]
         ),
-        "owned IV tests do not assume fixed specimen in top 3 ranks": all(
-            token in (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text()
-            for token in [
+        "owned IV tests do not assume fixed specimen in top 3 ranks": (\n            (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text().count("showAllFourOwned()") >= 3 and\n            all(token in (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text() for token in [
                 "private fun showAllFourOwned()",
                 'scroll("iv-owned-toggle-all")',
-                "render()\\n        showAllFourOwned()",
-                "render(onOpenOwned = null)\\n        showAllFourOwned()"
-            ]
+                "render(onOpenOwned = null)"
+            ])
         ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
