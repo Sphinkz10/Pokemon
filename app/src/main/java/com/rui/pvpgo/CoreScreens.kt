@@ -664,7 +664,7 @@ private fun ManualImportScreen(
 
     Scaffold(topBar = { TopAppBar(title = { Text(if (guided) "Adicionar · Guiado" else "Adicionar · Rápido") }, navigationIcon = { TextButton(onClick = onBack, modifier = Modifier.testTag("manual-import-back")) { Text("←") } }) }) { padding ->
         LazyColumn(
-            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
+            Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize().testTag("manual-import-scroll"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(bottom = 28.dp)
         ) {
