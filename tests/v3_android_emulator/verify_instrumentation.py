@@ -23,6 +23,7 @@ required={
     "OwnedIvCompareComposeAndroidTest":4,
     "CollectionPlanJourneyAndroidTest":18,
     "PokemonGoSearchComposeAndroidTest":5,
+    "PokemonGoCandidateHandoffAndroidTest":4,
 }
 
 def source_contract():
@@ -264,8 +265,25 @@ def source_contract():
                 "go-search-language-pt", "collection-guide-compare"
             ]
         ),
-        "GO clipboard UI is present in existing comparison flow": "PokemonGoSearchPanel(league = compareLeague)" in
+        "GO clipboard UI is present in existing comparison flow": "PokemonGoSearchPanel(\n                league = compareLeague," in
             (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text(),
+        "GO candidates are manually entered into an actual isolated Room Inbox": all(
+            token in (android_test/"PokemonGoCandidateHandoffAndroidTest.kt").read_text()
+            for token in [
+                "PvPGoApp(", "Room.inMemoryDatabaseBuilder",
+                "go-search-record-candidate", "go-search-review-inbox",
+                "manual-import-species-search", "manual-import-iv-ataque",
+                "manual-import-submit", "repository.pendingInbox.first()",
+                "repository.currentCollection()"
+            ]
+        ),
+        "GO filter guide has direct real destinations without auto-import": all(
+            token in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for token in [
+                "onRecordCandidates = {", "route = CollectionRoute.MANUAL_GUIDED",
+                "manualReturnRoute = CollectionRoute.LIST"
+            ]
+        ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()
