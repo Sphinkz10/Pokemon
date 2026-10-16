@@ -20,6 +20,11 @@ Na primeira execução do PR #44, o erro de Room já não reapareceu, mas a suit
 
 A suite foi corrigida para carregar os rankings verdadeiros e selecionar explicitamente `Ver os 4 exemplares` antes de procurar o ID "a". Um contrato no CI exige esse fluxo, sem alterar os cálculos reais da aplicação. O merge continua bloqueado até **112/112 testes passarem**.
 
+## Terceira falha: ecrã de Coleção assíncrono
+Na execução seguinte, o teste `PokemonGoCandidateHandoffAndroidTest.candidateIvPreviewOpensAndClosesWithoutAutoAddingOwnedPokemon` encontrou `collection-guide-compare` ausente. A UI da Coleção é uma `LazyColumn` e o teste usava `onNodeWithTag("collection-guide-compare").performScrollTo()` sem esperar que a lista estivesse composta.
+
+A prova JUnit indica falha de procura do nó, **não perda de dados nem erro comprovado de navegação em produção**. O teste foi atualizado para aguardar `collection-overview-scroll` e usar `performScrollToNode(hasTestTag("collection-guide-compare"))`, evitando temporizações arbitrárias.
+
 ## Gates para integração
 1. A compilação/JVM/APK mantém todos os verificadores verdes.
 2. O emulador Android 35 executa **112/112 casos**, incluindo a jornada que falhou na main, sem skips nem erros.
