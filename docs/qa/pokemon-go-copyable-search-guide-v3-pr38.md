@@ -33,7 +33,7 @@ Os equivalentes PT usam `ataque`, `defesa`, `ps`; o nome dos termos pode variar 
 ## Provas requeridas
 - **14 testes JVM** `PokemonGoSearchPolicyTest`: sugestões por liga, inglês/português, 5 perfis e ausência de buscas destrutivas.
 - **5 testes Android Compose** `PokemonGoSearchComposeAndroidTest`: perfil por defeito, área de transferência real após clique, alteração de liga, 4* e integração real com a Coleção vazia.
-- O gate Android `tests/v3_android_emulator/verify_instrumentation.py` aumenta de **87 para 92 testes** reais executados via JUnit XML, sem falhas/skips.
+- O gate Android `tests/v3_android_emulator/verify_instrumentation.py` aumenta de **88 para 93 testes** reais executados via JUnit XML, sem falhas/skips.
 - Verificador `tests/v3_go_search/verify_search.py` corre no pipeline habitual APK/JVM.
 - Os 110 cenários E2E globais mantêm contagem independente; não somar 5 novos testes como E2E globais sem mapeamento explícito.
 
