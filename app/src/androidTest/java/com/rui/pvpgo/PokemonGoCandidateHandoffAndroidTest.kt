@@ -72,6 +72,35 @@ class PokemonGoCandidateHandoffAndroidTest {
         rule.onNodeWithTag("go-search-review-inbox").performClick()
     }
 
+
+    /** Real manual-capture UI; no test repository shortcuts to confirm/discard. */
+    private fun captureOnePendingCandidate(): String {
+        startComparison()
+        openGuidedCapture()
+        rule.onNodeWithTag("manual-import-species-search").performTextInput("Pikachu")
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("manual-import-species-go-hand-off-pikachu"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithTag("manual-import-species-go-hand-off-pikachu").performClick()
+        rule.onNodeWithTag("manual-import-iv-ataque")
+            .performScrollTo().performTextInput("0")
+        rule.onNodeWithTag("manual-import-iv-defesa")
+            .performScrollTo().performTextInput("15")
+        rule.onNodeWithTag("manual-import-iv-hp")
+            .performScrollTo().performTextInput("15")
+        rule.onNodeWithTag("manual-import-scroll")
+            .performScrollToNode(hasTestTag("manual-import-submit"))
+        rule.onNodeWithTag("manual-import-submit").performClick()
+        rule.waitUntil(15000) { runBlocking { repository.pendingInbox.first().size } == 1 }
+        val candidateId = runBlocking { repository.pendingInbox.first().single().id }
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("inbox-candidate-$candidateId"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        return candidateId
+    }
+
     @Test fun filterStepHasRealActionsAndDoesNotInventAnImportedPokemon() {
         startComparison()
         rule.onNodeWithTag("go-search-next-guidance").assertExists()
@@ -140,4 +169,62 @@ class PokemonGoCandidateHandoffAndroidTest {
             assertTrue(runBlocking { repository.currentCollection() }.isEmpty())
         }
     }
+
+    @Test fun candidateIvPreviewOpensAndClosesWithoutAutoAddingOwnedPokemon() {
+        val candidateId = captureOnePendingCandidate()
+        rule.onNodeWithTag("inbox-preview-$candidateId").performClick()
+        rule.onNodeWithText("Fechar pré-visualização de IVs").assertExists()
+        rule.onNodeWithTag("inbox-preview-$candidateId").performClick()
+        rule.onNodeWithText("Ver ranking de IVs por liga").assertExists()
+        rule.runOnIdle {
+            assertTrue(runBlocking { repository.currentCollection() }.isEmpty())
+            assertEquals(1, runBlocking { repository.pendingInbox.first().size })
+        }
+    }
+
+    @Test fun explicitlyDiscardedCandidateNeverEntersOwnedCollection() {
+        val candidateId = captureOnePendingCandidate()
+        rule.onNodeWithTag("inbox-discard-$candidateId").performClick()
+        rule.waitUntil(15000) {
+            runBlocking { repository.pendingInbox.first().isEmpty() }
+        }
+        rule.onNodeWithText("Não há candidatos pendentes.").assertExists()
+        rule.runOnIdle {
+            assertTrue(runBlocking { repository.currentCollection() }.isEmpty())
+            val reviewed = runBlocking { repository.inbox.first() }.single()
+            assertEquals(candidateId, reviewed.id)
+            assertEquals("DISCARDED", reviewed.status.name)
+            assertEquals(null, reviewed.linkedOwnedPokemonId)
+        }
+    }
+
+    @Test fun explicitConfirmCreatesExactOwnedPokemonAndOpensReal360() {
+        val candidateId = captureOnePendingCandidate()
+        val before = runBlocking { repository.pendingInbox.first().single() }
+        val candidate = before.candidate
+        rule.onNodeWithTag("inbox-confirm-$candidateId").performClick()
+        rule.waitUntil(15000) {
+            runBlocking {
+                repository.currentCollection().size == 1 &&
+                    repository.pendingInbox.first().isEmpty()
+            }
+        }
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("pokemon-360-back"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.runOnIdle {
+            val saved = runBlocking { repository.currentCollection() }.single()
+            assertEquals(candidate.id, saved.id)
+            assertEquals(species.speciesId, saved.speciesId)
+            assertEquals(0, saved.iv.attack)
+            assertEquals(15, saved.iv.defense)
+            assertEquals(15, saved.iv.stamina)
+            val reviewed = runBlocking { repository.inbox.first() }.single()
+            assertEquals(candidateId, reviewed.id)
+            assertEquals("CONFIRMED_NEW", reviewed.status.name)
+            assertEquals(saved.id, reviewed.linkedOwnedPokemonId)
+        }
+    }
+
 }
