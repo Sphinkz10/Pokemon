@@ -169,6 +169,10 @@ fun CollectionModuleScreen(
             pendingCount = pending.size,
             onAdd = { route = CollectionRoute.IMPORT_HOME },
             onInbox = { route = CollectionRoute.INBOX },
+            onRecordCandidates = {
+                manualReturnRoute = CollectionRoute.LIST
+                route = CollectionRoute.MANUAL_GUIDED
+            },
             onSelectOwned = { id ->
                 selectedOwnedId = id
                 selectedSpeciesId = collection.firstOrNull { it.id == id }?.speciesId
