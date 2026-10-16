@@ -18,7 +18,17 @@ checks={
  "clipboard only on explicit user click": "setPrimaryClip(ClipData.newPlainText(" in panel and "onClick = {" in panel,
  "copied text tied to exact selected query": "lastCopied == query" in panel and "lastCopied = query" in panel,
  "safety warning against transferring exists": "Não transfiras Pokémon" in panel,
- "go search is part of existing COMPARE flow": "PokemonGoSearchPanel(league = compareLeague)" in collection and "selected == CollectionGuideStep.COMPARE" in collection,
+ "go search is part of existing COMPARE flow": "PokemonGoSearchPanel(\n                league = compareLeague," in collection and "selected == CollectionGuideStep.COMPARE" in collection,
+ "copy step leads to manual guided registration and Inbox without automatic import":
+    all(x in panel for x in [
+        "onRecordCandidates", "onReviewCandidates",
+        'testTag("go-search-record-candidate")',
+        'testTag("go-search-review-inbox")',
+        "O registo vai primeiro para a Inbox"
+    ]) and all(x in collection for x in [
+        "onRecordCandidates = onRecordCandidates ?: onAdd",
+        "onReviewCandidates = onInbox"
+    ]),
  "no new competing collection guide": collection.count("CollectionJourneyGuide(")==2,
  "fourteen or more explicit JVM cases": jvm.count("@Test fun ")>=14,
  "five or more real Android UI cases": android.count("@Test fun ")>=5 and "clipText()" in android,
