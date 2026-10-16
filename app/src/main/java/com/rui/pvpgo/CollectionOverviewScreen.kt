@@ -571,7 +571,7 @@ private fun CollectionTabs(tab: CollectionViewTab, onSelect: (CollectionViewTab)
 @Composable
 private fun PendingReviewCard(count: Int, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().testTag("collection-open-inbox").clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
         color = PvpColors.SurfaceRaised,
         border = BorderStroke(1.dp, PvpColors.BorderDefault)
