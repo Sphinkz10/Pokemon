@@ -184,6 +184,8 @@ class PokemonGoCandidateHandoffAndroidTest {
 
     @Test fun explicitlyDiscardedCandidateNeverEntersOwnedCollection() {
         val candidateId = captureOnePendingCandidate()
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-discard-$candidateId"))
         rule.onNodeWithTag("inbox-discard-$candidateId").performClick()
         rule.waitUntil(15000) {
             runBlocking { repository.pendingInbox.first().isEmpty() }
@@ -202,6 +204,8 @@ class PokemonGoCandidateHandoffAndroidTest {
         val candidateId = captureOnePendingCandidate()
         val before = runBlocking { repository.pendingInbox.first().single() }
         val candidate = before.candidate
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-confirm-$candidateId"))
         rule.onNodeWithTag("inbox-confirm-$candidateId").performClick()
         rule.waitUntil(15000) {
             runBlocking {

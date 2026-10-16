@@ -61,6 +61,8 @@ jobs:
         run: python3 tests/v1_56_league_360/verify_wiring.py
       - name: Validate V1.57 collection flow and edit integrity
         run: python3 tests/v1_57_collection_flow/verify_flow.py
+      - name: Validate V3 safe Inbox filtering
+        run: python3 tests/v3_inbox_triage/verify_triage.py
       - name: Validate V3 candidate-to-analysis journey
         run: python3 tests/v3_candidate_review/verify_handoff.py
       - name: Validate V3 explainable candidate decisions

@@ -881,6 +881,17 @@ private fun InboxScreen(
     var actionError by remember { mutableStateOf<String?>(null) }
     var busyId by remember { mutableStateOf<String?>(null) }
     var expandedCandidateId by rememberSaveable { mutableStateOf<String?>(null) }
+    var triageSearch by rememberSaveable { mutableStateOf("") }
+    var triageFilter by rememberSaveable { mutableStateOf(InboxTriageFilter.ALL) }
+    val triage = remember(pending, collection, byId, triageSearch, triageFilter) {
+        InboxTriagePolicy.evaluate(
+            pending = pending,
+            collection = collection,
+            speciesNamesById = byId.mapValues { it.value.name },
+            search = triageSearch,
+            filter = triageFilter
+        )
+    }
 
     Scaffold(topBar = { TopAppBar(title = { Text(if (pendingLoaded) "Review Inbox · ${pending.size}" else "Review Inbox") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
         if (!pendingLoaded) {
@@ -907,15 +918,77 @@ private fun InboxScreen(
             }
         } else {
             LazyColumn(
-                Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
+                Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize()
+                    .testTag("inbox-list"),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(top = 12.dp, bottom = 28.dp)
             ) {
+                item {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "ORGANIZAR CANDIDATOS · ${triage.visible.size} de ${triage.totalPending}",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.testTag("inbox-triage-count")
+                        )
+                        Text(
+                            "${triage.possibleMatches} possível(is) correspondência(s) com a tua Coleção · " +
+                                "${triage.noMatches} sem correspondência · " +
+                                "${triage.missingData} com dados por completar.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        OutlinedTextField(
+                            value = triageSearch,
+                            onValueChange = { triageSearch = it },
+                            label = { Text("Procurar espécie, nome ou IVs") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth().testTag("inbox-triage-search")
+                        )
+                        Row(
+                            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            InboxTriageFilter.entries.forEach { option ->
+                                FilterChip(
+                                    selected = triageFilter == option,
+                                    onClick = { triageFilter = option },
+                                    label = { Text(option.label) },
+                                    modifier = Modifier.heightIn(min = 48.dp)
+                                        .testTag("inbox-triage-${option.name.lowercase()}")
+                                )
+                            }
+                        }
+                        Text(
+                            "Estas categorias só organizam a revisão. Uma possível correspondência " +
+                                "não prova que seja o mesmo Pokémon. Nada é importado, fundido ou descartado automaticamente.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
                 actionError?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
-                items(pending, key = { it.id }) { item ->
+                if (triage.visible.isEmpty()) {
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Nenhum candidato corresponde à pesquisa ou filtro atual.")
+                            TextButton(
+                                onClick = {
+                                    triageSearch = ""
+                                    triageFilter = InboxTriageFilter.ALL
+                                },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                    .testTag("inbox-triage-reset")
+                            ) { Text("Mostrar todos os candidatos") }
+                        }
+                    }
+                }
+                items(triage.visible, key = { it.id }) { item ->
                     val c = item.candidate
                     val species = byId[c.speciesId]
-                    val report = remember(item, collection) { CollectionReconciler.reconcile(c, collection) }
+                    val report = requireNotNull(triage.reconciliationById[item.id]) {
+                        "Pending Inbox must have an explicit reconciliation report"
+                    }
                     Card(Modifier.fillMaxWidth().testTag("inbox-candidate-${item.id}")) {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
