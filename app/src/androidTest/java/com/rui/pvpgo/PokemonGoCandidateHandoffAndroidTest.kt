@@ -187,6 +187,12 @@ class PokemonGoCandidateHandoffAndroidTest {
         rule.onNodeWithTag("inbox-list")
             .performScrollToNode(hasTestTag("inbox-discard-$candidateId"))
         rule.onNodeWithTag("inbox-discard-$candidateId").performClick()
+        rule.onNodeWithText("Descartar este candidato?").assertExists()
+        rule.runOnIdle {
+            assertEquals(1, runBlocking { repository.pendingInbox.first().size })
+            assertTrue(runBlocking { repository.currentCollection() }.isEmpty())
+        }
+        rule.onNodeWithTag("inbox-discard-confirm").performClick()
         rule.waitUntil(15000) {
             runBlocking { repository.pendingInbox.first().isEmpty() }
         }
