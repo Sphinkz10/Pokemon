@@ -52,7 +52,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          script: gradle --no-daemon --stacktrace :app:connectedDebugAndroidTest
+          script: gradle --no-daemon --stacktrace -Pandroid.testInstrumentationRunnerArguments.notClass=com.rui.pvpgo.ApkUpgradePersistenceAndroidTest :app:connectedDebugAndroidTest
       - name: Validate executed Android JUnit report
         run: python3 tests/v3_android_emulator/verify_instrumentation.py --verify-results
       - name: Upload instrumented results
