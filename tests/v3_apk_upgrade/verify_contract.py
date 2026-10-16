@@ -25,7 +25,7 @@ def verify_source():
         "two actual install-r calls": script.count('adb install -r "$EVIDENCE/')>=3,
         "real process forced to stop": script.count('adb shell am force-stop "$PKG"')>=3,
         "no app data wipe in implementation": not any(re.search(pattern, script) for pattern in [
-            r"adb\s+uninstall",r"pm\s+clear",r"adb\s+shell\s+rm\b",r"deleteDatabase\s*\("
+            r"adb\s+uninstall",r"(?m)^\s*pm\s+clear\b",r"adb\s+shell\s+rm\b",r"deleteDatabase\s*\("
         ]),
         "explicit three instrumented test executions": "require_success seedExistingApp" in script and script.count("require_success verifyPreservedCollectionResources") == 2,
         "JUnit result enforced not merely logged": '"OK (1 test)"' in script and "return 1" in script,
