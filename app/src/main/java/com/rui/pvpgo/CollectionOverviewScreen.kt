@@ -79,7 +79,8 @@ internal fun CollectionOverviewScreen(
     onOpenIvTargetsForLeague: ((String, League) -> Unit)? = null,
     onStartPlan: ((String, League) -> Unit)? = null,
     resourceStoreOverride: UserResourceStore? = null,
-    onOpenSavedPlanAction: ((String, League, SavedPlanNextStep) -> Unit)? = null
+    onOpenSavedPlanAction: ((String, League, SavedPlanNextStep) -> Unit)? = null,
+    onRecordCandidates: (() -> Unit)? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(CollectionViewTab.COLLECTION) }
@@ -260,7 +261,9 @@ internal fun CollectionOverviewScreen(
                     onCompareLeague = { pvpCompareLeague = it },
                     onCompareStage = { pvpCompareStage = it },
                     hasSavedPokemon = collection.isNotEmpty(),
-                    onRecoverEmptySelection = recoverEmptySelection
+                    onRecoverEmptySelection = recoverEmptySelection,
+                    onRecordCandidates = onRecordCandidates ?: onAdd,
+                    onReviewCandidates = onInbox
                 )
             }
             item { CollectionFilterRow(filter, onSelect = { filter = it }) }
@@ -593,7 +596,9 @@ private fun CollectionJourneyGuide(
     onCompareLeague: (League) -> Unit,
     onCompareStage: (PvpGuideStage) -> Unit,
     hasSavedPokemon: Boolean,
-    onRecoverEmptySelection: () -> Unit
+    onRecoverEmptySelection: () -> Unit,
+    onRecordCandidates: () -> Unit,
+    onReviewCandidates: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -666,7 +671,11 @@ private fun CollectionJourneyGuide(
             Text("Filtra o CP atual, não o ranking IV. Em IV Targets confirma a liga antes de comparar ranks.",
                 color = PvpColors.TextSecondary,
                 style = MaterialTheme.typography.bodySmall)
-            PokemonGoSearchPanel(league = compareLeague)
+            PokemonGoSearchPanel(
+                league = compareLeague,
+                onRecordCandidates = onRecordCandidates,
+                onReviewCandidates = onReviewCandidates
+            )
         }
         Text(
             "$visibleCount ${if (visibleCount == 1) "exemplar" else "exemplares"} nesta seleção",

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,11 @@ import com.rui.pvpgo.ui.theme.PvpColors
  * evaluates a true IV rank or edits the player's Pokémon GO account.
  */
 @Composable
-internal fun PokemonGoSearchPanel(league: League) {
+internal fun PokemonGoSearchPanel(
+    league: League,
+    onRecordCandidates: (() -> Unit)? = null,
+    onReviewCandidates: (() -> Unit)? = null
+) {
     val context = LocalContext.current
     var preset by rememberSaveable(league) {
         mutableStateOf(PokemonGoSearchPolicy.suggestedFor(league))
@@ -58,7 +63,7 @@ internal fun PokemonGoSearchPanel(league: League) {
         Text(
             "1 · Escolhe um perfil. 2 · Copia a pesquisa. " +
                 "3 · Abre Pokémon GO → Pokémon → Lupa e cola. " +
-                "4 · Confirma a avaliação e volta aqui para comparar IVs por espécie e liga.",
+                "4 · Confirma a avaliação no jogo. 5 · Volta aqui para registar os IVs e rever cada candidato por liga.",
             color = PvpColors.TextSecondary,
             style = MaterialTheme.typography.bodySmall
         )
@@ -125,6 +130,36 @@ internal fun PokemonGoSearchPanel(league: League) {
                 color = PvpColors.AccentGreen,
                 style = MaterialTheme.typography.bodySmall
             )
+        }
+        if (onRecordCandidates != null || onReviewCandidates != null) {
+            Text(
+                "DEPOIS DE CONSULTARES O POKÉMON GO",
+                color = PvpColors.TextPrimary,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                "A pesquisa apenas mostra Pokémon no jogo. Regista manualmente espécie e IVs " +
+                    "confirmados no Pokémon GO. O registo vai primeiro para a Inbox, " +
+                    "onde decides se o adicionas à Coleção.",
+                color = PvpColors.TextSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("go-search-next-guidance")
+            )
+            if (onRecordCandidates != null) {
+                Button(
+                    onClick = onRecordCandidates,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("go-search-record-candidate")
+                ) { Text("Registar candidato encontrado") }
+            }
+            if (onReviewCandidates != null) {
+                OutlinedButton(
+                    onClick = onReviewCandidates,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .testTag("go-search-review-inbox")
+                ) { Text("Rever candidatos na Inbox") }
+            }
         }
         Text(
             "ATENÇÃO: são grupos aproximados de IV, não IVs exatos, rank PvP, " +
