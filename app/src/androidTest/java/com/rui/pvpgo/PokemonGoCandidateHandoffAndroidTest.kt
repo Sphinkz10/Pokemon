@@ -124,7 +124,9 @@ class PokemonGoCandidateHandoffAndroidTest {
             .performScrollTo().performTextInput("15")
         rule.onNodeWithTag("manual-import-iv-hp")
             .performScrollTo().performTextInput("15")
-        rule.onNodeWithTag("manual-import-submit").performScrollTo().performClick()
+        rule.onNodeWithTag("manual-import-scroll")
+            .performScrollToNode(hasTestTag("manual-import-submit"))
+        rule.onNodeWithTag("manual-import-submit").performClick()
         rule.waitUntil(15000) {
             runBlocking { repository.pendingInbox.first().size } == 1
         }
