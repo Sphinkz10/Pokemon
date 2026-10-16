@@ -23,7 +23,7 @@ required={
     "OwnedIvCompareComposeAndroidTest":4,
     "CollectionPlanJourneyAndroidTest":18,
     "PokemonGoSearchComposeAndroidTest":5,
-    "PokemonGoCandidateHandoffAndroidTest":4,
+    "PokemonGoCandidateHandoffAndroidTest":7,
 }
 
 def source_contract():
@@ -282,6 +282,26 @@ def source_contract():
             for token in [
                 "onRecordCandidates = {", "route = CollectionRoute.MANUAL_GUIDED",
                 "manualReturnRoute = CollectionRoute.LIST"
+            ]
+        ),
+        "Inbox UI exposes unique per-candidate actions": all(
+            tag in (root/"app/src/main/java/com/rui/pvpgo/CoreScreens.kt").read_text()
+            for tag in [
+                'testTag("inbox-candidate-${item.id}")',
+                'testTag("inbox-preview-${item.id}")',
+                'testTag("inbox-confirm-${item.id}")',
+                'testTag("inbox-discard-${item.id}")'
+            ]
+        ),
+        "Inbox E2E covers confirmed and discarded data without silent promotion": all(
+            token in (android_test/"PokemonGoCandidateHandoffAndroidTest.kt").read_text()
+            for token in [
+                "fun candidateIvPreviewOpensAndClosesWithoutAutoAddingOwnedPokemon()",
+                "fun explicitlyDiscardedCandidateNeverEntersOwnedCollection()",
+                "fun explicitConfirmCreatesExactOwnedPokemonAndOpensReal360()",
+                'assertEquals("CONFIRMED_NEW", reviewed.status.name)',
+                'assertEquals("DISCARDED", reviewed.status.name)',
+                'pokemon-360-back'
             ]
         ),
         "source test count minimum": all(
