@@ -2,6 +2,9 @@ package com.rui.pvpgo
 
 import android.content.Context
 import androidx.room.Room
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -34,6 +37,9 @@ class CollectionNavigationJourneyAndroidTest {
     @get:Rule val rule = createComposeRule()
     private lateinit var database: PvpUserDatabase
     private lateinit var repository: CollectionRepository
+    // Tear down the live Compose collectors before closing the test's Room pool.
+    private var compositionActive by mutableStateOf(true)
+    private var contentInstalled = false
 
     private val species = PokemonSpecies(
         dex = 25, speciesId = "journey-nav-species-25", name = "Navegação Pikachu",
@@ -59,15 +65,30 @@ class CollectionNavigationJourneyAndroidTest {
     }
 
     @After fun teardown() {
-        database.close()
+        // @After runs BEFORE createComposeRule disposes its host composition.
+        // Closing Room first races active collectAsState Flow queries and can
+        // cause SQLiteConnectionPool.throwIfClosedLocked on CI devices.
+        // Explicitly remove the app subtree, allow effect cancellation to
+        // settle, and only then close the isolated test database.
+        try {
+            if (contentInstalled) {
+                rule.runOnIdle { compositionActive = false }
+                rule.waitForIdle()
+            }
+        } finally {
+            database.close()
+        }
     }
 
     private fun launchRoot() {
+        contentInstalled = true
         rule.setContent {
-            PvPGoApp(
-                catalogOverride = listOf(species),
-                collectionRepositoryOverride = repository
-            )
+            if (compositionActive) {
+                PvPGoApp(
+                    catalogOverride = listOf(species),
+                    collectionRepositoryOverride = repository
+                )
+            }
         }
     }
 
