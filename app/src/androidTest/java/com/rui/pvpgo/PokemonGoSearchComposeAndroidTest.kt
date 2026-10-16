@@ -15,6 +15,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -86,7 +87,7 @@ class PokemonGoSearchComposeAndroidTest {
 
     @Test fun perfectIvUses4StarSearchButMakesNoPvpRankClaim() {
         render(League.MASTER)
-        rule.onNodeWithTag("go-search-preset-perfect").performClick()
+        rule.onNodeWithTag("go-search-preset-perfect").performScrollTo().performClick()
         rule.onNodeWithTag("go-search-query").assertTextContains("4*")
         rule.onNodeWithTag("go-search-copy").performClick()
         rule.runOnIdle { assertEquals("4*", clipText()) }
