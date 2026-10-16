@@ -662,7 +662,7 @@ private fun ManualImportScreen(
     var busy by remember { mutableStateOf(false) }
     val results = remember(query, catalog) { if (query.length < 2) emptyList() else PokemonSearch.find(catalog, query, 12) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text(if (guided) "Adicionar · Guiado" else "Adicionar · Rápido") }, navigationIcon = { TextButton(onClick = onBack) { Text("←") } }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text(if (guided) "Adicionar · Guiado" else "Adicionar · Rápido") }, navigationIcon = { TextButton(onClick = onBack, modifier = Modifier.testTag("manual-import-back")) { Text("←") } }) }) { padding ->
         LazyColumn(
             Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -677,10 +677,10 @@ private fun ManualImportScreen(
             }
             if (selected == null) {
                 item {
-                    OutlinedTextField(query, { query = it }, label = { Text("Pokémon") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(query, { query = it }, label = { Text("Pokémon") }, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("manual-import-species-search"))
                 }
                 items(results, key = { it.speciesId }) { species ->
-                    Card(Modifier.fillMaxWidth().clickable { selected = species; query = species.name }) {
+                    Card(Modifier.fillMaxWidth().testTag("manual-import-species-${species.speciesId}").clickable { selected = species; query = species.name }) {
                         Column(Modifier.padding(12.dp)) {
                             Text(species.name, fontWeight = FontWeight.Bold)
                             Text("#${species.dex} · ${species.speciesId}", style = MaterialTheme.typography.labelSmall)
@@ -774,7 +774,7 @@ private fun ManualImportScreen(
                             }
                         },
                         enabled = !busy && CandidateReviewPolicy.hasExplicitIvs(atk, def, hp),
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("manual-import-submit")
                     ) { Text(if (busy) "A preparar…" else "Rever antes de guardar") }
                 }
                 error?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
@@ -796,7 +796,7 @@ private fun CompactIvInput(
         label = { Text(label) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = modifier
+        modifier = modifier.testTag("manual-import-iv-${label.lowercase()}")
     )
 }
 
