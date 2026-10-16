@@ -74,8 +74,16 @@ class OwnedIvCompareComposeAndroidTest {
         rule.onNodeWithTag("iv-targets-scroll").performScrollToNode(hasTestTag(tag))
     }
 
+    private fun showAllFourOwned() {
+        // The first three are sorted by real IV rank: a fixture named "a"
+        // is not guaranteed to be among them. Expand intentionally.
+        scroll("iv-owned-toggle-all")
+        rule.onNodeWithTag("iv-owned-toggle-all").performClick()
+    }
+
     @Test fun listsRealOwnedRanksAndDoesNotPretendThoseAreMetaRankings() {
         render()
+        showAllFourOwned()
         scroll("iv-owned-rank-a")
         rule.onNodeWithTag("iv-owned-rank-a")
             .assertTextContains("Rank IV #", substring = true)
@@ -114,6 +122,7 @@ class OwnedIvCompareComposeAndroidTest {
 
     @Test fun rankingCardsRemainReadOnlyWithoutNavigationCallback() {
         render(onOpenOwned = null)
+        showAllFourOwned()
         scroll("iv-owned-row-a")
         rule.onNodeWithTag("iv-owned-row-a").assertExists()
         rule.onNodeWithTag("iv-owned-open-a").assertDoesNotExist()
