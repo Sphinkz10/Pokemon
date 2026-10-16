@@ -3,6 +3,7 @@ package com.rui.pvpgo
 import android.content.Context
 import androidx.room.Room
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -145,6 +146,11 @@ class InboxTriageComposeAndroidTest {
         rule.onNodeWithTag("inbox-list")
             .performScrollToNode(hasTestTag("inbox-discard-triage-different"))
         rule.onNodeWithTag("inbox-discard-triage-different").performClick()
+        rule.onNodeWithTag("inbox-discard-confirm").assertExists()
+        rule.runOnIdle {
+            assertEquals(3, runBlocking { repository.pendingInbox.first().size })
+        }
+        rule.onNodeWithTag("inbox-discard-confirm").performClick()
         rule.waitUntil(15000) {
             runBlocking { repository.pendingInbox.first().size } == 2
         }
@@ -157,4 +163,47 @@ class InboxTriageComposeAndroidTest {
             assertEquals("saved-25", runBlocking { repository.currentCollection() }.single().id)
         }
     }
+    @Test fun cancelDiscardLeavesAllPendingCandidatesUntouched() {
+        openInbox()
+        filter("no_matches")
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-discard-triage-different"))
+        rule.onNodeWithTag("inbox-discard-triage-different").performClick()
+        rule.onNodeWithText("Descartar este candidato?").assertExists()
+        rule.onNodeWithTag("inbox-discard-cancel").performClick()
+        rule.runOnIdle {
+            assertEquals(3, runBlocking { repository.pendingInbox.first().size })
+            assertEquals(1, runBlocking { repository.currentCollection().size })
+        }
+        requireCandidate("triage-different")
+    }
+
+    @Test fun explicitlyUndoingDiscardRestoresPendingWithoutCreatingOwned() {
+        openInbox()
+        filter("no_matches")
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-discard-triage-different"))
+        rule.onNodeWithTag("inbox-discard-triage-different").performClick()
+        rule.onNodeWithTag("inbox-discard-confirm").performClick()
+        rule.waitUntil(15000) {
+            runBlocking { repository.pendingInbox.first().size } == 2
+        }
+        rule.waitUntil(10000) {
+            rule.onAllNodes(hasText("Desfazer")).fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithText("Desfazer").performClick()
+        rule.waitUntil(15000) {
+            runBlocking { repository.pendingInbox.first().size } == 3
+        }
+        rule.onNodeWithTag("inbox-triage-count")
+            .assertTextContains("2 de 3", substring = true)
+        requireCandidate("triage-different")
+        rule.runOnIdle {
+            val entries = runBlocking { repository.inbox.first() }
+            assertEquals("PENDING",
+                entries.single { it.id == "triage-different" }.status.name)
+            assertEquals(1, runBlocking { repository.currentCollection().size })
+        }
+    }
+
 }
