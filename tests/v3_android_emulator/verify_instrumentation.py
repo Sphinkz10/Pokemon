@@ -22,6 +22,7 @@ required={
     "PvpGuidedCollectionComposeAndroidTest":8,
     "OwnedIvCompareComposeAndroidTest":4,
     "CollectionPlanJourneyAndroidTest":18,
+    "PokemonGoSearchComposeAndroidTest":5,
 }
 
 def source_contract():
@@ -256,6 +257,15 @@ def source_contract():
                 "pvp-compare-league-"
             ]
         ),
+        "real Pokémon GO search clipboard UI tested": all(
+            token in (android_test/"PokemonGoSearchComposeAndroidTest.kt").read_text()
+            for token in [
+                "PokemonGoSearchPanel(", "go-search-copy", "clipText()",
+                "go-search-language-pt", "collection-guide-compare"
+            ]
+        ),
+        "GO clipboard UI is present in existing comparison flow": "PokemonGoSearchPanel(league = compareLeague)" in
+            (root/"app/src/main/java/com/rui/pvpgo/CollectionOverviewScreen.kt").read_text(),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()

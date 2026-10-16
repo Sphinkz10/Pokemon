@@ -81,6 +81,8 @@ jobs:
         run: python3 tests/v3_affordable_level/verify_affordable.py
       - name: Validate step-by-step IV evaluation in Collection
         run: python3 tests/v3_guided_iv/verify_guide.py
+      - name: Validate V3 copyable Pokemon GO IV search guides
+        run: python3 tests/v3_go_search/verify_search.py
       - name: Validate V1.58 lifecycle-safe Collection navigation
         run: python3 tests/v1_58_navigation_lifecycle/verify_navigation.py
       - name: Validate Team Advisor locked-slot regression wiring

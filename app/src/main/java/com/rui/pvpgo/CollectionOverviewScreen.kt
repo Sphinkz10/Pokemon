@@ -666,6 +666,7 @@ private fun CollectionJourneyGuide(
             Text("Filtra o CP atual, não o ranking IV. Em IV Targets confirma a liga antes de comparar ranks.",
                 color = PvpColors.TextSecondary,
                 style = MaterialTheme.typography.bodySmall)
+            PokemonGoSearchPanel(league = compareLeague)
         }
         Text(
             "$visibleCount ${if (visibleCount == 1) "exemplar" else "exemplares"} nesta seleção",
