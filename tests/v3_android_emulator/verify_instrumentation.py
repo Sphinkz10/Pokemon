@@ -308,7 +308,7 @@ def source_contract():
         "Inbox triage is real Android Room, not an invented result": all(
             item in (android_test/"InboxTriageComposeAndroidTest.kt").read_text()
             for item in ["Room.inMemoryDatabaseBuilder", "repository.pendingInbox.first()",
-                         "inbox-triage-possible_matches", "inbox-triage-reset",
+                         'filter("possible_matches")', "inbox-triage-reset",
                          "inbox-discard-triage-different", "performClick()"]
         ),
         "Inbox filtering cannot silently mutate saved Pokémon": all(
