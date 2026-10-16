@@ -918,7 +918,8 @@ private fun InboxScreen(
             }
         } else {
             LazyColumn(
-                Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize(),
+                Modifier.padding(padding).padding(horizontal = 16.dp).fillMaxSize()
+                    .testTag("inbox-list"),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(top = 12.dp, bottom = 28.dp)
             ) {
