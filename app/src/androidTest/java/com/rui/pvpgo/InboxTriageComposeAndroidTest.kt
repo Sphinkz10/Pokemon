@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextClearance
 import androidx.test.core.app.ApplicationProvider
@@ -87,13 +88,19 @@ class InboxTriageComposeAndroidTest {
         rule.onNodeWithTag("inbox-triage-$tag").performScrollTo().performClick()
     }
 
+    private fun requireCandidate(id: String) {
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-candidate-$id"))
+        rule.onNodeWithTag("inbox-candidate-$id").assertExists()
+    }
+
     @Test fun inboxShowsCountsAndAllPendingBeforeFiltering() {
         openInbox()
         rule.onNodeWithTag("inbox-triage-count")
             .assertTextContains("3 de 3", substring = true)
-        rule.onNodeWithTag("inbox-candidate-triage-match").assertExists()
-        rule.onNodeWithTag("inbox-candidate-triage-different").assertExists()
-        rule.onNodeWithTag("inbox-candidate-triage-unknown").assertExists()
+        requireCandidate("triage-match")
+        requireCandidate("triage-different")
+        requireCandidate("triage-unknown")
     }
 
     @Test fun possibleCorrespondenceFilterShowsOnlyMatchingSpecimen() {
@@ -101,7 +108,7 @@ class InboxTriageComposeAndroidTest {
         filter("possible_matches")
         rule.onNodeWithTag("inbox-triage-count")
             .assertTextContains("1 de 3", substring = true)
-        rule.onNodeWithTag("inbox-candidate-triage-match").assertExists()
+        requireCandidate("triage-match")
         rule.onNodeWithTag("inbox-candidate-triage-different").assertDoesNotExist()
         rule.runOnIdle {
             assertEquals(3, runBlocking { repository.pendingInbox.first().size })
@@ -129,14 +136,15 @@ class InboxTriageComposeAndroidTest {
         rule.onNodeWithTag("inbox-triage-reset").performScrollTo().performClick()
         rule.onNodeWithTag("inbox-triage-count")
             .assertTextContains("3 de 3", substring = true)
-        rule.onNodeWithTag("inbox-candidate-triage-match").assertExists()
+        requireCandidate("triage-match")
     }
 
     @Test fun actualExplicitDiscardAfterFilteringOnlyRemovesChosenPending() {
         openInbox()
         filter("no_matches")
-        rule.onNodeWithTag("inbox-discard-triage-different")
-            .performScrollTo().performClick()
+        rule.onNodeWithTag("inbox-list")
+            .performScrollToNode(hasTestTag("inbox-discard-triage-different"))
+        rule.onNodeWithTag("inbox-discard-triage-different").performClick()
         rule.waitUntil(15000) {
             runBlocking { repository.pendingInbox.first().size } == 2
         }
