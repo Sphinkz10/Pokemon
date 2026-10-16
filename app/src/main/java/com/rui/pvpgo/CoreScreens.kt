@@ -916,7 +916,7 @@ private fun InboxScreen(
                     val c = item.candidate
                     val species = byId[c.speciesId]
                     val report = remember(item, collection) { CollectionReconciler.reconcile(c, collection) }
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(Modifier.fillMaxWidth().testTag("inbox-candidate-${item.id}")) {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(species?.name ?: c.speciesId, fontWeight = FontWeight.Bold)
@@ -945,6 +945,7 @@ private fun InboxScreen(
                                         if (expandedCandidateId == item.id) null else item.id
                                 },
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                    .testTag("inbox-preview-${item.id}")
                             ) {
                                 Text(
                                     if (expandedCandidateId == item.id)
@@ -974,6 +975,7 @@ private fun InboxScreen(
                                     },
                                     enabled = busyId == null,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                        .testTag("inbox-confirm-${item.id}")
                                 ) { Text(CandidateReviewPolicy.saveAction(report.matches.isNotEmpty())) }
                                 OutlinedButton(
                                     onClick = {
@@ -986,6 +988,7 @@ private fun InboxScreen(
                                     },
                                     enabled = busyId == null,
                                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                        .testTag("inbox-discard-${item.id}")
                                 ) { Text("Descartar") }
                             }
                         }
