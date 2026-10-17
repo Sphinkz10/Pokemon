@@ -54,7 +54,15 @@ class PokemonGoCandidateHandoffAndroidTest {
             )
         }
         rule.onNodeWithTag("app-tab-collection").performClick()
-        rule.onNodeWithTag("collection-guide-compare").performScrollTo().performClick()
+        // Room data is asynchronous and this card may be below the LazyColumn
+        // fold. Wait for the real scroll container, not the uncomposed child.
+        rule.waitUntil(15000) {
+            rule.onAllNodes(hasTestTag("collection-overview-scroll"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onNodeWithTag("collection-overview-scroll")
+            .performScrollToNode(hasTestTag("collection-guide-compare"))
+        rule.onNodeWithTag("collection-guide-compare").performClick()
         rule.onNodeWithTag("collection-overview-scroll")
             .performScrollToNode(hasTestTag("go-search-panel"))
     }

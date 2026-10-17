@@ -331,6 +331,24 @@ def source_contract():
                           'dao.ownedById(row.candidateOwnedId) == null',
                           'status = CandidateInboxStatus.PENDING.name']
         ),
+        "navigation fixture cancels Room observers before database.close": all(
+            token in (android_test/"CollectionNavigationJourneyAndroidTest.kt").read_text()
+            for token in [
+                "compositionActive by mutableStateOf(true)",
+                "if (compositionActive)",
+                "rule.runOnIdle { compositionActive = false }",
+                "rule.waitForIdle()",
+                "database.close()"
+            ]
+        ),
+        "owned IV tests do not assume fixed specimen in top 3 ranks": (
+            (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text().count("showAllFourOwned()") >= 3 and
+            all(token in (android_test/"OwnedIvCompareComposeAndroidTest.kt").read_text() for token in [
+                "private fun showAllFourOwned()",
+                'scroll("iv-owned-toggle-all")',
+                "render(onOpenOwned = null)"
+            ])
+        ),
         "source test count minimum": all(
             (android_test/f"{name}.kt").read_text().count("@Test fun ") >= count
             for name,count in required.items()
