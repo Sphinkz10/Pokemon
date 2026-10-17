@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,7 +37,9 @@ import kotlinx.coroutines.flow.map
 fun TodayJourneyPanel(
     goal: TodayGoal,
     onOpenCollection: () -> Unit,
-    onContinueGoal: () -> Unit
+    onContinueGoal: () -> Unit,
+    onRecordCandidate: (() -> Unit)? = null,
+    repositoryOverride: CollectionRepository? = null
 ) {
     val context = LocalContext.current.applicationContext
     val prefs = remember(context) {
@@ -65,7 +68,9 @@ fun TodayJourneyPanel(
         TodayJourneyPolicy.scopedSuggestion(goal, scope, language)
     }
     val clipboard = LocalClipboardManager.current
-    val repository = remember(context) { CollectionRepository.get(context) }
+    val repository = remember(context, repositoryOverride) {
+        repositoryOverride ?: CollectionRepository.get(context)
+    }
     val inboxCountFlow = remember(repository) { repository.pendingInbox.map { it.size } }
     // -1 is only a loading sentinel: zero must come from the first Room emission.
     val pendingCount by inboxCountFlow.collectAsState(initial = -1)
@@ -231,6 +236,7 @@ fun TodayJourneyPanel(
                             updateStage(TodayJourneyPolicy.afterCopy(stage))
                         },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            .testTag("today-journey-copy")
                     ) {
                         Text("Copiar filtro e continuar")
                     }
@@ -238,13 +244,15 @@ fun TodayJourneyPanel(
                 TodayJourneyStage.REVIEW_CANDIDATES -> {
                     Text(
                         "Cola o filtro na pesquisa da coleção do Pokémon GO. " +
-                            "Confere os resultados no jogo, depois abre a Coleção da Companion. " +
+                            "Abre um resultado → Avaliar e confirma Ataque, Defesa e PS. " +
+                            "Depois regista aqui o Pokémon que queres comparar. " +
                             "Uma pesquisa copiada não importa exemplares automaticamente.",
                         color = PvpColors.TextSecondary,
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         inboxSummary,
+                        modifier = Modifier.testTag("today-journey-inbox-status"),
                         color = PvpColors.TextPrimary,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -254,9 +262,23 @@ fun TodayJourneyPanel(
                         color = PvpColors.AccentAmber,
                         style = MaterialTheme.typography.bodySmall
                     )
+                    if (onRecordCandidate != null) {
+                        Button(
+                            onClick = onRecordCandidate,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .testTag("today-journey-record-candidate")
+                        ) { Text("Registar Pokémon encontrado") }
+                        Text(
+                            "Escolhe a espécie e introduz os três IVs da avaliação. " +
+                                "O registo fica pendente na Inbox até confirmares que o queres guardar.",
+                            color = PvpColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                     Button(
                         onClick = onOpenCollection,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            .testTag("today-journey-open-inbox")
                     ) {
                         Text(
                             if (TodayJourneyPolicy.hasPendingInboxReview(pendingCount.takeIf { it >= 0 }))
