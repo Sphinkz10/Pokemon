@@ -19,7 +19,13 @@ Os coletores Compose são desmontados antes de fechar a base de testes. O gate d
 
 - Validação de estrutura dos filtros: **13/13 aprovada localmente**.
 - Validação de estrutura dos testes Android: **57/57 aprovada localmente**.
-- Compilação e testes JVM: em verificação; registar o resultado final antes de considerar o lote validado.
-- Android instrumentado: ainda sem resultado executado nesta retoma. A existência do teste e a sua compilação não demonstram que passou num emulador.
+- Compilação local: **APK debug e APK de testes Android gerados com sucesso**.
+- Testes JVM locais: **403 aprovados, zero falhas, erros ou ignorados**, confirmados nos relatórios JUnit XML.
+- Assinatura do APK local: verificada; pacote de diagnóstico `com.rui.pvpgo.installtestv190`, versão `1.59.0-dev-installtestv190` / código 59.
+- CI APK/JVM do código `5a6ba29`: **[aprovado](https://github.com/Sphinkz10/Pokemon/actions/runs/38988449705)**.
+- Android instrumentado do código `5a6ba29`: **114/114 casos aprovados no emulador Android 35**, em 20 suites, sem falhas ou ignorados. Os **dois casos de `TodayCandidateJourneyAndroidTest` passaram**, conforme auditoria dos relatórios JUnit.
+- Atualização real de APK 58→59 com a mesma assinatura e reinício do processo: **[aprovada](https://github.com/Sphinkz10/Pokemon/actions/runs/38988449832)**, no âmbito do pacote de diagnóstico e dos dados do teste.
 - Telefone físico e aceitação visual: em aberto.
 - Nenhuma tarefa do Excel nem cenário UX global é fechado por inferência.
+
+O [PR #45](https://github.com/Sphinkz10/Pokemon/pull/45) fica em rascunho para revisão visual e aceitação do produto. A [execução dos 114 casos Android](https://github.com/Sphinkz10/Pokemon/actions/runs/38988449707) foi aprovada. A atualização seguinte deste documento altera apenas documentação; as provas acima identificam explicitamente o commit do código executado. A falha intermitente histórica referida no PR #44 não se reproduziu nesta execução; isto não equivale a integrar a correção separada.
