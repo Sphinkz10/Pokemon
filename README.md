@@ -1,5 +1,7 @@
 # Pokémon PvP — Android V1.51
 
+> **Retoma de 17 de outubro de 2026:** a versão no título e as verificações abaixo são históricas. O repositório avançou até ao PR #43. Consultar a [direção atual e estado verificado](docs/retoma-2026-10-17.md) e o [percurso Hoje → registo guiado → Inbox](docs/qa/today-guided-candidate-entry.md). A prioridade atual é a jornada de IVs e filtros; números de testes não medem a conclusão da aplicação.
+
 Aplicação Android em Kotlin/Jetpack Compose, com funcionalidades de Coleção, Pokédex Nacional, Equipa, Batalhas e Companion (parcial). Design: [Figma · Pokémon Companion](https://www.figma.com/design/Y85bgqW7K2jEnrXdqDnwBE).
 
 ## Código importado

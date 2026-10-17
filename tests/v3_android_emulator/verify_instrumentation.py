@@ -26,6 +26,7 @@ required={
     "PokemonGoCandidateHandoffAndroidTest":7,
     "InboxTriageComposeAndroidTest":7,
     "InboxRestoreAndroidTest":5,
+    "TodayCandidateJourneyAndroidTest":2,
 }
 
 def source_contract():

@@ -173,6 +173,7 @@ internal fun PvPGoApp(
     var selectedReturnTab by rememberSaveable { mutableStateOf(AppTab.HOME) }
     var tab by rememberSaveable { mutableStateOf(AppTab.HOME) }
     var guidedInboxRequest by rememberSaveable { mutableIntStateOf(0) }
+    var guidedCaptureRequest by rememberSaveable { mutableIntStateOf(0) }
     var moreStartRoute by remember { mutableStateOf(MoreRoute.HOME) }
     var favorites by remember { mutableStateOf(UserStore.favorites(context)) }
     var recents by remember { mutableStateOf(UserStore.recents(context)) }
@@ -270,11 +271,18 @@ internal fun PvPGoApp(
                                     moreStartRoute = MoreRoute.AGENDA
                                     tab = AppTab.MORE
                                 },
-                                onSearch = { tab = AppTab.COLLECTION }
+                                onSearch = { tab = AppTab.COLLECTION },
+                                onRecordCandidate = {
+                                    guidedCaptureRequest++
+                                    tab = AppTab.COLLECTION
+                                },
+                                repositoryOverride = collectionRepositoryOverride
                             )
                             AppTab.COLLECTION -> CollectionModuleScreen(
                                 catalog = catalog, moves = moves,
                                 inboxRequestCounter = guidedInboxRequest,
+                                guidedCaptureRequestCounter = guidedCaptureRequest,
+                                onCaptureBackToToday = { tab = AppTab.HOME },
                                 repositoryOverride = collectionRepositoryOverride
                             )
                             AppTab.TEAMS -> TeamLabRootScreen(catalog = catalog, moves = moves)

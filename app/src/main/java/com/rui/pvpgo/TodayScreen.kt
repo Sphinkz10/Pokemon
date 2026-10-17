@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.flow.combine
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -76,10 +77,14 @@ fun TodayScreen(
     onOpenTeams: () -> Unit,
     onOpenCandidateInbox: () -> Unit,
     onOpenAgenda: () -> Unit,
-    onSearch: () -> Unit
+    onSearch: () -> Unit,
+    onRecordCandidate: (() -> Unit)? = null,
+    repositoryOverride: CollectionRepository? = null
 ) {
     val context = LocalContext.current
-    val repository = remember(context) { CollectionRepository.get(context.applicationContext) }
+    val repository = remember(context, repositoryOverride) {
+        repositoryOverride ?: CollectionRepository.get(context.applicationContext)
+    }
     val goalPreferences = remember(context) {
         context.applicationContext.getSharedPreferences("companion_today_goal_v1", android.content.Context.MODE_PRIVATE)
     }
@@ -106,7 +111,7 @@ fun TodayScreen(
     val actions by actionsFlow.collectAsState(initial = emptyList())
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("today-scroll"),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -127,7 +132,9 @@ fun TodayScreen(
                         TodayGoal.EVENTS -> onOpenRadar()
                         else -> onSearch()
                     }
-                }
+                },
+                onRecordCandidate = onRecordCandidate,
+                repositoryOverride = repository
             )
         }
         item {
@@ -245,6 +252,7 @@ private fun TodayGoalPicker(selected: TodayGoal, onSelect: (TodayGoal) -> Unit) 
                             onClick = { onSelect(goal) },
                             label = { Text(goal.shortLabel, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                             modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                                .testTag("today-goal-${goal.name.lowercase()}")
                         )
                     }
                 }

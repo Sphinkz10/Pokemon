@@ -84,7 +84,9 @@ fun CollectionModuleScreen(
     catalog: List<PokemonSpecies>,
     moves: List<PvpMove>,
     inboxRequestCounter: Int = 0,
-    repositoryOverride: CollectionRepository? = null
+    repositoryOverride: CollectionRepository? = null,
+    guidedCaptureRequestCounter: Int = 0,
+    onCaptureBackToToday: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val repository = remember(context, repositoryOverride) {
@@ -96,9 +98,18 @@ fun CollectionModuleScreen(
     var awaitingConfirmedOwnedId by rememberSaveable { mutableStateOf<String?>(null) }
     var manualReturnRoute by rememberSaveable { mutableStateOf(CollectionRoute.IMPORT_HOME) }
     var consumedInboxRequest by rememberSaveable { mutableIntStateOf(0) }
-    LaunchedEffect(inboxRequestCounter) {
-        if (inboxRequestCounter > consumedInboxRequest) {
+    var consumedCaptureRequest by rememberSaveable { mutableIntStateOf(0) }
+    var captureFromToday by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(inboxRequestCounter, guidedCaptureRequestCounter) {
+        if (guidedCaptureRequestCounter > consumedCaptureRequest) {
+            consumedCaptureRequest = guidedCaptureRequestCounter
             consumedInboxRequest = inboxRequestCounter
+            captureFromToday = true
+            manualReturnRoute = CollectionRoute.LIST
+            route = CollectionRoute.MANUAL_GUIDED
+        } else if (inboxRequestCounter > consumedInboxRequest) {
+            consumedInboxRequest = inboxRequestCounter
+            captureFromToday = false
             route = CollectionRoute.INBOX
         }
     }
@@ -149,9 +160,19 @@ fun CollectionModuleScreen(
         }
     }
 
+    fun returnFromManual() {
+        route = manualReturnRoute
+        if (captureFromToday) {
+            captureFromToday = false
+            onCaptureBackToToday?.invoke()
+        }
+    }
+
     // DETAIL has a dedicated unsaved-edit BackHandler; it takes precedence.
     BackHandler(enabled = route != CollectionRoute.LIST && route != CollectionRoute.DETAIL) {
-        route = CollectionNavigationPolicy.backTarget(
+        if (route == CollectionRoute.MANUAL_GUIDED && captureFromToday) {
+            returnFromManual()
+        } else route = CollectionNavigationPolicy.backTarget(
             current = route,
             detailOrigin = detailReturnRoute,
             compareOrigin = compareReturnRoute,
@@ -377,8 +398,11 @@ fun CollectionModuleScreen(
             repository = repository,
             collection = collection,
             guided = true,
-            onBack = { route = manualReturnRoute },
-            onSubmitted = { route = CollectionRoute.INBOX }
+            onBack = { returnFromManual() },
+            onSubmitted = {
+                captureFromToday = false
+                route = CollectionRoute.INBOX
+            }
         )
         CollectionRoute.PASTE -> PasteImportScreen(
             repository = repository,
